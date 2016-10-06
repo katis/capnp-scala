@@ -1,0 +1,62 @@
+package org.capnproto
+
+object AnyPointer  {
+
+  object factory extends PointerFactory[Builder, Reader] {
+    def fromPointerReader(segment: SegmentReader, pointer: Int, nestingLimit: Int): Reader = {
+      new Reader(segment, pointer, nestingLimit)
+    }
+
+    def fromPointerBuilder(segment: SegmentBuilder, pointer: Int): Builder = new Builder(segment, pointer)
+
+    def initFromPointerBuilder(segment: SegmentBuilder, pointer: Int, elementCount: Int): Builder = {
+      val result = new Builder(segment, pointer)
+      result.clear()
+      result
+    }
+  }
+
+  class Reader(val segment: SegmentReader, val pointer: Int, val nestingLimit: Int) {
+
+    def isNull(): Boolean = {
+      WirePointer.isNull(this.segment.buffer.getLong(this.pointer * Constants.BYTES_PER_WORD))
+    }
+
+    def getAs[T](factory: FromPointerReader[T]): T = {
+      factory.fromPointerReader(this.segment, this.pointer, this.nestingLimit)
+    }
+  }
+
+  class Builder(val segment: SegmentBuilder, val pointer: Int) {
+
+    def isNull(): Boolean = {
+      WirePointer.isNull(this.segment.buffer.getLong(this.pointer * Constants.BYTES_PER_WORD))
+    }
+
+    def getAs[T](factory: FromPointerBuilder[T]): T = {
+      factory.fromPointerBuilder(this.segment, this.pointer)
+    }
+
+    def initAs[T](factory: FromPointerBuilder[T]): T = {
+      factory.initFromPointerBuilder(this.segment, this.pointer, 0)
+    }
+
+    def initAs[T](factory: FromPointerBuilder[T], elementCount: Int): T = {
+      factory.initFromPointerBuilder(this.segment, this.pointer, elementCount)
+    }
+
+    def setAs[T, U](factory: SetPointerBuilder[T, U], reader: U) {
+      factory.setPointerBuilder(this.segment, this.pointer, reader)
+    }
+
+    def asReader(): Reader = {
+      new Reader(segment, pointer, 0x7fffffff)
+    }
+
+    def clear() {
+      WireHelpers.zeroObject(this.segment, this.pointer)
+      this.segment.buffer.putLong(this.pointer * 8, 0L)
+    }
+  }
+
+}
