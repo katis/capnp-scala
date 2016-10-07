@@ -8,9 +8,9 @@ trait FromPointerBuilder[T] {
 }
 
 trait FromPointerBuilderTF {
-  type B
+  type Builder
 
-  def fromPointerBuilder(segment: SegmentBuilder, pointer: Int): B
+  def fromPointerBuilder(segment: SegmentBuilder, pointer: Int): Builder
 
-  def initFromPointerBuilder(segment: SegmentBuilder, pointer: Int, elementCount: Int): B
+  def initFromPointerBuilder(segment: SegmentBuilder, pointer: Int, elementCount: Int): Builder
 }

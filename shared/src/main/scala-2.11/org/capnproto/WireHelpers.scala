@@ -229,27 +229,27 @@ object WireHelpers {
     }
   }
 
-  def initStructPointer[T](factory: StructBuilder.Factory[T],
+  def initStructPointer(factory: Struct,
                            refOffset: Int,
                            segment: SegmentBuilder,
-                           size: StructSize): T = {
+                           size: StructSize): factory.Builder = {
     val allocation = allocate(refOffset, segment, size.total(), WirePointer.STRUCT.toByte)
     StructPointer.setFromStructSize(allocation.segment.buffer, allocation.refOffset, size)
-    factory.constructBuilder(allocation.segment, allocation.ptr * Constants.BYTES_PER_WORD, allocation.ptr + size.data,
+    factory.Builder(allocation.segment, allocation.ptr * Constants.BYTES_PER_WORD, allocation.ptr + size.data,
       size.data * 64, size.pointers)
   }
 
-  def getWritableStructPointer[T](factory: StructBuilder.Factory[T],
+  def getWritableStructPointer(factory: Struct,
                                   refOffset: Int,
                                   segment: SegmentBuilder,
                                   size: StructSize,
                                   defaultSegment: SegmentReader,
-                                  defaultOffset: Int): T = {
+                                  defaultOffset: Int): factory.Builder = {
     val ref = segment.get(refOffset)
     val target = WirePointer.target(refOffset, ref)
     if (WirePointer.isNull(ref)) {
       if (defaultSegment == null) {
-        return initStructPointer(factory, refOffset, segment, size)
+        return initStructPointer(factory, refOffset, segment, size).asInstanceOf[factory.Builder]
       } else {
         throw new Error("unimplemented")
       }
@@ -273,10 +273,10 @@ object WireHelpers {
       }
       memset(resolved.segment.buffer, resolved.ptr * Constants.BYTES_PER_WORD, 0.toByte, (oldDataSize + oldPointerCount * Constants.WORDS_PER_POINTER) *
         Constants.BYTES_PER_WORD)
-      factory.constructBuilder(allocation.segment, allocation.ptr * Constants.BYTES_PER_WORD, newPointerSection,
+      factory.Builder(allocation.segment, allocation.ptr * Constants.BYTES_PER_WORD, newPointerSection,
         newDataSize * Constants.BITS_PER_WORD, newPointerCount)
     } else {
-      factory.constructBuilder(resolved.segment, resolved.ptr * Constants.BYTES_PER_WORD, oldPointerSection,
+      factory.Builder(resolved.segment, resolved.ptr * Constants.BYTES_PER_WORD, oldPointerSection,
         oldDataSize * Constants.BITS_PER_WORD, oldPointerCount)
     }
   }
@@ -560,7 +560,7 @@ object WireHelpers {
                            _refOffset: Int,
                            defaultSegment: SegmentReader,
                            defaultOffset: Int,
-                           nestingLimit: Int): factory.R = {
+                           nestingLimit: Int): factory.Reader = {
     var segment = _segment
     var refOffset = _refOffset
 

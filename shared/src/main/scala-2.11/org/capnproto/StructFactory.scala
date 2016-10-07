@@ -7,24 +7,24 @@ trait Struct extends PointerFactoryTF
   with FromPointerReaderRefDefaultTF
   with StructReader.FactoryTF {
 
-  type B <: StructBuilder
-  type R <: StructReader
+  type Builder <: StructBuilder
+  type Reader <: StructReader
 
-  abstract class Builder(segment: SegmentBuilder,
-                         data: Int,
-                         pointers: Int,
-                         dataSize: Int,
-                         pointerCount: Short) extends StructBuilder(segment, data, pointers, dataSize, pointerCount) {
+  abstract class BuilderBase(segment: SegmentBuilder,
+                             data: Int,
+                             pointers: Int,
+                             dataSize: Int,
+                             pointerCount: Short) extends StructBuilder(segment, data, pointers, dataSize, pointerCount) {
 
-    def asReader: R = Reader(segment, data, pointers, dataSize, pointerCount, 134217727)
+    def asReader: Reader = Reader(segment, data, pointers, dataSize, pointerCount, 134217727)
   }
 
-  abstract class Reader(segment: SegmentReader,
-                        data: Int,
-                        pointers: Int,
-                        dataSize: Int,
-                        pointerCount: Short,
-                        nestingLimit: Int) extends StructReader(segment, data, pointers, dataSize, pointerCount, nestingLimit) {
+  abstract class ReaderBase(segment: SegmentReader,
+                            data: Int,
+                            pointers: Int,
+                            dataSize: Int,
+                            pointerCount: Short,
+                            nestingLimit: Int) extends StructReader(segment, data, pointers, dataSize, pointerCount, nestingLimit) {
 
   }
 
@@ -32,62 +32,63 @@ trait Struct extends PointerFactoryTF
                                   pointer: Int,
                                   defaultSegment: SegmentReader,
                                   defaultOffset: Int,
-                                  nestingLimit: Int): R = {
+                                  nestingLimit: Int): Reader = {
     WireHelpers.readStructPointerTF(this, segment, pointer, defaultSegment, defaultOffset, nestingLimit)
-  }
-
-  def asReader(builder: Builder): R = builder.asReader()
-}
-
-object Date extends Struct {
-  type B = Builder
-  type R = Reader
-
-  val Builder = new Builder(_, _, _, _, _)
-  val Reader = new Reader(_, _, _, _, _, _)
-  val structSize = new StructSize(2, 2)
-
-  class Builder(segment: SegmentBuilder,
-                data: Int,
-                pointers: Int,
-                dataSize: Int,
-                pointerCount: Short) extends super.Builder(segment, data, pointers, dataSize, pointerCount) {
-  }
-
-  class Reader(segment: SegmentReader,
-               data: Int,
-               pointers: Int,
-               dataSize: Int,
-               pointerCount: Short,
-               nestingLimit: Int) extends super.Reader(segment, data, pointers, dataSize, pointerCount, nestingLimit) {
-
   }
 
 
   def fromPointerReader(segment: SegmentReader, pointer: Int, nestingLimit: Int): Reader = {
-    null
+    fromPointerReaderRefDefault(segment, pointer, null, 0, nestingLimit)
   }
 
   def fromPointerBuilderRefDefault(segment: SegmentBuilder,
                                    pointer: Int,
                                    defaultSegment: SegmentReader,
                                    defaultOffset: Int): Builder = {
-    null
+    WireHelpers.getWritableStructPointer(this, pointer, segment, this.structSize, defaultSegment, defaultOffset)
   }
 
   def fromPointerBuilder(segment: SegmentBuilder, pointer: Int): Builder = {
-    null
+    WireHelpers.getWritableStructPointer(this, pointer, segment, this.structSize, null, 0)
   }
 
   def initFromPointerBuilder(segment: SegmentBuilder, pointer: Int, elementCount: Int): Builder = {
-    null
+    WireHelpers.initStructPointer(this, pointer, segment, this.structSize)
   }
 
   def setPointerBuilder(segment: SegmentBuilder, pointer: Int, value: Reader) {
-    null
+    WireHelpers.setStructPointer(segment, pointer, value)
+  }
+
+  def asReader(builder: BuilderBase): Reader = builder.asReader
+}
+
+object Date extends Struct {
+  type Builder = BuilderImpl
+  type Reader = ReaderImpl
+
+  val Builder = new BuilderImpl(_, _, _, _, _)
+  val Reader = new ReaderImpl(_, _, _, _, _, _)
+  val structSize = new StructSize(2, 2)
+
+  class BuilderImpl(segment: SegmentBuilder,
+                    data: Int,
+                    pointers: Int,
+                    dataSize: Int,
+                    pointerCount: Short) extends super.BuilderBase(segment, data, pointers, dataSize, pointerCount) {
+  }
+
+  class ReaderImpl(segment: SegmentReader,
+                   data: Int,
+                   pointers: Int,
+                   dataSize: Int,
+                   pointerCount: Short,
+                   nestingLimit: Int) extends super.ReaderBase(segment, data, pointers, dataSize, pointerCount, nestingLimit) {
+
   }
 }
 
+/*
 trait StructFactory[Builder, Reader <: StructReader]
   extends PointerFactory[Builder, Reader]
     with FromPointerBuilderRefDefault[Builder]
@@ -129,3 +130,4 @@ trait StructFactory[Builder, Reader <: StructReader]
 
   def asReader(builder: Builder): Reader
 }
+*/

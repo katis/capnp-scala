@@ -9,10 +9,10 @@ trait FromPointerBuilderRefDefault[T] {
 }
 
 trait FromPointerBuilderRefDefaultTF {
-  type B
+  type Builder
 
   def fromPointerBuilderRefDefault(segment: SegmentBuilder,
       pointer: Int,
       defaultSegment: SegmentReader,
-      defaultOffset: Int): B
+      defaultOffset: Int): Builder
 }

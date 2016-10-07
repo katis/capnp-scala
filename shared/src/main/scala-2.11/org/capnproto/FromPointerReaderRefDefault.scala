@@ -10,11 +10,11 @@ trait FromPointerReaderRefDefault[T] {
 }
 
 trait FromPointerReaderRefDefaultTF {
-  type R
+  type Reader
 
   def fromPointerReaderRefDefault(segment: SegmentReader,
       pointer: Int,
       defaultSegment: SegmentReader,
       defaultOffset: Int,
-      nestingLimit: Int): R
+      nestingLimit: Int): Reader
 }

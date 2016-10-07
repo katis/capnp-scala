@@ -13,14 +13,14 @@ object StructReader {
   }
 
   trait FactoryTF {
-    type R
+    type Reader
 
     def Reader: (SegmentReader,
                         Int,
                         Int,
                         Int,
                         Short,
-                        Int) => R
+                        Int) => Reader
   }
 }
 

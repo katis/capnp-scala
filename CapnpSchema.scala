@@ -1,6 +1,4 @@
-package org.capnproto.schema
-
-import org.capnproto._
+package org.capnproto.schema;
 
 object CapnpSchema {
 

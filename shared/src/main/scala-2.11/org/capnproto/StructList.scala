@@ -1,5 +1,8 @@
 package org.capnproto
 
+class StructList(struct: Struct) {
+}
+
 object StructList {
   class Factory[ElementBuilder <: StructBuilder, ElementReader <: StructReader](factory: StructFactory[ElementBuilder, ElementReader])
     extends ListFactory[Builder[ElementBuilder], Reader[ElementReader]](ElementSize.INLINE_COMPOSITE) {

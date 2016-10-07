@@ -6,8 +6,8 @@ trait SetPointerBuilder[Builder, Reader] {
 }
 
 trait SetPointerBuilderTF {
-  type B
-  type R
+  type Builder
+  type Reader
 
-  def setPointerBuilder(segment: SegmentBuilder, pointer: Int, value: R): Unit
+  def setPointerBuilder(segment: SegmentBuilder, pointer: Int, value: Reader): Unit
 }

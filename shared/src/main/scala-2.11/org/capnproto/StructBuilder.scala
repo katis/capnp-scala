@@ -14,9 +14,9 @@ object StructBuilder {
   }
 
   trait FactoryTF {
-    type B
+    type Builder
 
-    def Builder: (SegmentBuilder, Int, Int, Int, Short) => B
+    def Builder: (SegmentBuilder, Int, Int, Int, Short) => Builder
 
     def structSize: StructSize
   }
