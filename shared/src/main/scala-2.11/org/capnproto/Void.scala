@@ -1,5 +1,7 @@
 package org.capnproto
 
+class Void
+
 object Void {
-  val VOID = Void
+  val VOID = new Void
 }

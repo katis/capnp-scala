@@ -6,7 +6,7 @@ trait FromPointerReader[T] {
 }
 
 trait FromPointerReaderTF {
-  type R
+  type Reader
 
-  def fromPointerReader(segment: SegmentReader, pointer: Int, nestingLimit: Int): R
+  def fromPointerReader(segment: SegmentReader, pointer: Int, nestingLimit: Int): Reader
 }

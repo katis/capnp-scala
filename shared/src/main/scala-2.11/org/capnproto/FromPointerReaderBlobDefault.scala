@@ -1,10 +1,11 @@
 package org.capnproto
 
-trait FromPointerReaderBlobDefault[T] {
+trait FromPointerReaderBlobDefault {
+  type Reader
 
   def fromPointerReaderBlobDefault(segment: SegmentReader, 
       pointer: Int, 
       defaultBuffer: java.nio.ByteBuffer, 
       defaultOffset: Int, 
-      defaultSize: Int): T
+      defaultSize: Int): Reader
 }

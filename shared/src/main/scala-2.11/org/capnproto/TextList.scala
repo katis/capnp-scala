@@ -1,94 +1,75 @@
 package org.capnproto
 
-object TextList {
+object TextList extends List[Text.Builder, Text.Reader](ElementSize.POINTER) {
+  type Builder = BuilderImpl
+  type Reader = ReaderImpl
 
-  object factory extends ListFactory[TextList.Builder, TextList.Reader](ElementSize.POINTER.toByte) {
-
-    def constructReader(segment: SegmentReader,
-                        ptr: Int,
-                        elementCount: Int,
-                        step: Int,
-                        structDataSize: Int,
-                        structPointerCount: Short,
-                        nestingLimit: Int): Reader = {
-      new Reader(segment, ptr, elementCount, step, structDataSize, structPointerCount, nestingLimit)
-    }
-
-    def constructBuilder(segment: SegmentBuilder,
-                         ptr: Int,
-                         elementCount: Int,
-                         step: Int,
-                         structDataSize: Int,
-                         structPointerCount: Short): Builder = {
-      new Builder(segment, ptr, elementCount, step, structDataSize, structPointerCount)
-    }
-  }
-
-  class Reader(segment: SegmentReader,
+  class ReaderImpl(segment: SegmentReader,
                ptr: Int,
                elementCount: Int,
                step: Int,
                structDataSize: Int,
                structPointerCount: Short,
-               nestingLimit: Int) extends ListReader(segment, ptr, elementCount, step, structDataSize, structPointerCount,
-    nestingLimit) with java.lang.Iterable[Text.Reader] {
+               nestingLimit: Int) extends ReaderBase(segment, ptr, elementCount, step, structDataSize, structPointerCount,
+    nestingLimit) with Iterable[Text.Reader] {
 
-    def get(index: Int): Text.Reader = _getPointerElement(Text.factory, index)
+    override def size(): Int = super[ReaderBase].size()
 
-    class Iterator(var list: Reader) extends java.util.Iterator[Text.Reader] {
+    def apply(idx: Int): Text.Reader = _getPointerElement(Text, idx)
 
+    def iterator(): Iterator[Text.Reader] = new Iterator[Text.Reader] {
       var idx: Int = 0
 
       def next(): Text.Reader = {
-        this.list._getPointerElement(Text.factory, {
-          idx += 1;
-          idx - 1
-        })
-      }
-
-      def hasNext(): Boolean = idx < list.size
-
-      def remove() {
-        throw new UnsupportedOperationException()
-      }
-    }
-
-    def iterator(): java.util.Iterator[Text.Reader] = new Iterator(this)
-  }
-
-  class Builder(segment: SegmentBuilder,
-                ptr: Int,
-                elementCount: Int,
-                step: Int,
-                structDataSize: Int,
-                structPointerCount: Short) extends ListBuilder(segment, ptr, elementCount, step, structDataSize,
-    structPointerCount) with java.lang.Iterable[Text.Builder] {
-
-    def get(index: Int): Text.Builder = _getPointerElement(Text.factory, index)
-
-    def set(index: Int, value: Text.Reader) {
-      _setPointerElement(Text.factory, index, value)
-    }
-
-    class Iterator(var list: Builder) extends java.util.Iterator[Text.Builder] {
-
-      var idx: Int = 0
-
-      def next(): Text.Builder = {
-        this.list._getPointerElement(Text.factory, {
+        _getPointerElement(Text, {
           idx += 1
           idx - 1
         })
       }
 
-      def hasNext(): Boolean = this.idx < this.list.size
+      def hasNext: Boolean = idx < size
+
+      def remove() {
+        throw new UnsupportedOperationException()
+      }
+    }
+  }
+
+  class BuilderImpl(segment: SegmentBuilder,
+                ptr: Int,
+                elementCount: Int,
+                step: Int,
+                structDataSize: Int,
+                structPointerCount: Short) extends BuilderBase(segment, ptr, elementCount, step, structDataSize,
+    structPointerCount) with Iterable[Text.Builder] {
+
+    override def size(): Int = super[BuilderBase].size()
+
+    def iterator(): Iterator[Text.Builder] = new Iterator[Text.Builder] {
+      var idx: Int = 0
+
+      def next(): Text.Builder = {
+        _getPointerElement(Text, {
+          idx += 1
+          idx - 1
+        })
+      }
+
+      def hasNext: Boolean = this.idx < size
 
       def remove() {
         throw new UnsupportedOperationException()
       }
     }
 
-    def iterator(): java.util.Iterator[Text.Builder] = new Iterator(this)
+    override def apply(idx: Int): Text.Builder = _getPointerElement(Text, idx)
+
+    def update(idx: Int, element: Text.Reader): Unit = _setPointerElement(Text)(idx, element)
   }
 
+  override def Builder(segment: SegmentBuilder, ptr: Int, elementCount: Int, step: Int, structDataSize: Int, structPointerCount: Short): BuilderImpl =
+    new BuilderImpl(segment, ptr, elementCount, step, structDataSize, structPointerCount)
+
+  override def Reader(segment: SegmentReader, ptr: Int, elementCount: Int, step: Int, structDataSize: Int, structPointerCount: Short, nestingLimit: Int): ReaderImpl =
+    new ReaderImpl(segment, ptr, elementCount, step, structDataSize, structPointerCount, nestingLimit)
 }

@@ -1,10 +1,6 @@
 package org.capnproto
 
 import java.nio.ByteBuffer
-import WireHelpers._
-
-//remove if not needed
-import scala.collection.JavaConversions._
 
 object WireHelpers {
 
@@ -281,11 +277,11 @@ object WireHelpers {
     }
   }
 
-  def initListPointer[T](factory: ListBuilder.Factory[T],
+  def initListPointer(factory: ListBuilder.Factory,
                          refOffset: Int,
                          segment: SegmentBuilder,
                          elementCount: Int,
-                         elementSize: Byte): T = {
+                         elementSize: Byte): factory.Builder = {
     assert(elementSize != ElementSize.INLINE_COMPOSITE, "Should have called initStructListPointer instead")
     val dataSize = ElementSize.dataBitsPerElement(elementSize)
     val pointerCount = ElementSize.pointersPerElement(elementSize)
@@ -293,15 +289,15 @@ object WireHelpers {
     val wordCount = roundBitsUpToWords(elementCount.toLong * step.toLong)
     val allocation = allocate(refOffset, segment, wordCount, WirePointer.LIST)
     ListPointer.set(allocation.segment.buffer, allocation.refOffset, elementSize, elementCount)
-    factory.constructBuilder(allocation.segment, allocation.ptr * Constants.BYTES_PER_WORD, elementCount,
+    factory.Builder(allocation.segment, allocation.ptr * Constants.BYTES_PER_WORD, elementCount,
       step, dataSize, pointerCount.toShort)
   }
 
-  def initStructListPointer[T](factory: ListBuilder.Factory[T],
+  def initStructListPointer(factory: ListBuilder.Factory,
                                refOffset: Int,
                                segment: SegmentBuilder,
                                elementCount: Int,
-                               elementSize: StructSize): T = {
+                               elementSize: StructSize): factory.Builder = {
     val wordsPerElement = elementSize.total()
     val wordCount = elementCount * wordsPerElement
     val allocation = allocate(refOffset, segment, Constants.POINTER_SIZE_IN_WORDS + wordCount, WirePointer.LIST)
@@ -309,16 +305,16 @@ object WireHelpers {
     WirePointer.setKindAndInlineCompositeListElementCount(allocation.segment.buffer, allocation.ptr,
       WirePointer.STRUCT, elementCount)
     StructPointer.setFromStructSize(allocation.segment.buffer, allocation.ptr, elementSize)
-    factory.constructBuilder(allocation.segment, (allocation.ptr + 1) * Constants.BYTES_PER_WORD, elementCount,
+    factory.Builder(allocation.segment, (allocation.ptr + 1) * Constants.BYTES_PER_WORD, elementCount,
       wordsPerElement * Constants.BITS_PER_WORD, elementSize.data * Constants.BITS_PER_WORD, elementSize.pointers)
   }
 
-  def getWritableListPointer[T](factory: ListBuilder.Factory[T],
+  def getWritableListPointer(factory: ListBuilder.Factory,
                                 origRefOffset: Int,
                                 origSegment: SegmentBuilder,
                                 elementSize: Byte,
                                 defaultSegment: SegmentReader,
-                                defaultOffset: Int): T = {
+                                defaultOffset: Int): factory.Builder = {
     assert(elementSize != ElementSize.INLINE_COMPOSITE, "Use getStructList{Element,Field} for structs")
     val origRef = origSegment.get(origRefOffset)
     val origRefTarget = WirePointer.target(origRefOffset, origRef)
@@ -342,17 +338,17 @@ object WireHelpers {
         throw new DecodeException("Existing list value is incompatible with expected type.")
       }
       val step = dataSize + pointerCount * Constants.BITS_PER_POINTER
-      factory.constructBuilder(resolved.segment, resolved.ptr * Constants.BYTES_PER_WORD, ListPointer.elementCount(resolved.ref),
+      factory.Builder(resolved.segment, resolved.ptr * Constants.BYTES_PER_WORD, ListPointer.elementCount(resolved.ref),
         step, dataSize, pointerCount.toShort)
     }
   }
 
-  def getWritableStructListPointer[T](factory: ListBuilder.Factory[T],
+  def getWritableStructListPointer(factory: ListBuilder.Factory,
                                       origRefOffset: Int,
                                       origSegment: SegmentBuilder,
                                       elementSize: StructSize,
                                       defaultSegment: SegmentReader,
-                                      defaultOffset: Int): T = {
+                                      defaultOffset: Int): factory.Builder = {
     val origRef = origSegment.get(origRefOffset)
     val origRefTarget = WirePointer.target(origRefOffset, origRef)
     if (WirePointer.isNull(origRef)) {
@@ -374,7 +370,7 @@ object WireHelpers {
       val oldStep = (oldDataSize + oldPointerCount * Constants.POINTER_SIZE_IN_WORDS)
       val elementCount = WirePointer.inlineCompositeListElementCount(oldTag)
       if (oldDataSize >= elementSize.data && oldPointerCount >= elementSize.pointers) {
-        return factory.constructBuilder(resolved.segment, oldPtr * Constants.BYTES_PER_WORD, elementCount,
+        return factory.Builder(resolved.segment, oldPtr * Constants.BYTES_PER_WORD, elementCount,
           oldStep * Constants.BITS_PER_WORD, oldDataSize * Constants.BITS_PER_WORD, oldPointerCount)
       }
       val newDataSize = Math.max(oldDataSize, elementSize.data).toShort
@@ -404,7 +400,7 @@ object WireHelpers {
         src += oldStep
       }
       memset(resolved.segment.buffer, resolved.ptr * Constants.BYTES_PER_WORD, 0.toByte, oldStep * elementCount * Constants.BYTES_PER_WORD)
-      factory.constructBuilder(allocation.segment, newPtr * Constants.BYTES_PER_WORD, elementCount, newStep * Constants.BITS_PER_WORD,
+      factory.Builder(allocation.segment, newPtr * Constants.BYTES_PER_WORD, elementCount, newStep * Constants.BITS_PER_WORD,
         newDataSize * Constants.BITS_PER_WORD, newPointerCount)
     } else {
       val oldDataSize = ElementSize.dataBitsPerElement(oldSize)
@@ -412,7 +408,7 @@ object WireHelpers {
       val oldStep = oldDataSize + oldPointerCount * Constants.BITS_PER_POINTER
       val elementCount = ListPointer.elementCount(origRef)
       if (oldSize == ElementSize.VOID) {
-        initStructListPointer(factory, origRefOffset, origSegment, elementCount, elementSize)
+          initStructListPointer(factory, origRefOffset, origSegment, elementCount, elementSize).asInstanceOf[factory.Builder]
       } else {
         if (oldSize == ElementSize.BIT) {
           throw new Error("Found bit list where struct list was expected; " +
@@ -456,7 +452,7 @@ object WireHelpers {
           }
         }
         memset(resolved.segment.buffer, resolved.ptr * Constants.BYTES_PER_WORD, 0.toByte, roundBitsUpToBytes(oldStep * elementCount))
-        factory.constructBuilder(allocation.segment, newPtr * Constants.BYTES_PER_WORD, elementCount,
+        factory.Builder(allocation.segment, newPtr * Constants.BYTES_PER_WORD, elementCount,
           newStep * Constants.BITS_PER_WORD, newDataSize * Constants.BITS_PER_WORD, newPointerCount)
       }
     }
@@ -781,19 +777,19 @@ object WireHelpers {
     throw new Error("unreachable")
   }
 
-  def readListPointer[T](factory: ListReader.Factory[T],
+  def readListPointer(factory: ListReader.Factory,
                          _segment: SegmentReader,
                          _refOffset: Int,
                          defaultSegment: SegmentReader,
                          defaultOffset: Int,
                          expectedElementSize: Byte,
-                         nestingLimit: Int): T = {
+                         nestingLimit: Int): factory.Reader = {
     var segment = _segment
     var refOffset = _refOffset
     var ref = segment.get(refOffset)
     if (WirePointer.isNull(ref)) {
       if (defaultSegment == null) {
-        return factory.constructReader(SegmentReader.EMPTY, 0, 0, 0, 0, 0.toShort, 0x7fffffff)
+        return factory.Reader(SegmentReader.EMPTY, 0, 0, 0, 0, 0.toShort, 0x7fffffff)
       } else {
         segment = defaultSegment
         refOffset = defaultOffset
@@ -820,7 +816,7 @@ object WireHelpers {
         if (wordsPerElement == 0) {
           resolved.segment.arena.checkReadLimit(size)
         }
-        factory.constructReader(resolved.segment, ptr * Constants.BYTES_PER_WORD, size, wordsPerElement * Constants.BITS_PER_WORD,
+        factory.Reader(resolved.segment, ptr * Constants.BYTES_PER_WORD, size, wordsPerElement * Constants.BITS_PER_WORD,
           StructPointer.dataSize(tag) * Constants.BITS_PER_WORD, StructPointer.ptrCount(tag), nestingLimit - 1)
       }
       case _ => {
@@ -840,7 +836,7 @@ object WireHelpers {
         if (expectedPointersPerElement > pointerCount) {
           throw new DecodeException("Message contains list with incompatible element type.")
         }
-        factory.constructReader(resolved.segment, resolved.ptr * Constants.BYTES_PER_WORD, ListPointer.elementCount(resolved.ref),
+        factory.Reader(resolved.segment, resolved.ptr * Constants.BYTES_PER_WORD, ListPointer.elementCount(resolved.ref),
           step, dataSize, pointerCount.toShort, nestingLimit - 1)
       }
     }

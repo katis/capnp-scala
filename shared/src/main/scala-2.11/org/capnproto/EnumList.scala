@@ -1,31 +1,43 @@
 package org.capnproto
 
-import EnumList._
+class EnumList[T <: Enumeration#Value](val values: Array[T])
+    extends List[T, T](ElementSize.TWO_BYTES.toByte) {
+  type Builder = BuilderImpl
+  type Reader = ReaderImpl
 
-object EnumList {
-  class Factory[T <: java.lang.Enum[_]](val values: Array[T]) extends ListFactory[Builder[T], Reader[T]](ElementSize.TWO_BYTES.toByte) {
-
-    def constructReader(segment: SegmentReader,
-        ptr: Int,
-        elementCount: Int,
-        step: Int,
-        structDataSize: Int,
-        structPointerCount: Short,
-        nestingLimit: Int): Reader[T] = {
-      new Reader[T](values, segment, ptr, elementCount, step, structDataSize, structPointerCount, nestingLimit)
-    }
-
-    def constructBuilder(segment: SegmentBuilder,
-        ptr: Int,
-        elementCount: Int,
-        step: Int,
-        structDataSize: Int,
-        structPointerCount: Short): Builder[T] = {
-      new Builder[T](values, segment, ptr, elementCount, step, structDataSize, structPointerCount)
-    }
+  def Reader(segment: SegmentReader,
+             ptr: Int,
+             elementCount: Int,
+             step: Int,
+             structDataSize: Int,
+             structPointerCount: Short,
+             nestingLimit: Int): Reader = {
+    new ReaderImpl(values,
+                  segment,
+                  ptr,
+                  elementCount,
+                  step,
+                  structDataSize,
+                  structPointerCount,
+                  nestingLimit)
   }
 
-  def clampOrdinal[T](values: Array[T], ordinal: Short): T = {
+  def Builder(segment: SegmentBuilder,
+                       ptr: Int,
+                       elementCount: Int,
+                       step: Int,
+                       structDataSize: Int,
+                       structPointerCount: Short): Builder = {
+    new BuilderImpl(values,
+                   segment,
+                   ptr,
+                   elementCount,
+                   step,
+                   structDataSize,
+                   structPointerCount)
+  }
+
+  def clampOrdinal[A](values: Array[A], ordinal: Short): A = {
     var index = ordinal
     if (ordinal < 0 || ordinal >= values.length) {
       index = (values.length - 1).toShort
@@ -33,38 +45,43 @@ object EnumList {
     values(index)
   }
 
+  class ReaderImpl(val values: Array[T],
+                   segment: SegmentReader,
+                   ptr: Int,
+                   elementCount: Int,
+                   step: Int,
+                   structDataSize: Int,
+                   structPointerCount: Short,
+                   nestingLimit: Int)
+      extends ReaderBase(segment,
+                         ptr,
+                         elementCount,
+                         step,
+                         structDataSize,
+                         structPointerCount,
+                         nestingLimit) {
 
-  class Reader[T <: java.lang.Enum[_]](val values: Array[T], 
-      segment: SegmentReader, 
-      ptr: Int, 
-      elementCount: Int, 
-      step: Int, 
-      structDataSize: Int, 
-      structPointerCount: Short, 
-      nestingLimit: Int) extends ListReader(segment, ptr, elementCount, step, structDataSize, structPointerCount, 
-    nestingLimit) {
-
-    def get(index: Int): T = {
-      clampOrdinal(this.values, _getShortElement(index))
-    }
+    def apply(idx: Int): T =  clampOrdinal(this.values, _getShortElement(idx))
   }
 
-  class Builder[T <: java.lang.Enum[_]](val values: Array[T], 
-      segment: SegmentBuilder, 
-      ptr: Int, 
-      elementCount: Int, 
-      step: Int, 
-      structDataSize: Int, 
-      structPointerCount: Short) extends ListBuilder(segment, ptr, elementCount, step, structDataSize, 
-    structPointerCount) {
+  class BuilderImpl(val values: Array[T],
+                    segment: SegmentBuilder,
+                    ptr: Int,
+                    elementCount: Int,
+                    step: Int,
+                    structDataSize: Int,
+                    structPointerCount: Short)
+      extends BuilderBase(segment,
+                          ptr,
+                          elementCount,
+                          step,
+                          structDataSize,
+                          structPointerCount) {
 
-    def get(index: Int): T = {
-      clampOrdinal(this.values, _getShortElement(index))
+    def update(index: Int, value: T) {
+      _setShortElement(index, value.id.toShort)
     }
 
-    def set(index: Int, value: T) {
-      _setShortElement(index, value.ordinal().toShort)
-    }
+    override def apply(idx: Int): T = clampOrdinal(this.values, _getShortElement(idx))
   }
 }
-

@@ -2,48 +2,62 @@ package org.capnproto
 
 import java.nio.ByteBuffer
 
-object Text {
+object Text
+    extends FromPointerReaderBlobDefault
+    with FromPointerBuilderBlobDefault
+    with PointerFactoryTF
+    with SetPointerBuilderTF {
 
-  object factory extends
-    FromPointerReaderBlobDefault[Text.Reader]
-    with FromPointerBuilderBlobDefault[Text.Builder]
-    with PointerFactory[Text.Builder, Text.Reader]
-    with SetPointerBuilder[Text.Builder, Text.Reader] {
+  type Reader = ReaderImpl
+  type Builder = BuilderImpl
 
-    def fromPointerReaderBlobDefault(segment: SegmentReader,
-                                     pointer: Int,
-                                     defaultBuffer: java.nio.ByteBuffer,
-                                     defaultOffset: Int,
-                                     defaultSize: Int): Reader = {
-      WireHelpers.readTextPointer(segment, pointer, defaultBuffer, defaultOffset, defaultSize)
-    }
-
-    def fromPointerReader(segment: SegmentReader, pointer: Int, nestingLimit: Int): Reader = {
-      WireHelpers.readTextPointer(segment, pointer, null, 0, 0)
-    }
-
-    def fromPointerBuilderBlobDefault(segment: SegmentBuilder,
-                                      pointer: Int,
-                                      defaultBuffer: java.nio.ByteBuffer,
-                                      defaultOffset: Int,
-                                      defaultSize: Int): Builder = {
-      WireHelpers.getWritableTextPointer(pointer, segment, defaultBuffer, defaultOffset, defaultSize)
-    }
-
-    def fromPointerBuilder(segment: SegmentBuilder, pointer: Int): Builder = {
-      WireHelpers.getWritableTextPointer(pointer, segment, null, 0, 0)
-    }
-
-    def initFromPointerBuilder(segment: SegmentBuilder, pointer: Int, size: Int): Builder = {
-      WireHelpers.initTextPointer(pointer, segment, size)
-    }
-
-    def setPointerBuilder(segment: SegmentBuilder, pointer: Int, value: Reader) {
-      WireHelpers.setTextPointer(pointer, segment, value)
-    }
+  def fromPointerReaderBlobDefault(segment: SegmentReader,
+                                   pointer: Int,
+                                   defaultBuffer: java.nio.ByteBuffer,
+                                   defaultOffset: Int,
+                                   defaultSize: Int): Reader = {
+    WireHelpers.readTextPointer(segment,
+                                pointer,
+                                defaultBuffer,
+                                defaultOffset,
+                                defaultSize)
   }
 
-  class Reader(val buffer: ByteBuffer = ByteBuffer.allocate(0), _offset: Int = 0, val size: Int = 0) {
+  def fromPointerReader(segment: SegmentReader,
+                        pointer: Int,
+                        nestingLimit: Int): Reader = {
+    WireHelpers.readTextPointer(segment, pointer, null, 0, 0)
+  }
+
+  def fromPointerBuilderBlobDefault(segment: SegmentBuilder,
+                                    pointer: Int,
+                                    defaultBuffer: java.nio.ByteBuffer,
+                                    defaultOffset: Int,
+                                    defaultSize: Int): Builder = {
+    WireHelpers.getWritableTextPointer(pointer,
+                                       segment,
+                                       defaultBuffer,
+                                       defaultOffset,
+                                       defaultSize)
+  }
+
+  def fromPointerBuilder(segment: SegmentBuilder, pointer: Int): Builder = {
+    WireHelpers.getWritableTextPointer(pointer, segment, null, 0, 0)
+  }
+
+  def initFromPointerBuilder(segment: SegmentBuilder,
+                             pointer: Int,
+                             size: Int): Builder = {
+    WireHelpers.initTextPointer(pointer, segment, size)
+  }
+
+  def setPointerBuilder(segment: SegmentBuilder, pointer: Int, value: Reader) {
+    WireHelpers.setTextPointer(pointer, segment, value)
+  }
+
+  class ReaderImpl(val buffer: ByteBuffer = ByteBuffer.allocate(0),
+                   _offset: Int = 0,
+                   val size: Int = 0) {
     val offset = _offset * 8
 
     def this(bytes: Array[Byte]) {
@@ -62,7 +76,7 @@ object Text {
       result
     }
 
-    override def toString(): String = {
+    override def toString: String = {
       val bytes = Array.ofDim[Byte](this.size)
       val dup = this.buffer.duplicate()
       dup.position(this.offset)
@@ -71,7 +85,9 @@ object Text {
     }
   }
 
-  class Builder(val buffer: ByteBuffer = ByteBuffer.allocate(0), val offset: Int = 0, val size: Int = 0) {
+  class BuilderImpl(val buffer: ByteBuffer = ByteBuffer.allocate(0),
+                    val offset: Int = 0,
+                    val size: Int = 0) {
     def asByteBuffer(): ByteBuffer = {
       val dup = this.buffer.duplicate()
       dup.position(this.offset)
@@ -80,7 +96,7 @@ object Text {
       result
     }
 
-    override def toString(): String = {
+    override def toString: String = {
       val bytes = Array.ofDim[Byte](this.size)
       val dup = this.buffer.duplicate()
       dup.position(this.offset)

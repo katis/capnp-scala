@@ -4,5 +4,5 @@ trait PointerFactory[Builder, Reader] extends FromPointerBuilder[Builder] with F
 
 trait PointerFactoryTF extends FromPointerBuilderTF with FromPointerReaderTF {
   type Builder
-  type R
+  type Reader
 }

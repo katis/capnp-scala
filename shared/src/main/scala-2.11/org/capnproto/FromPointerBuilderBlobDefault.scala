@@ -1,10 +1,11 @@
 package org.capnproto
 
-trait FromPointerBuilderBlobDefault[T] {
+trait FromPointerBuilderBlobDefault {
+  type Builder
 
   def fromPointerBuilderBlobDefault(segment: SegmentBuilder, 
       pointer: Int, 
       defaultBuffer: java.nio.ByteBuffer, 
       defaultOffset: Int, 
-      defaultSize: Int): T
+      defaultSize: Int): Builder
 }

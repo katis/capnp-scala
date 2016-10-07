@@ -2,15 +2,16 @@ package org.capnproto
 
 object ListReader {
 
-  trait Factory[T] {
+  trait Factory {
+    type Reader
 
-    def constructReader(segment: SegmentReader, 
-        ptr: Int, 
-        elementCount: Int, 
-        step: Int, 
-        structDataSize: Int, 
-        structPointerCount: Short, 
-        nestingLimit: Int): T
+    def Reader(segment: SegmentReader,
+               ptr: Int,
+               elementCount: Int,
+               step: Int,
+               structDataSize: Int,
+               structPointerCount: Short,
+               nestingLimit: Int): Reader
   }
 }
 
@@ -61,25 +62,25 @@ class ListReader(
       (index.toLong * this.step / Constants.BITS_PER_BYTE).toInt)
   }
 
-  protected def _getStructElement[T](factory: StructReader.Factory[T], index: Int): T = {
+  protected def _getStructElement(factory: Struct, index: Int): factory.Reader = {
     val indexBit = index.toLong * this.step
     val structData = this.ptr + (indexBit / Constants.BITS_PER_BYTE).toInt
     val structPointers = structData + (this.structDataSize / Constants.BITS_PER_BYTE)
-    factory.constructReader(this.segment, structData, structPointers / 8, this.structDataSize, this.structPointerCount, 
+    factory.Reader(this.segment, structData, structPointers / 8, this.structDataSize, this.structPointerCount,
       this.nestingLimit - 1)
   }
 
-  protected def _getPointerElement[T](factory: FromPointerReader[T], index: Int): T = {
+  protected def _getPointerElement(factory: FromPointerReaderTF, index: Int): factory.Reader = {
     factory.fromPointerReader(this.segment, (this.ptr + 
       (index.toLong * this.step / Constants.BITS_PER_BYTE).toInt) / 
       Constants.BYTES_PER_WORD, this.nestingLimit)
   }
 
-  protected def _getPointerElement[T](factory: FromPointerReaderBlobDefault[T], 
+  protected def _getPointerElement(factory: FromPointerReaderBlobDefault,
       index: Int, 
       defaultBuffer: java.nio.ByteBuffer, 
       defaultOffset: Int, 
-      defaultSize: Int): T = {
+      defaultSize: Int): factory.Reader = {
     factory.fromPointerReaderBlobDefault(this.segment, (this.ptr + 
       (index.toLong * this.step / Constants.BITS_PER_BYTE).toInt) / 
       Constants.BYTES_PER_WORD, defaultBuffer, defaultOffset, defaultSize)

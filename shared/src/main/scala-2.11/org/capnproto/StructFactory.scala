@@ -1,14 +1,75 @@
 package org.capnproto
 
-trait Struct extends PointerFactoryTF
-  with FromPointerBuilderRefDefaultTF
-  with StructBuilder.FactoryTF
-  with SetPointerBuilderTF
-  with FromPointerReaderRefDefaultTF
-  with StructReader.FactoryTF {
+trait Struct
+  extends PointerFactoryTF
+    with FromPointerBuilderRefDefaultTF
+    with StructBuilder.FactoryTF
+    with SetPointerBuilderTF
+    with FromPointerReaderRefDefaultTF
+    with StructReader.FactoryTF {
+
+  struct =>
 
   type Builder <: StructBuilder
   type Reader <: StructReader
+
+  object List extends List[struct.Builder, struct.Reader](ElementSize.INLINE_COMPOSITE) {
+    override type Builder = BuilderImpl
+    override type Reader = ReaderImpl
+
+    override def Builder(segment: SegmentBuilder, ptr: Int, elementCount: Int, step: Int, structDataSize: Int, structPointerCount: Short): Builder =
+      new BuilderImpl(segment, ptr, elementCount, step, structDataSize, structPointerCount)
+
+    override def setPointerBuilder(segment: SegmentBuilder, pointer: Int, value: Reader): Unit = ???
+
+    override def Reader(segment: SegmentReader, ptr: Int, elementCount: Int, step: Int, structDataSize: Int, structPointerCount: Short, nestingLimit: Int): Reader =
+      new ReaderImpl(segment, ptr, elementCount, step, structDataSize, structPointerCount, nestingLimit)
+
+    class BuilderImpl(segment: SegmentBuilder,
+                      ptr: Int,
+                      elementCount: Int,
+                      step: Int,
+                      structDataSize: Int,
+                      structPointerCount: Short) extends BuilderBase(segment, ptr, elementCount, step, structDataSize, structPointerCount) {
+
+      def apply(idx: Int): struct.Builder = _getStructElement(struct, idx)
+
+      def iterator(): Iterator[struct.Builder] = new Iterator[struct.Builder] {
+        private var idx: Int = 0
+
+        def next(): struct.Builder = _getStructElement(struct, {idx += 1; idx - 1})
+
+        def hasNext(): Boolean = idx < size
+
+        def remove() {
+          throw new UnsupportedOperationException()
+        }
+      }
+    }
+
+    class ReaderImpl(segment: SegmentReader,
+                  ptr: Int,
+                  elementCount: Int,
+                  step: Int,
+                  structDataSize: Int,
+                  structPointerCount: Short,
+                  nestingLimit: Int) extends ReaderBase(segment, ptr, elementCount, step, structDataSize, structPointerCount, nestingLimit) {
+
+      def apply(idx: Int): struct.Reader = _getStructElement(struct, idx)
+
+      def iterator(): Iterator[struct.Reader] = new Iterator[struct.Reader] {
+        private var idx: Int = 0
+
+        def next(): struct.Reader = _getStructElement(struct, {idx += 1; idx - 1})
+
+        def hasNext(): Boolean = idx < size
+
+        def remove() {
+          throw new UnsupportedOperationException()
+        }
+      }
+    }
+  }
 
   abstract class BuilderBase(segment: SegmentBuilder,
                              data: Int,

@@ -132,10 +132,10 @@ class StructReader(val segment: SegmentReader = SegmentReader.EMPTY,
     }
   }
 
-  protected def _getPointerField[T](factory: FromPointerReaderRefDefault[T],
+  protected def _getPointerField(factory: FromPointerReaderRefDefaultTF,
                                     ptrIndex: Int,
                                     defaultSegment: SegmentReader,
-                                    defaultOffset: Int): T = {
+                                    defaultOffset: Int): factory.Reader = {
     if (ptrIndex < this.pointerCount) {
       factory.fromPointerReaderRefDefault(this.segment, this.pointers + ptrIndex, defaultSegment, defaultOffset,
         this.nestingLimit)
@@ -144,11 +144,11 @@ class StructReader(val segment: SegmentReader = SegmentReader.EMPTY,
     }
   }
 
-  protected def _getPointerField[T](factory: FromPointerReaderBlobDefault[T],
+  protected def _getPointerField(factory: FromPointerReaderBlobDefault,
                                     ptrIndex: Int,
                                     defaultBuffer: java.nio.ByteBuffer,
                                     defaultOffset: Int,
-                                    defaultSize: Int): T = {
+                                    defaultSize: Int): factory.Reader = {
     if (ptrIndex < this.pointerCount) {
       factory.fromPointerReaderBlobDefault(this.segment, this.pointers + ptrIndex, defaultBuffer, defaultOffset,
         defaultSize)

@@ -1,414 +1,587 @@
 package org.capnproto
 
 object PrimitiveList {
+  object Void extends List[Void, Void](ElementSize.VOID.toByte) {
+    type Reader = ReaderImpl
+    type Builder = BuilderImpl
 
-  object Void {
-
-    object factory extends ListFactory[Void.Builder, Void.Reader](ElementSize.VOID.toByte) {
-      def constructReader(segment: SegmentReader,
-                          ptr: Int,
-                          elementCount: Int,
-                          step: Int,
-                          structDataSize: Int,
-                          structPointerCount: Short,
-                          nestingLimit: Int): Reader = {
-        new Reader(segment, ptr, elementCount, step, structDataSize, structPointerCount, nestingLimit)
-      }
-
-      def constructBuilder(segment: SegmentBuilder,
-                           ptr: Int,
-                           elementCount: Int,
-                           step: Int,
-                           structDataSize: Int,
-                           structPointerCount: Short): Builder = {
-        new Builder(segment, ptr, elementCount, step, structDataSize, structPointerCount)
-      }
+    def Reader(segment: SegmentReader,
+               ptr: Int,
+               elementCount: Int,
+               step: Int,
+               structDataSize: Int,
+               structPointerCount: Short,
+               nestingLimit: Int): Reader = {
+      new ReaderImpl(segment,
+                     ptr,
+                     elementCount,
+                     step,
+                     structDataSize,
+                     structPointerCount,
+                     nestingLimit)
     }
 
-    class Reader(segment: SegmentReader,
-                 ptr: Int,
-                 elementCount: Int,
-                 step: Int,
-                 structDataSize: Int,
-                 structPointerCount: Short,
-                 nestingLimit: Int) extends ListReader(segment, ptr, elementCount, step, structDataSize, structPointerCount,
-      nestingLimit) {
-
-      def get(index: Int): org.capnproto.Void.type = org.capnproto.Void.VOID
+    def Builder(segment: SegmentBuilder,
+                ptr: Int,
+                elementCount: Int,
+                step: Int,
+                structDataSize: Int,
+                structPointerCount: Short): Builder = {
+      new BuilderImpl(segment,
+                      ptr,
+                      elementCount,
+                      step,
+                      structDataSize,
+                      structPointerCount)
     }
 
-    class Builder(segment: SegmentBuilder,
-                  ptr: Int,
-                  elementCount: Int,
-                  step: Int,
-                  structDataSize: Int,
-                  structPointerCount: Short) extends ListBuilder(segment, ptr, elementCount, step, structDataSize,
-      structPointerCount)
+    class ReaderImpl(segment: SegmentReader,
+                     ptr: Int,
+                     elementCount: Int,
+                     step: Int,
+                     structDataSize: Int,
+                     structPointerCount: Short,
+                     nestingLimit: Int)
+        extends ReaderBase(segment,
+                           ptr,
+                           elementCount,
+                           step,
+                           structDataSize,
+                           structPointerCount,
+                           nestingLimit) {
 
+      def apply(idx: Int): org.capnproto.Void = org.capnproto.Void.VOID
+    }
+
+    class BuilderImpl(segment: SegmentBuilder,
+                      ptr: Int,
+                      elementCount: Int,
+                      step: Int,
+                      structDataSize: Int,
+                      structPointerCount: Short)
+        extends BuilderBase(segment,
+                            ptr,
+                            elementCount,
+                            step,
+                            structDataSize,
+                            structPointerCount) {
+      override def apply(idx: Int): Void = org.capnproto.Void.VOID
+    }
   }
 
-  object Boolean {
+  object Boolean extends List[Boolean, Boolean](ElementSize.BIT.toByte) {
+    type Reader = ReaderImpl
+    type Builder = BuilderImpl
 
-    object factory extends ListFactory[Boolean.Builder, Boolean.Reader](ElementSize.BIT.toByte) {
-      def constructReader(segment: SegmentReader,
-                          ptr: Int,
-                          elementCount: Int,
-                          step: Int,
-                          structDataSize: Int,
-                          structPointerCount: Short,
-                          nestingLimit: Int): Reader = {
-        new Reader(segment, ptr, elementCount, step, structDataSize, structPointerCount, nestingLimit)
-      }
-
-      def constructBuilder(segment: SegmentBuilder,
-                           ptr: Int,
-                           elementCount: Int,
-                           step: Int,
-                           structDataSize: Int,
-                           structPointerCount: Short): Builder = {
-        new Builder(segment, ptr, elementCount, step, structDataSize, structPointerCount)
-      }
+    def Reader(segment: SegmentReader,
+               ptr: Int,
+               elementCount: Int,
+               step: Int,
+               structDataSize: Int,
+               structPointerCount: Short,
+               nestingLimit: Int): Reader = {
+      new ReaderImpl(segment,
+                     ptr,
+                     elementCount,
+                     step,
+                     structDataSize,
+                     structPointerCount,
+                     nestingLimit)
     }
 
-    class Reader(segment: SegmentReader,
-                 ptr: Int,
-                 elementCount: Int,
-                 step: Int,
-                 structDataSize: Int,
-                 structPointerCount: Short,
-                 nestingLimit: Int) extends ListReader(segment, ptr, elementCount, step, structDataSize, structPointerCount,
-      nestingLimit) {
-
-      def get(index: Int): Boolean = _getBooleanElement(index)
+    def Builder(segment: SegmentBuilder,
+                ptr: Int,
+                elementCount: Int,
+                step: Int,
+                structDataSize: Int,
+                structPointerCount: Short): Builder = {
+      new BuilderImpl(segment,
+                      ptr,
+                      elementCount,
+                      step,
+                      structDataSize,
+                      structPointerCount)
     }
 
-    class Builder(segment: SegmentBuilder,
-                  ptr: Int,
-                  elementCount: Int,
-                  step: Int,
-                  structDataSize: Int,
-                  structPointerCount: Short) extends ListBuilder(segment, ptr, elementCount, step, structDataSize,
-      structPointerCount) {
+    class ReaderImpl(segment: SegmentReader,
+                     ptr: Int,
+                     elementCount: Int,
+                     step: Int,
+                     structDataSize: Int,
+                     structPointerCount: Short,
+                     nestingLimit: Int)
+        extends ReaderBase(segment,
+                           ptr,
+                           elementCount,
+                           step,
+                           structDataSize,
+                           structPointerCount,
+                           nestingLimit) {
 
-      def get(index: Int): Boolean = _getBooleanElement(index)
-
-      def set(index: Int, value: Boolean) {
-        _setBooleanElement(index, value)
-      }
+      def apply(idx: Int): Boolean = _getBooleanElement(idx)
     }
 
-  }
+    class BuilderImpl(segment: SegmentBuilder,
+                      ptr: Int,
+                      elementCount: Int,
+                      step: Int,
+                      structDataSize: Int,
+                      structPointerCount: Short)
+        extends BuilderBase(segment,
+                            ptr,
+                            elementCount,
+                            step,
+                            structDataSize,
+                            structPointerCount) {
 
-  object Byte {
+      def apply(idx: Int): Boolean = _getBooleanElement(idx)
 
-    object factory extends ListFactory[Byte.Builder, Byte.Reader](ElementSize.BYTE.toByte) {
-      def constructReader(segment: SegmentReader,
-                          ptr: Int,
-                          elementCount: Int,
-                          step: Int,
-                          structDataSize: Int,
-                          structPointerCount: Short,
-                          nestingLimit: Int): Reader = {
-        new Reader(segment, ptr, elementCount, step, structDataSize, structPointerCount, nestingLimit)
-      }
-
-      def constructBuilder(segment: SegmentBuilder,
-                           ptr: Int,
-                           elementCount: Int,
-                           step: Int,
-                           structDataSize: Int,
-                           structPointerCount: Short): Builder = {
-        new Builder(segment, ptr, elementCount, step, structDataSize, structPointerCount)
-      }
-    }
-
-    class Reader(segment: SegmentReader,
-                 ptr: Int,
-                 elementCount: Int,
-                 step: Int,
-                 structDataSize: Int,
-                 structPointerCount: Short,
-                 nestingLimit: Int) extends ListReader(segment, ptr, elementCount, step, structDataSize, structPointerCount,
-      nestingLimit) {
-
-      def get(index: Int): Byte = _getByteElement(index)
-    }
-
-    class Builder(segment: SegmentBuilder,
-                  ptr: Int,
-                  elementCount: Int,
-                  step: Int,
-                  structDataSize: Int,
-                  structPointerCount: Short) extends ListBuilder(segment, ptr, elementCount, step, structDataSize,
-      structPointerCount) {
-
-      def get(index: Int): Byte = _getByteElement(index)
-
-      def set(index: Int, value: Byte) {
-        _setByteElement(index, value)
+      def set(idx: Int, value: Boolean) {
+        _setBooleanElement(idx, value)
       }
     }
 
   }
 
-  object Short {
+  object Byte extends List[Byte, Byte](ElementSize.BYTE.toByte) {
+    type Builder = BuilderImpl
+    type Reader = ReaderImpl
 
-    object factory extends ListFactory[Short.Builder, Short.Reader](ElementSize.TWO_BYTES.toByte) {
-      def constructReader(segment: SegmentReader,
-                          ptr: Int,
-                          elementCount: Int,
-                          step: Int,
-                          structDataSize: Int,
-                          structPointerCount: Short,
-                          nestingLimit: Int): Reader = {
-        new Reader(segment, ptr, elementCount, step, structDataSize, structPointerCount, nestingLimit)
-      }
-
-      def constructBuilder(segment: SegmentBuilder,
-                           ptr: Int,
-                           elementCount: Int,
-                           step: Int,
-                           structDataSize: Int,
-                           structPointerCount: Short): Builder = {
-        new Builder(segment, ptr, elementCount, step, structDataSize, structPointerCount)
-      }
+    def Reader(segment: SegmentReader,
+               ptr: Int,
+               elementCount: Int,
+               step: Int,
+               structDataSize: Int,
+               structPointerCount: Short,
+               nestingLimit: Int): Reader = {
+      new ReaderImpl(segment,
+                     ptr,
+                     elementCount,
+                     step,
+                     structDataSize,
+                     structPointerCount,
+                     nestingLimit)
     }
 
-    class Reader(segment: SegmentReader,
-                 ptr: Int,
-                 elementCount: Int,
-                 step: Int,
-                 structDataSize: Int,
-                 structPointerCount: Short,
-                 nestingLimit: Int) extends ListReader(segment, ptr, elementCount, step, structDataSize, structPointerCount,
-      nestingLimit) {
-
-      def get(index: Int): Short = _getShortElement(index)
+    def Builder(segment: SegmentBuilder,
+                ptr: Int,
+                elementCount: Int,
+                step: Int,
+                structDataSize: Int,
+                structPointerCount: Short): Builder = {
+      new BuilderImpl(segment,
+                      ptr,
+                      elementCount,
+                      step,
+                      structDataSize,
+                      structPointerCount)
     }
 
-    class Builder(segment: SegmentBuilder,
-                  ptr: Int,
-                  elementCount: Int,
-                  step: Int,
-                  structDataSize: Int,
-                  structPointerCount: Short) extends ListBuilder(segment, ptr, elementCount, step, structDataSize,
-      structPointerCount) {
+    class ReaderImpl(segment: SegmentReader,
+                     ptr: Int,
+                     elementCount: Int,
+                     step: Int,
+                     structDataSize: Int,
+                     structPointerCount: Short,
+                     nestingLimit: Int)
+        extends ReaderBase(segment,
+                           ptr,
+                           elementCount,
+                           step,
+                           structDataSize,
+                           structPointerCount,
+                           nestingLimit) {
 
-      def get(index: Int): Short = _getShortElement(index)
-
-      def set(index: Int, value: Short) {
-        _setShortElement(index, value)
-      }
+      def apply(idx: Int): Byte = _getByteElement(idx)
     }
 
-  }
+    class BuilderImpl(segment: SegmentBuilder,
+                      ptr: Int,
+                      elementCount: Int,
+                      step: Int,
+                      structDataSize: Int,
+                      structPointerCount: Short)
+        extends BuilderBase(segment,
+                            ptr,
+                            elementCount,
+                            step,
+                            structDataSize,
+                            structPointerCount) {
 
-  object Int {
+      def apply(idx: Int): Byte = _getByteElement(idx)
 
-    object factory extends ListFactory[Int.Builder, Int.Reader](ElementSize.FOUR_BYTES.toByte) {
-      def constructReader(segment: SegmentReader,
-                          ptr: Int,
-                          elementCount: Int,
-                          step: Int,
-                          structDataSize: Int,
-                          structPointerCount: Short,
-                          nestingLimit: Int): Reader = {
-        new Reader(segment, ptr, elementCount, step, structDataSize, structPointerCount, nestingLimit)
-      }
-
-      def constructBuilder(segment: SegmentBuilder,
-                           ptr: Int,
-                           elementCount: Int,
-                           step: Int,
-                           structDataSize: Int,
-                           structPointerCount: Short): Builder = {
-        new Builder(segment, ptr, elementCount, step, structDataSize, structPointerCount)
-      }
-    }
-
-    class Reader(segment: SegmentReader,
-                 ptr: Int,
-                 elementCount: Int,
-                 step: Int,
-                 structDataSize: Int,
-                 structPointerCount: Short,
-                 nestingLimit: Int) extends ListReader(segment, ptr, elementCount, step, structDataSize, structPointerCount,
-      nestingLimit) {
-
-      def get(index: Int): Int = _getIntElement(index)
-    }
-
-    class Builder(segment: SegmentBuilder,
-                  ptr: Int,
-                  elementCount: Int,
-                  step: Int,
-                  structDataSize: Int,
-                  structPointerCount: Short) extends ListBuilder(segment, ptr, elementCount, step, structDataSize,
-      structPointerCount) {
-
-      def get(index: Int): Int = _getIntElement(index)
-
-      def set(index: Int, value: Int) {
-        _setIntElement(index, value)
+      def set(idx: Int, value: Byte) {
+        _setByteElement(idx, value)
       }
     }
 
   }
 
-  object Float {
+  object Short extends List[Short, Short](ElementSize.TWO_BYTES.toByte) {
+    type Builder = BuilderImpl
+    type Reader = ReaderImpl
 
-    object factory extends ListFactory[Float.Builder, Float.Reader](ElementSize.FOUR_BYTES.toByte) {
-      def constructReader(segment: SegmentReader,
-                          ptr: Int,
-                          elementCount: Int,
-                          step: Int,
-                          structDataSize: Int,
-                          structPointerCount: Short,
-                          nestingLimit: Int): Reader = {
-        new Reader(segment, ptr, elementCount, step, structDataSize, structPointerCount, nestingLimit)
-      }
-
-      def constructBuilder(segment: SegmentBuilder,
-                           ptr: Int,
-                           elementCount: Int,
-                           step: Int,
-                           structDataSize: Int,
-                           structPointerCount: Short): Builder = {
-        new Builder(segment, ptr, elementCount, step, structDataSize, structPointerCount)
-      }
+    def Reader(segment: SegmentReader,
+               ptr: Int,
+               elementCount: Int,
+               step: Int,
+               structDataSize: Int,
+               structPointerCount: Short,
+               nestingLimit: Int): Reader = {
+      new ReaderImpl(segment,
+                     ptr,
+                     elementCount,
+                     step,
+                     structDataSize,
+                     structPointerCount,
+                     nestingLimit)
     }
 
-    class Reader(segment: SegmentReader,
-                 ptr: Int,
-                 elementCount: Int,
-                 step: Int,
-                 structDataSize: Int,
-                 structPointerCount: Short,
-                 nestingLimit: Int) extends ListReader(segment, ptr, elementCount, step, structDataSize, structPointerCount,
-      nestingLimit) {
-
-      def get(index: Int): Float = _getFloatElement(index)
+    def Builder(segment: SegmentBuilder,
+                ptr: Int,
+                elementCount: Int,
+                step: Int,
+                structDataSize: Int,
+                structPointerCount: Short): Builder = {
+      new BuilderImpl(segment,
+                      ptr,
+                      elementCount,
+                      step,
+                      structDataSize,
+                      structPointerCount)
     }
 
-    class Builder(segment: SegmentBuilder,
-                  ptr: Int,
-                  elementCount: Int,
-                  step: Int,
-                  structDataSize: Int,
-                  structPointerCount: Short) extends ListBuilder(segment, ptr, elementCount, step, structDataSize,
-      structPointerCount) {
+    class ReaderImpl(segment: SegmentReader,
+                     ptr: Int,
+                     elementCount: Int,
+                     step: Int,
+                     structDataSize: Int,
+                     structPointerCount: Short,
+                     nestingLimit: Int)
+        extends ReaderBase(segment,
+                           ptr,
+                           elementCount,
+                           step,
+                           structDataSize,
+                           structPointerCount,
+                           nestingLimit) {
 
-      def get(index: Int): Float = _getFloatElement(index)
-
-      def set(index: Int, value: Float) {
-        _setFloatElement(index, value)
-      }
+      def apply(idx: Int): Short = _getShortElement(idx)
     }
 
-  }
+    class BuilderImpl(segment: SegmentBuilder,
+                      ptr: Int,
+                      elementCount: Int,
+                      step: Int,
+                      structDataSize: Int,
+                      structPointerCount: Short)
+        extends BuilderBase(segment,
+                            ptr,
+                            elementCount,
+                            step,
+                            structDataSize,
+                            structPointerCount) {
 
-  object Long {
+      def apply(idx: Int): Short = _getShortElement(idx)
 
-    object factory extends ListFactory[Long.Builder, Long.Reader](ElementSize.EIGHT_BYTES.toByte) {
-      def constructReader(segment: SegmentReader,
-                          ptr: Int,
-                          elementCount: Int,
-                          step: Int,
-                          structDataSize: Int,
-                          structPointerCount: Short,
-                          nestingLimit: Int): Reader = {
-        new Reader(segment, ptr, elementCount, step, structDataSize, structPointerCount, nestingLimit)
-      }
-
-      def constructBuilder(segment: SegmentBuilder,
-                           ptr: Int,
-                           elementCount: Int,
-                           step: Int,
-                           structDataSize: Int,
-                           structPointerCount: Short): Builder = {
-        new Builder(segment, ptr, elementCount, step, structDataSize, structPointerCount)
-      }
-    }
-
-    class Reader(segment: SegmentReader,
-                 ptr: Int,
-                 elementCount: Int,
-                 step: Int,
-                 structDataSize: Int,
-                 structPointerCount: Short,
-                 nestingLimit: Int) extends ListReader(segment, ptr, elementCount, step, structDataSize, structPointerCount,
-      nestingLimit) {
-
-      def get(index: Int): Long = _getLongElement(index)
-    }
-
-    class Builder(segment: SegmentBuilder,
-                  ptr: Int,
-                  elementCount: Int,
-                  step: Int,
-                  structDataSize: Int,
-                  structPointerCount: Short) extends ListBuilder(segment, ptr, elementCount, step, structDataSize,
-      structPointerCount) {
-
-      def get(index: Int): Long = _getLongElement(index)
-
-      def set(index: Int, value: Long) {
-        _setLongElement(index, value)
+      def set(idx: Int, value: Short) {
+        _setShortElement(idx, value)
       }
     }
 
   }
 
-  object Double {
+  object Int extends List[Int, Int](ElementSize.FOUR_BYTES.toByte) {
+    type Builder = BuilderImpl
+    type Reader = ReaderImpl
 
-    object factory extends ListFactory[Double.Builder, Double.Reader](ElementSize.EIGHT_BYTES.toByte) {
-      def constructReader(segment: SegmentReader,
-                          ptr: Int,
-                          elementCount: Int,
-                          step: Int,
-                          structDataSize: Int,
-                          structPointerCount: Short,
-                          nestingLimit: Int): Reader = {
-        new Reader(segment, ptr, elementCount, step, structDataSize, structPointerCount, nestingLimit)
-      }
-
-      def constructBuilder(segment: SegmentBuilder,
-                           ptr: Int,
-                           elementCount: Int,
-                           step: Int,
-                           structDataSize: Int,
-                           structPointerCount: Short): Builder = {
-        new Builder(segment, ptr, elementCount, step, structDataSize, structPointerCount)
-      }
+    def Reader(segment: SegmentReader,
+               ptr: Int,
+               elementCount: Int,
+               step: Int,
+               structDataSize: Int,
+               structPointerCount: Short,
+               nestingLimit: Int): Reader = {
+      new ReaderImpl(segment,
+                     ptr,
+                     elementCount,
+                     step,
+                     structDataSize,
+                     structPointerCount,
+                     nestingLimit)
     }
 
-    class Reader(segment: SegmentReader,
-                 ptr: Int,
-                 elementCount: Int,
-                 step: Int,
-                 structDataSize: Int,
-                 structPointerCount: Short,
-                 nestingLimit: Int) extends ListReader(segment, ptr, elementCount, step, structDataSize, structPointerCount,
-      nestingLimit) {
-
-      def get(index: Int): Double = _getDoubleElement(index)
+    def Builder(segment: SegmentBuilder,
+                ptr: Int,
+                elementCount: Int,
+                step: Int,
+                structDataSize: Int,
+                structPointerCount: Short): Builder = {
+      new BuilderImpl(segment,
+                      ptr,
+                      elementCount,
+                      step,
+                      structDataSize,
+                      structPointerCount)
     }
 
-    class Builder(segment: SegmentBuilder,
-                  ptr: Int,
-                  elementCount: Int,
-                  step: Int,
-                  structDataSize: Int,
-                  structPointerCount: Short) extends ListBuilder(segment, ptr, elementCount, step, structDataSize,
-      structPointerCount) {
+    class ReaderImpl(segment: SegmentReader,
+                     ptr: Int,
+                     elementCount: Int,
+                     step: Int,
+                     structDataSize: Int,
+                     structPointerCount: Short,
+                     nestingLimit: Int)
+        extends ReaderBase(segment,
+                           ptr,
+                           elementCount,
+                           step,
+                           structDataSize,
+                           structPointerCount,
+                           nestingLimit) {
 
-      def get(index: Int): Double = _getDoubleElement(index)
+      def apply(idx: Int): Int = _getIntElement(idx)
+    }
 
-      def set(index: Int, value: Double) {
-        _setDoubleElement(index, value)
+    class BuilderImpl(segment: SegmentBuilder,
+                      ptr: Int,
+                      elementCount: Int,
+                      step: Int,
+                      structDataSize: Int,
+                      structPointerCount: Short)
+        extends BuilderBase(segment,
+                            ptr,
+                            elementCount,
+                            step,
+                            structDataSize,
+                            structPointerCount) {
+
+      def apply(idx: Int): Int = _getIntElement(idx)
+
+      def set(idx: Int, value: Int) {
+        _setIntElement(idx, value)
       }
     }
 
   }
 
+  object Float extends List[Float, Float](ElementSize.FOUR_BYTES.toByte) {
+    type Builder = BuilderImpl
+    type Reader = ReaderImpl
+
+    def Reader(segment: SegmentReader,
+               ptr: Int,
+               elementCount: Int,
+               step: Int,
+               structDataSize: Int,
+               structPointerCount: Short,
+               nestingLimit: Int): Reader = {
+      new ReaderImpl(segment,
+                     ptr,
+                     elementCount,
+                     step,
+                     structDataSize,
+                     structPointerCount,
+                     nestingLimit)
+    }
+
+    def Builder(segment: SegmentBuilder,
+                ptr: Int,
+                elementCount: Int,
+                step: Int,
+                structDataSize: Int,
+                structPointerCount: Short): Builder = {
+      new BuilderImpl(segment,
+                      ptr,
+                      elementCount,
+                      step,
+                      structDataSize,
+                      structPointerCount)
+    }
+
+    class ReaderImpl(segment: SegmentReader,
+                     ptr: Int,
+                     elementCount: Int,
+                     step: Int,
+                     structDataSize: Int,
+                     structPointerCount: Short,
+                     nestingLimit: Int)
+        extends ReaderBase(segment,
+                           ptr,
+                           elementCount,
+                           step,
+                           structDataSize,
+                           structPointerCount,
+                           nestingLimit) {
+
+      def apply(idx: Int): Float = _getFloatElement(idx)
+    }
+
+    class BuilderImpl(segment: SegmentBuilder,
+                      ptr: Int,
+                      elementCount: Int,
+                      step: Int,
+                      structDataSize: Int,
+                      structPointerCount: Short)
+        extends BuilderBase(segment,
+                            ptr,
+                            elementCount,
+                            step,
+                            structDataSize,
+                            structPointerCount) {
+
+      def apply(idx: Int): Float = _getFloatElement(idx)
+
+      def set(idx: Int, value: Float) {
+        _setFloatElement(idx, value)
+      }
+    }
+
+  }
+
+  object Long extends List[Long, Long](ElementSize.EIGHT_BYTES.toByte) {
+    type Builder = BuilderImpl
+    type Reader = ReaderImpl
+
+    def Reader(segment: SegmentReader,
+               ptr: Int,
+               elementCount: Int,
+               step: Int,
+               structDataSize: Int,
+               structPointerCount: Short,
+               nestingLimit: Int): Reader = {
+      new ReaderImpl(segment,
+                     ptr,
+                     elementCount,
+                     step,
+                     structDataSize,
+                     structPointerCount,
+                     nestingLimit)
+    }
+
+    def Builder(segment: SegmentBuilder,
+                ptr: Int,
+                elementCount: Int,
+                step: Int,
+                structDataSize: Int,
+                structPointerCount: Short): Builder = {
+      new BuilderImpl(segment,
+                      ptr,
+                      elementCount,
+                      step,
+                      structDataSize,
+                      structPointerCount)
+    }
+
+    class ReaderImpl(segment: SegmentReader,
+                     ptr: Int,
+                     elementCount: Int,
+                     step: Int,
+                     structDataSize: Int,
+                     structPointerCount: Short,
+                     nestingLimit: Int)
+        extends ReaderBase(segment,
+                           ptr,
+                           elementCount,
+                           step,
+                           structDataSize,
+                           structPointerCount,
+                           nestingLimit) {
+
+      def apply(idx: Int): Long = _getLongElement(idx)
+    }
+
+    class BuilderImpl(segment: SegmentBuilder,
+                      ptr: Int,
+                      elementCount: Int,
+                      step: Int,
+                      structDataSize: Int,
+                      structPointerCount: Short)
+        extends BuilderBase(segment,
+                            ptr,
+                            elementCount,
+                            step,
+                            structDataSize,
+                            structPointerCount) {
+
+      def apply(idx: Int): Long = _getLongElement(idx)
+
+      def set(idx: Int, value: Long) {
+        _setLongElement(idx, value)
+      }
+    }
+  }
+
+  object Double extends List[Double, Double](ElementSize.EIGHT_BYTES.toByte) {
+    type Builder = BuilderImpl
+    type Reader = ReaderImpl
+
+    def Reader(segment: SegmentReader,
+               ptr: Int,
+               elementCount: Int,
+               step: Int,
+               structDataSize: Int,
+               structPointerCount: Short,
+               nestingLimit: Int): Reader = {
+      new ReaderImpl(segment,
+                     ptr,
+                     elementCount,
+                     step,
+                     structDataSize,
+                     structPointerCount,
+                     nestingLimit)
+    }
+
+    def Builder(segment: SegmentBuilder,
+                ptr: Int,
+                elementCount: Int,
+                step: Int,
+                structDataSize: Int,
+                structPointerCount: Short): Builder = {
+      new BuilderImpl(segment,
+                      ptr,
+                      elementCount,
+                      step,
+                      structDataSize,
+                      structPointerCount)
+    }
+
+    class ReaderImpl(segment: SegmentReader,
+                     ptr: Int,
+                     elementCount: Int,
+                     step: Int,
+                     structDataSize: Int,
+                     structPointerCount: Short,
+                     nestingLimit: Int)
+        extends ReaderBase(segment,
+                           ptr,
+                           elementCount,
+                           step,
+                           structDataSize,
+                           structPointerCount,
+                           nestingLimit) {
+
+      def apply(idx: Int): Double = _getDoubleElement(idx)
+    }
+
+    class BuilderImpl(segment: SegmentBuilder,
+                      ptr: Int,
+                      elementCount: Int,
+                      step: Int,
+                      structDataSize: Int,
+                      structPointerCount: Short)
+        extends BuilderBase(segment,
+                            ptr,
+                            elementCount,
+                            step,
+                            structDataSize,
+                            structPointerCount) {
+
+      def apply(idx: Int): Double = _getDoubleElement(idx)
+
+      def set(idx: Int, value: Double) {
+        _setDoubleElement(idx, value)
+      }
+    }
+  }
 }

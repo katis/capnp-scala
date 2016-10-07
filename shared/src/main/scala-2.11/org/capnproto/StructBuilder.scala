@@ -165,20 +165,20 @@ class StructBuilder(
     factory.fromPointerBuilderRefDefault(this.segment, this.pointers + index, defaultSegment, defaultOffset)
   }
 
-  protected def _getPointerField[T](factory: FromPointerBuilderBlobDefault[T],
+  protected def _getPointerField(factory: FromPointerBuilderBlobDefault,
       index: Int,
       defaultBuffer: java.nio.ByteBuffer,
       defaultOffset: Int,
-      defaultSize: Int): T = {
+      defaultSize: Int): factory.Builder = {
     factory.fromPointerBuilderBlobDefault(this.segment, this.pointers + index, defaultBuffer, defaultOffset,
       defaultSize)
   }
 
-  protected def _initPointerField[T](factory: FromPointerBuilder[T], index: Int, elementCount: Int): T = {
+  protected def _initPointerField(factory: FromPointerBuilderTF, index: Int, elementCount: Int): factory.Builder = {
     factory.initFromPointerBuilder(this.segment, this.pointers + index, elementCount)
   }
 
-  protected def _setPointerField[Builder, Reader](factory: SetPointerBuilder[Builder, Reader], index: Int, value: Reader) {
+  protected def _setPointerField(factory: SetPointerBuilderTF)(index: Int, value: factory.Reader) {
     factory.setPointerBuilder(this.segment, this.pointers + index, value)
   }
 }
