@@ -20,8 +20,10 @@ lazy val capnProto = crossProject.in(file(".")).
   ).
   jsSettings(
     // Add JS-specific settings here
+    libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.9.0"
   )
 
 lazy val capnProtoJVM = capnProto.jvm
 mainClass in capnProtoJVM := Some("org.capnproto.compiler.package")
 lazy val capnProtoJS = capnProto.js
+mainClass in capnProtoJS := Some("org.capnproto.javascript.Main")
