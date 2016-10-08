@@ -198,7 +198,7 @@ private:
   std::unordered_set<uint64_t> usedImports;
   bool hasInterfaces = false;
 
-  kj::StringTree scalaFullName(Schema schema) {
+  kj::StringTree javaFullName(Schema schema) {
     auto node = schema.getProto();
     if (node.getScopeId() == 0) {
       usedImports.insert(node.getId());
@@ -217,7 +217,7 @@ private:
       Schema parent = schemaLoader.get(node.getScopeId());
       for (auto nested: parent.getProto().getNestedNodes()) {
         if (nested.getId() == node.getId()) {
-          return kj::strTree(scalaFullName(parent), ".", nested.getName());
+          return kj::strTree(javaFullName(parent), ".", nested.getName());
         }
       }
       KJ_FAIL_REQUIRE("A schema Node's supposed scope did not contain the node as a NestedNode.");
@@ -299,39 +299,39 @@ private:
     switch (type.which()) {
     case schema::Type::VOID: return kj::strTree("org.capnproto.Void");
 
-    case schema::Type::BOOL: return kj::strTree("Boolean");
-    case schema::Type::INT8: return kj::strTree("Byte");
-    case schema::Type::INT16: return kj::strTree("Short");
-    case schema::Type::INT32: return kj::strTree("Int");
-    case schema::Type::INT64: return kj::strTree("Long");
-    case schema::Type::UINT8: return kj::strTree("Byte");
-    case schema::Type::UINT16: return kj::strTree("Short");
-    case schema::Type::UINT32: return kj::strTree("Int");
-    case schema::Type::UINT64: return kj::strTree("Long");
-    case schema::Type::FLOAT32: return kj::strTree("Float");
-    case schema::Type::FLOAT64: return kj::strTree("Double");
+    case schema::Type::BOOL: return kj::strTree("boolean");
+    case schema::Type::INT8: return kj::strTree("byte");
+    case schema::Type::INT16: return kj::strTree("short");
+    case schema::Type::INT32: return kj::strTree("int");
+    case schema::Type::INT64: return kj::strTree("long");
+    case schema::Type::UINT8: return kj::strTree("byte");
+    case schema::Type::UINT16: return kj::strTree("short");
+    case schema::Type::UINT32: return kj::strTree("int");
+    case schema::Type::UINT64: return kj::strTree("long");
+    case schema::Type::FLOAT32: return kj::strTree("float");
+    case schema::Type::FLOAT64: return kj::strTree("double");
 
     case schema::Type::TEXT: return kj::strTree("org.capnproto.Text.", suffix);
     case schema::Type::DATA: return kj::strTree("org.capnproto.Data.", suffix);
 
-    case schema::Type::ENUM: return scalaFullName(type.asEnum());
+    case schema::Type::ENUM: return javaFullName(type.asEnum());
     case schema::Type::STRUCT: {
       auto structSchema = type.asStruct();
       if (structSchema.getProto().getIsGeneric()) {
         auto typeArgs = getTypeArguments(structSchema, structSchema, kj::str(suffix));
         return kj::strTree(
-          scalaFullName(structSchema), ".", suffix, "<",
+          javaFullName(structSchema), ".", suffix, "<",
           kj::StringTree(KJ_MAP(arg, typeArgs){
               return kj::strTree(arg);
             }, ", "),
           ">"
           );
       } else {
-        return kj::strTree(scalaFullName(type.asStruct()), ".", suffix);
+        return kj::strTree(javaFullName(type.asStruct()), ".", suffix);
       }
     }
     case schema::Type::INTERFACE:
-      return scalaFullName(type.asInterface());
+      return javaFullName(type.asInterface());
 
     case schema::Type::LIST:
     {
@@ -414,10 +414,10 @@ private:
         EnumSchema schema = schemaLoader.get(type.getEnum().getTypeId()).asEnum();
         if (value.getEnum() < schema.getEnumerants().size()) {
           return kj::strTree(
-              scalaFullName(schema), ".",
+              javaFullName(schema), ".",
               toUpperCase(schema.getEnumerants()[value.getEnum()].getProto().getName()));
         } else {
-          return kj::strTree("static_cast<", scalaFullName(schema), ">(", value.getEnum(), ")");
+          return kj::strTree("static_cast<", javaFullName(schema), ">(", value.getEnum(), ")");
         }
       }
 
@@ -526,17 +526,17 @@ private:
   static kj::StringPtr maskZeroLiteral(schema::Type::Which whichType) {
     switch (whichType) {
       case schema::Type::BOOL: return "false";
-      case schema::Type::INT8: return "0.toByte";
-      case schema::Type::INT16: return "0.toShort";
+      case schema::Type::INT8: return "(byte)0";
+      case schema::Type::INT16: return "(short)0";
       case schema::Type::INT32: return "0";
       case schema::Type::INT64: return "0L";
-      case schema::Type::UINT8: return "0.toByte";
-      case schema::Type::UINT16: return "0.toShort";
+      case schema::Type::UINT8: return "(byte)0";
+      case schema::Type::UINT16: return "(short)0";
       case schema::Type::UINT32: return "0";
       case schema::Type::UINT64: return "0L";
       case schema::Type::FLOAT32: return "0";
       case schema::Type::FLOAT64: return "0L";
-      case schema::Type::ENUM: return "0.toShort";
+      case schema::Type::ENUM: return "(short)0";
 
       case schema::Type::VOID:
       case schema::Type::TEXT:
@@ -724,10 +724,10 @@ private:
       spaces(indent), "switch(_getShortField(", offset, defaultMaskParam, ")) {\n",
       KJ_MAP(e, enumerants) {
         return kj::strTree(spaces(indent+1), "case ", e.getOrdinal(), " : return ",
-                           scalaFullName(schema), ".",
+                           javaFullName(schema), ".",
                            toUpperCase(e.getProto().getName()), ";\n");
       },
-      spaces(indent+1), "default: return ", scalaFullName(schema), "._NOT_IN_SCHEMA;\n",
+      spaces(indent+1), "default: return ", javaFullName(schema), "._NOT_IN_SCHEMA;\n",
       spaces(indent), "}\n"
       );
   }
@@ -756,7 +756,7 @@ private:
       if (node.getIsGeneric()) {
         auto factoryArgs = getFactoryArguments(structSchema, structSchema);
         return kj::strTree(
-          scalaFullName(structSchema), ".newFactory(",
+          javaFullName(structSchema), ".newFactory(",
           kj::StringTree(
             KJ_MAP(arg, factoryArgs) {
               return kj::strTree(arg);
@@ -780,7 +780,7 @@ private:
             typeName(elementType, kj::str("Builder")), ", ",
             typeName(elementType, kj::str("Reader")),
             ">(",
-            scalaFullName(elementStructSchema), ".newFactory(",
+            javaFullName(elementStructSchema), ".newFactory(",
             kj::StringTree(
               KJ_MAP(arg, factoryArgs) {
                 return kj::strTree(arg);
