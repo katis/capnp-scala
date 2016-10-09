@@ -139,7 +139,7 @@ object CapnpSchema {
         _setShortField(7, 0.toShort)
         _setShortField(12, 0.toShort)
         _setShortField(13, 0.toShort)
-        _setBooleanField(224, false)
+        _setBooleanField(224, value = false)
         _setShortField(15, 0.toShort)
         _setIntField(8, 0)
         _clearPointerField(3)
@@ -200,18 +200,18 @@ object CapnpSchema {
 
       def initAnnotation: CapnpSchema.Node.Annotation.Builder = {
         _setShortField(6, Node.Which.ANNOTATION.id.toShort)
-        _setBooleanField(112, false)
-        _setBooleanField(113, false)
-        _setBooleanField(114, false)
-        _setBooleanField(115, false)
-        _setBooleanField(116, false)
-        _setBooleanField(117, false)
-        _setBooleanField(118, false)
-        _setBooleanField(119, false)
-        _setBooleanField(120, false)
-        _setBooleanField(121, false)
-        _setBooleanField(122, false)
-        _setBooleanField(123, false)
+        _setBooleanField(112, value = false)
+        _setBooleanField(113, value = false)
+        _setBooleanField(114, value = false)
+        _setBooleanField(115, value = false)
+        _setBooleanField(116, value = false)
+        _setBooleanField(117, value = false)
+        _setBooleanField(118, value = false)
+        _setBooleanField(119, value = false)
+        _setBooleanField(120, value = false)
+        _setBooleanField(121, value = false)
+        _setBooleanField(122, value = false)
+        _setBooleanField(123, value = false)
         _clearPointerField(3)
         new CapnpSchema.Node.Annotation.Builder(segment, data, pointers, dataSize, pointerCount)
       }
@@ -369,6 +369,7 @@ object CapnpSchema {
       type Reader = ReaderImpl
 
       override def Builder: (SegmentBuilder, Int, Int, Int, Short) => Builder = new BuilderImpl(_, _, _, _, _)
+
       override def Reader: (SegmentReader, Int, Int, Int, Short, Int) => Reader = new ReaderImpl(_, _, _, _, _, _)
 
       val STRUCT_SIZE: StructSize = new StructSize(0.toShort, 1.toShort)
@@ -417,6 +418,7 @@ object CapnpSchema {
       type Reader = ReaderImpl
 
       override def Builder: (SegmentBuilder, Int, Int, Int, Short) => Builder = new BuilderImpl(_, _, _, _, _)
+
       override def Reader: (SegmentReader, Int, Int, Int, Short, Int) => Reader = new ReaderImpl(_, _, _, _, _, _)
 
       def constructReader(segment: SegmentReader, data: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int): CapnpSchema.Node.NestedNode.Reader = {
@@ -485,6 +487,7 @@ object CapnpSchema {
       type Reader = ReaderImpl
 
       override def Builder: (SegmentBuilder, Int, Int, Int, Short) => Builder = new BuilderImpl(_, _, _, _, _)
+
       override def Reader: (SegmentReader, Int, Int, Int, Short, Int) => Reader = new ReaderImpl(_, _, _, _, _, _)
 
       val STRUCT_SIZE: StructSize = new StructSize(5.toShort, 6.toShort)
@@ -647,6 +650,7 @@ object CapnpSchema {
       type Reader = ReaderImpl
 
       override def Builder: (SegmentBuilder, Int, Int, Int, Short) => Builder = new BuilderImpl(_, _, _, _, _)
+
       override def Reader: (SegmentReader, Int, Int, Int, Short, Int) => Reader = new ReaderImpl(_, _, _, _, _, _)
 
       def structSize: StructSize = {
@@ -691,6 +695,7 @@ object CapnpSchema {
       type Reader = ReaderImpl
 
       override def Builder: (SegmentBuilder, Int, Int, Int, Short) => Builder = new BuilderImpl(_, _, _, _, _)
+
       override def Reader: (SegmentReader, Int, Int, Int, Short, Int) => Reader = new ReaderImpl(_, _, _, _, _, _)
 
       def structSize: StructSize = {
@@ -759,7 +764,9 @@ object CapnpSchema {
       type Reader = ReaderImpl
 
       override def Builder: (SegmentBuilder, Int, Int, Int, Short) => Builder = new BuilderImpl(_, _, _, _, _)
+
       override def Reader: (SegmentReader, Int, Int, Int, Short, Int) => Reader = new ReaderImpl(_, _, _, _, _, _)
+
       def structSize: StructSize = {
         Node.Const.STRUCT_SIZE
       }
@@ -769,7 +776,7 @@ object CapnpSchema {
       final class BuilderImpl private[schema](segment: SegmentBuilder, data: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, data, pointers, dataSize, pointerCount) {
 
         def getType: CapnpSchema.Type.Builder = {
-          _getPointerField(CapnpSchema.Type,  3, null, 0)
+          _getPointerField(CapnpSchema.Type, 3, null, 0)
         }
 
         def setType(value: CapnpSchema.Type.Reader) {
@@ -818,6 +825,7 @@ object CapnpSchema {
       type Reader = ReaderImpl
 
       override def Builder: (SegmentBuilder, Int, Int, Int, Short) => Builder = new BuilderImpl(_, _, _, _, _)
+
       override def Reader: (SegmentReader, Int, Int, Int, Short, Int) => Reader = new ReaderImpl(_, _, _, _, _, _)
 
       def structSize: StructSize = {
@@ -1187,6 +1195,7 @@ object CapnpSchema {
       type Reader = ReaderImpl
 
       override def Builder: (SegmentBuilder, Int, Int, Int, Short) => Builder = new BuilderImpl(_, _, _, _, _)
+
       override def Reader: (SegmentReader, Int, Int, Int, Short, Int) => Reader = new ReaderImpl(_, _, _, _, _, _)
 
       def structSize: StructSize = {
