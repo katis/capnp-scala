@@ -1,22 +1,22 @@
 package org.capnproto
 
-object AnyPointer  {
+object AnyPointer extends PointerFactoryTF {
+  type Builder = BuilderImpl
+  type Reader = ReaderImpl
 
-  object factory extends PointerFactory[Builder, Reader] {
-    def fromPointerReader(segment: SegmentReader, pointer: Int, nestingLimit: Int): Reader = {
-      new Reader(segment, pointer, nestingLimit)
-    }
-
-    def fromPointerBuilder(segment: SegmentBuilder, pointer: Int): Builder = new Builder(segment, pointer)
-
-    def initFromPointerBuilder(segment: SegmentBuilder, pointer: Int, elementCount: Int): Builder = {
-      val result = new Builder(segment, pointer)
-      result.clear()
-      result
-    }
+  def fromPointerReader(segment: SegmentReader, pointer: Int, nestingLimit: Int): Reader = {
+    new Reader(segment, pointer, nestingLimit)
   }
 
-  class Reader(val segment: SegmentReader, val pointer: Int, val nestingLimit: Int) {
+  def fromPointerBuilder(segment: SegmentBuilder, pointer: Int): Builder = new Builder(segment, pointer)
+
+  def initFromPointerBuilder(segment: SegmentBuilder, pointer: Int, elementCount: Int): Builder = {
+    val result = new Builder(segment, pointer)
+    result.clear()
+    result
+  }
+
+  class ReaderImpl(val segment: SegmentReader, val pointer: Int, val nestingLimit: Int) {
 
     def isNull(): Boolean = {
       WirePointer.isNull(this.segment.buffer.getLong(this.pointer * Constants.BYTES_PER_WORD))
@@ -27,7 +27,7 @@ object AnyPointer  {
     }
   }
 
-  class Builder(val segment: SegmentBuilder, val pointer: Int) {
+  class BuilderImpl(val segment: SegmentBuilder, val pointer: Int) {
 
     def isNull(): Boolean = {
       WirePointer.isNull(this.segment.buffer.getLong(this.pointer * Constants.BYTES_PER_WORD))

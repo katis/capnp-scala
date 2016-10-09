@@ -10,8 +10,8 @@ trait Struct
 
   struct =>
 
-  type Builder <: StructBuilder
-  type Reader <: StructReader
+  type Builder <: BuilderBase
+  type Reader <: BuilderBase
 
   object List extends List[struct.Builder, struct.Reader](ElementSize.INLINE_COMPOSITE) {
     override type Builder = BuilderImpl
@@ -77,7 +77,7 @@ trait Struct
                              dataSize: Int,
                              pointerCount: Short) extends StructBuilder(segment, data, pointers, dataSize, pointerCount) {
 
-    def asReader: Reader = Reader(segment, data, pointers, dataSize, pointerCount, 134217727)
+    def asReader: Reader = Reader(segment, data, pointers, dataSize, pointerCount, 0x7fffffff)
   }
 
   abstract class ReaderBase(segment: SegmentReader,

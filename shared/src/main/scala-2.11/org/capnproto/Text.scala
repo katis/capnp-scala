@@ -11,6 +11,9 @@ object Text
   type Reader = ReaderImpl
   type Builder = BuilderImpl
 
+  def Reader(value: String): Reader = new ReaderImpl(value)
+  def Reader(byte: Array[Byte]): Reader = new ReaderImpl(byte)
+
   def fromPointerReaderBlobDefault(segment: SegmentReader,
                                    pointer: Int,
                                    defaultBuffer: java.nio.ByteBuffer,

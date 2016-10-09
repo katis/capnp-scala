@@ -154,14 +154,14 @@ class StructBuilder(
     this.segment.buffer.putLong(pointer * 8, 0L)
   }
 
-  protected def _getPointerField[T](factory: FromPointerBuilder[T], index: Int): T = {
+  protected def _getPointerField(factory: FromPointerBuilderTF, index: Int): factory.Builder = {
     factory.fromPointerBuilder(this.segment, this.pointers + index)
   }
 
-  protected def _getPointerField[T](factory: FromPointerBuilderRefDefault[T],
+  protected def _getPointerField(factory: FromPointerBuilderRefDefaultTF,
       index: Int,
       defaultSegment: SegmentReader,
-      defaultOffset: Int): T = {
+      defaultOffset: Int): factory.Builder = {
     factory.fromPointerBuilderRefDefault(this.segment, this.pointers + index, defaultSegment, defaultOffset)
   }
 
