@@ -628,7 +628,7 @@ object WireHelpers {
       throw new Error("single bit case not handled")
     } else {
       memcpy(allocation.segment.buffer, allocation.ptr * Constants.BYTES_PER_WORD, value.segment.buffer,
-        value.data, value.dataSize / Constants.BITS_PER_BYTE)
+        value.dataOffset, value.dataSize / Constants.BITS_PER_BYTE)
     }
     val pointerSection = allocation.ptr + dataSize
     for (i <- 0 until value.pointerCount) {

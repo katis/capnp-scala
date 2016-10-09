@@ -17,7 +17,7 @@ object CapnpSchema {
 
     val STRUCT_SIZE: StructSize = new StructSize(5.toShort, 6.toShort)
 
-    final class BuilderImpl private[schema](segment: SegmentBuilder, data: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, data, pointers, dataSize, pointerCount) {
+    final class BuilderImpl private[compiler](segment: SegmentBuilder, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, dataOffset, pointers, dataSize, pointerCount) {
       def which: CapnpSchema.Node.Which.Which = {
         _getShortField(6) match {
           case 0 =>
@@ -37,11 +37,11 @@ object CapnpSchema {
         }
       }
 
-      def getId: Long = {
+      def id: Long = {
         _getLongField(0)
       }
 
-      def setId(value: Long) {
+      def id_=(value: Long) {
         _setLongField(0, value)
       }
 
@@ -49,15 +49,15 @@ object CapnpSchema {
         !_pointerFieldIsNull(0)
       }
 
-      def getDisplayName: Text.Builder = {
+      def displayname: Text.Builder = {
         _getPointerField(org.capnproto.Text, 0, null, 0, 0)
       }
 
-      def setDisplayName(value: Text.Reader) {
+      def displayname_=(value: Text.Reader) {
         _setPointerField(org.capnproto.Text)(0, value)
       }
 
-      def setDisplayName(value: String) {
+      def displayname_=(value: String) {
         _setPointerField(org.capnproto.Text)(0, org.capnproto.Text.Reader(value))
       }
 
@@ -65,19 +65,19 @@ object CapnpSchema {
         _initPointerField(org.capnproto.Text, 0, size)
       }
 
-      def getDisplayNamePrefixLength: Int = {
+      def displaynameprefixlength: Int = {
         _getIntField(2)
       }
 
-      def setDisplayNamePrefixLength(value: Int) {
+      def displaynameprefixlength_=(value: Int) {
         _setIntField(2, value)
       }
 
-      def getScopeId: Long = {
+      def scopeid: Long = {
         _getLongField(2)
       }
 
-      def setScopeId(value: Long) {
+      def scopeid_=(value: Long) {
         _setLongField(2, value)
       }
 
@@ -85,11 +85,11 @@ object CapnpSchema {
         !_pointerFieldIsNull(1)
       }
 
-      def getNestedNodes: CapnpSchema.Node.NestedNode.List.Builder = {
+      def nestednodes: CapnpSchema.Node.NestedNode.List.Builder = {
         _getPointerField(CapnpSchema.Node.NestedNode.List, 1, null, 0)
       }
 
-      def setNestedNodes(value: CapnpSchema.Node.NestedNode.List.Reader) {
+      def nestednodes_=(value: CapnpSchema.Node.NestedNode.List.Reader) {
         _setPointerField(CapnpSchema.Node.NestedNode.List)(1, value)
       }
 
@@ -101,11 +101,11 @@ object CapnpSchema {
         !_pointerFieldIsNull(2)
       }
 
-      def getAnnotations: CapnpSchema.Annotation.List.Builder = {
+      def annotations: CapnpSchema.Annotation.List.Builder = {
         _getPointerField(CapnpSchema.Annotation.List, 2, null, 0)
       }
 
-      def setAnnotations(value: CapnpSchema.Annotation.List.Reader) {
+      def annotations_=(value: CapnpSchema.Annotation.List.Reader) {
         _setPointerField(CapnpSchema.Annotation.List)(2, value)
       }
 
@@ -117,12 +117,12 @@ object CapnpSchema {
         which == Node.Which.FILE
       }
 
-      def getFile: Void = {
+      def file: Void = {
         assert(which == Node.Which.FILE, "Must check which() before get()ing a union member.")
         org.capnproto.Void.VOID
       }
 
-      def setFile(value: Void) {
+      def file_=(value: Void) {
         _setShortField(6, Node.Which.FILE.id.toShort)
       }
 
@@ -130,8 +130,8 @@ object CapnpSchema {
         which == Node.Which.STRUCT
       }
 
-      def getStruct: CapnpSchema.Node.Struct.Builder = {
-        new CapnpSchema.Node.Struct.Builder(segment, data, pointers, dataSize, pointerCount)
+      def struct: CapnpSchema.Node.Struct.Builder = {
+        CapnpSchema.Node.Struct.Builder(segment, dataOffset, pointers, dataSize, pointerCount)
       }
 
       def initStruct: CapnpSchema.Node.Struct.Builder = {
@@ -143,59 +143,59 @@ object CapnpSchema {
         _setShortField(15, 0.toShort)
         _setIntField(8, 0)
         _clearPointerField(3)
-        new CapnpSchema.Node.Struct.Builder(segment, data, pointers, dataSize, pointerCount)
+        CapnpSchema.Node.Struct.Builder(segment, dataOffset, pointers, dataSize, pointerCount)
       }
 
       def isEnum: Boolean = {
         which == Node.Which.ENUM
       }
 
-      def getEnum: CapnpSchema.Node.Enum.Builder = {
-        new CapnpSchema.Node.Enum.Builder(segment, data, pointers, dataSize, pointerCount)
+      def enum: CapnpSchema.Node.Enum.Builder = {
+        CapnpSchema.Node.Enum.Builder(segment, dataOffset, pointers, dataSize, pointerCount)
       }
 
       def initEnum: CapnpSchema.Node.Enum.Builder = {
         _setShortField(6, Node.Which.ENUM.id.toShort)
         _clearPointerField(3)
-        new CapnpSchema.Node.Enum.Builder(segment, data, pointers, dataSize, pointerCount)
+        CapnpSchema.Node.Enum.Builder(segment, dataOffset, pointers, dataSize, pointerCount)
       }
 
       def isInterface: Boolean = {
         which == Node.Which.INTERFACE
       }
 
-      def getInterface: CapnpSchema.Node.Interface.Builder = {
-        new CapnpSchema.Node.Interface.Builder(segment, data, pointers, dataSize, pointerCount)
+      def interface: CapnpSchema.Node.Interface.Builder = {
+        CapnpSchema.Node.Interface.Builder(segment, dataOffset, pointers, dataSize, pointerCount)
       }
 
       def initInterface: CapnpSchema.Node.Interface.Builder = {
         _setShortField(6, Node.Which.INTERFACE.id.toShort)
         _clearPointerField(3)
         _clearPointerField(4)
-        new CapnpSchema.Node.Interface.Builder(segment, data, pointers, dataSize, pointerCount)
+        CapnpSchema.Node.Interface.Builder(segment, dataOffset, pointers, dataSize, pointerCount)
       }
 
       def isConst: Boolean = {
         which == Node.Which.CONST
       }
 
-      def getConst: CapnpSchema.Node.Const.Builder = {
-        new CapnpSchema.Node.Const.Builder(segment, data, pointers, dataSize, pointerCount)
+      def const: CapnpSchema.Node.Const.Builder = {
+        CapnpSchema.Node.Const.Builder(segment, dataOffset, pointers, dataSize, pointerCount)
       }
 
       def initConst: CapnpSchema.Node.Const.Builder = {
         _setShortField(6, Node.Which.CONST.id.toShort)
         _clearPointerField(3)
         _clearPointerField(4)
-        new CapnpSchema.Node.Const.Builder(segment, data, pointers, dataSize, pointerCount)
+        CapnpSchema.Node.Const.Builder(segment, dataOffset, pointers, dataSize, pointerCount)
       }
 
       def isAnnotation: Boolean = {
         which == Node.Which.ANNOTATION
       }
 
-      def getAnnotation: CapnpSchema.Node.Annotation.Builder = {
-        new CapnpSchema.Node.Annotation.Builder(segment, data, pointers, dataSize, pointerCount)
+      def annotation: CapnpSchema.Node.Annotation.Builder = {
+        CapnpSchema.Node.Annotation.Builder(segment, dataOffset, pointers, dataSize, pointerCount)
       }
 
       def initAnnotation: CapnpSchema.Node.Annotation.Builder = {
@@ -213,18 +213,18 @@ object CapnpSchema {
         _setBooleanField(122, value = false)
         _setBooleanField(123, value = false)
         _clearPointerField(3)
-        new CapnpSchema.Node.Annotation.Builder(segment, data, pointers, dataSize, pointerCount)
+        CapnpSchema.Node.Annotation.Builder(segment, dataOffset, pointers, dataSize, pointerCount)
       }
 
       def hasParameters: Boolean = {
         !_pointerFieldIsNull(5)
       }
 
-      def getParameters: CapnpSchema.Node.Parameter.List.Builder = {
+      def parameters: CapnpSchema.Node.Parameter.List.Builder = {
         _getPointerField(CapnpSchema.Node.Parameter.List, 5, null, 0)
       }
 
-      def setParameters(value: CapnpSchema.Node.Parameter.List.Reader) {
+      def parameters_=(value: CapnpSchema.Node.Parameter.List.Reader) {
         _setPointerField(CapnpSchema.Node.Parameter.List)(5, value)
       }
 
@@ -232,16 +232,16 @@ object CapnpSchema {
         _initPointerField(CapnpSchema.Node.Parameter.List, 5, size)
       }
 
-      def getIsGeneric: Boolean = {
+      def isgeneric: Boolean = {
         _getBooleanField(288)
       }
 
-      def setIsGeneric(value: Boolean) {
+      def isgeneric_=(value: Boolean) {
         _setBooleanField(288, value)
       }
     }
 
-    final class ReaderImpl private[schema](segment: SegmentReader, data: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, data, pointers, dataSize, pointerCount, nestingLimit) {
+    final class ReaderImpl private[compiler](segment: SegmentReader, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit) {
       def which: CapnpSchema.Node.Which.Which = {
         _getShortField(6) match {
           case 0 =>
@@ -261,7 +261,7 @@ object CapnpSchema {
         }
       }
 
-      def getId: Long = {
+      def id: Long = {
         _getLongField(0)
       }
 
@@ -269,15 +269,15 @@ object CapnpSchema {
         !_pointerFieldIsNull(0)
       }
 
-      def getDisplayName: Text.Reader = {
+      def displayname: Text.Reader = {
         _getPointerField(org.capnproto.Text, 0, null, 0, 0)
       }
 
-      def getDisplayNamePrefixLength: Int = {
+      def displaynameprefixlength: Int = {
         _getIntField(2)
       }
 
-      def getScopeId: Long = {
+      def scopeid: Long = {
         _getLongField(2)
       }
 
@@ -285,7 +285,7 @@ object CapnpSchema {
         !_pointerFieldIsNull(1)
       }
 
-      def getNestedNodes: CapnpSchema.Node.NestedNode.List.Reader = {
+      def nestednodes: CapnpSchema.Node.NestedNode.List.Reader = {
         _getPointerField(CapnpSchema.Node.NestedNode.List, 1, null, 0)
       }
 
@@ -293,7 +293,7 @@ object CapnpSchema {
         !_pointerFieldIsNull(2)
       }
 
-      def getAnnotations: CapnpSchema.Annotation.List.Reader = {
+      def annotations: CapnpSchema.Annotation.List.Reader = {
         _getPointerField(CapnpSchema.Annotation.List, 2, null, 0)
       }
 
@@ -301,7 +301,7 @@ object CapnpSchema {
         which == Node.Which.FILE
       }
 
-      def getFile: Void = {
+      def file: Void = {
         assert(which == Node.Which.FILE, "Must check which() before get()ing a union member.")
         org.capnproto.Void.VOID
       }
@@ -310,51 +310,51 @@ object CapnpSchema {
         which == Node.Which.STRUCT
       }
 
-      def getStruct: CapnpSchema.Node.Struct.Reader = {
-        new CapnpSchema.Node.Struct.Reader(segment, data, pointers, dataSize, pointerCount, nestingLimit)
+      def struct: CapnpSchema.Node.Struct.Reader = {
+        CapnpSchema.Node.Struct.Reader(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit)
       }
 
       def isEnum: Boolean = {
         which == Node.Which.ENUM
       }
 
-      def getEnum: CapnpSchema.Node.Enum.Reader = {
-        new CapnpSchema.Node.Enum.Reader(segment, data, pointers, dataSize, pointerCount, nestingLimit)
+      def enum: CapnpSchema.Node.Enum.Reader = {
+        CapnpSchema.Node.Enum.Reader(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit)
       }
 
       def isInterface: Boolean = {
         which == Node.Which.INTERFACE
       }
 
-      def getInterface: CapnpSchema.Node.Interface.Reader = {
-        new CapnpSchema.Node.Interface.Reader(segment, data, pointers, dataSize, pointerCount, nestingLimit)
+      def interface: CapnpSchema.Node.Interface.Reader = {
+        CapnpSchema.Node.Interface.Reader(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit)
       }
 
       def isConst: Boolean = {
         which == Node.Which.CONST
       }
 
-      def getConst: CapnpSchema.Node.Const.Reader = {
-        new CapnpSchema.Node.Const.Reader(segment, data, pointers, dataSize, pointerCount, nestingLimit)
+      def const: CapnpSchema.Node.Const.Reader = {
+        CapnpSchema.Node.Const.Reader(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit)
       }
 
       def isAnnotation: Boolean = {
         which == Node.Which.ANNOTATION
       }
 
-      def getAnnotation: CapnpSchema.Node.Annotation.Reader = {
-        new CapnpSchema.Node.Annotation.Reader(segment, data, pointers, dataSize, pointerCount, nestingLimit)
+      def annotation: CapnpSchema.Node.Annotation.Reader = {
+        CapnpSchema.Node.Annotation.Reader(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit)
       }
 
       def hasParameters: Boolean = {
         !_pointerFieldIsNull(5)
       }
 
-      def getParameters: CapnpSchema.Node.Parameter.List.Reader = {
+      def parameters: CapnpSchema.Node.Parameter.List.Reader = {
         _getPointerField(CapnpSchema.Node.Parameter.List, 5, null, 0)
       }
 
-      def getIsGeneric: Boolean = {
+      def isgeneric: Boolean = {
         _getBooleanField(288)
       }
     }
@@ -378,21 +378,21 @@ object CapnpSchema {
         Node.Parameter.STRUCT_SIZE
       }
 
-      final class BuilderImpl private[schema](segment: SegmentBuilder, data: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, data, pointers, dataSize, pointerCount) {
+      final class BuilderImpl private[compiler](segment: SegmentBuilder, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, dataOffset, pointers, dataSize, pointerCount) {
 
         def hasName: Boolean = {
           !_pointerFieldIsNull(0)
         }
 
-        def getName: Text.Builder = {
+        def name: Text.Builder = {
           _getPointerField(org.capnproto.Text, 0, null, 0, 0)
         }
 
-        def setName(value: Text.Reader) {
+        def name_=(value: Text.Reader) {
           _setPointerField(org.capnproto.Text)(0, value)
         }
 
-        def setName(value: String) {
+        def name_=(value: String) {
           _setPointerField(org.capnproto.Text)(0, Text.Reader(value))
         }
 
@@ -401,12 +401,12 @@ object CapnpSchema {
         }
       }
 
-      final class ReaderImpl private[schema](segment: SegmentReader, data: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, data, pointers, dataSize, pointerCount, nestingLimit) {
+      final class ReaderImpl private[compiler](segment: SegmentReader, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit) {
         def hasName: Boolean = {
           !_pointerFieldIsNull(0)
         }
 
-        def getName: Text.Reader = {
+        def name: Text.Reader = {
           _getPointerField(org.capnproto.Text, 0, null, 0, 0)
         }
       }
@@ -421,12 +421,12 @@ object CapnpSchema {
 
       override def Reader: (SegmentReader, Int, Int, Int, Short, Int) => Reader = new ReaderImpl(_, _, _, _, _, _)
 
-      def constructReader(segment: SegmentReader, data: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int): CapnpSchema.Node.NestedNode.Reader = {
-        new CapnpSchema.Node.NestedNode.Reader(segment, data, pointers, dataSize, pointerCount, nestingLimit)
+      def constructReader(segment: SegmentReader, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int): CapnpSchema.Node.NestedNode.Reader = {
+        CapnpSchema.Node.NestedNode.Reader(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit)
       }
 
-      def constructBuilder(segment: SegmentBuilder, data: Int, pointers: Int, dataSize: Int, pointerCount: Short): CapnpSchema.Node.NestedNode.Builder = {
-        new CapnpSchema.Node.NestedNode.Builder(segment, data, pointers, dataSize, pointerCount)
+      def constructBuilder(segment: SegmentBuilder, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short): CapnpSchema.Node.NestedNode.Builder = {
+        CapnpSchema.Node.NestedNode.Builder(segment, dataOffset, pointers, dataSize, pointerCount)
       }
 
       def structSize: StructSize = {
@@ -435,21 +435,21 @@ object CapnpSchema {
 
       val STRUCT_SIZE: StructSize = new StructSize(1.toShort, 1.toShort)
 
-      final class BuilderImpl private[schema](segment: SegmentBuilder, data: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, data, pointers, dataSize, pointerCount) {
+      final class BuilderImpl private[compiler](segment: SegmentBuilder, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, dataOffset, pointers, dataSize, pointerCount) {
 
         def hasName: Boolean = {
           !_pointerFieldIsNull(0)
         }
 
-        def getName: Text.Builder = {
+        def name: Text.Builder = {
           _getPointerField(org.capnproto.Text, 0, null, 0, 0)
         }
 
-        def setName(value: Text.Reader) {
+        def name_=(value: Text.Reader) {
           _setPointerField(org.capnproto.Text)(0, value)
         }
 
-        def setName(value: String) {
+        def name_=(value: String) {
           _setPointerField(org.capnproto.Text)(0, new Text.Reader(value))
         }
 
@@ -457,25 +457,25 @@ object CapnpSchema {
           _initPointerField(org.capnproto.Text, 0, size)
         }
 
-        def getId: Long = {
+        def id: Long = {
           _getLongField(0)
         }
 
-        def setId(value: Long) {
+        def id_=(value: Long) {
           _setLongField(0, value)
         }
       }
 
-      final class ReaderImpl private[schema](segment: SegmentReader, data: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, data, pointers, dataSize, pointerCount, nestingLimit) {
+      final class ReaderImpl private[compiler](segment: SegmentReader, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit) {
         def hasName: Boolean = {
           !_pointerFieldIsNull(0)
         }
 
-        def getName: Text.Reader = {
+        def name: Text.Reader = {
           _getPointerField(org.capnproto.Text, 0, null, 0, 0)
         }
 
-        def getId: Long = {
+        def id: Long = {
           _getLongField(0)
         }
       }
@@ -492,37 +492,37 @@ object CapnpSchema {
 
       val STRUCT_SIZE: StructSize = new StructSize(5.toShort, 6.toShort)
 
-      def constructReader(segment: SegmentReader, data: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int): CapnpSchema.Node.Struct.Reader = {
-        new CapnpSchema.Node.Struct.Reader(segment, data, pointers, dataSize, pointerCount, nestingLimit)
+      def constructReader(segment: SegmentReader, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int): CapnpSchema.Node.Struct.Reader = {
+        CapnpSchema.Node.Struct.Reader(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit)
       }
 
-      def constructBuilder(segment: SegmentBuilder, data: Int, pointers: Int, dataSize: Int, pointerCount: Short): CapnpSchema.Node.Struct.Builder = {
-        new CapnpSchema.Node.Struct.Builder(segment, data, pointers, dataSize, pointerCount)
+      def constructBuilder(segment: SegmentBuilder, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short): CapnpSchema.Node.Struct.Builder = {
+        CapnpSchema.Node.Struct.Builder(segment, dataOffset, pointers, dataSize, pointerCount)
       }
 
       def structSize: StructSize = {
         Node.Struct.STRUCT_SIZE
       }
 
-      final class BuilderImpl private[schema](segment: SegmentBuilder, data: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, data, pointers, dataSize, pointerCount) {
+      final class BuilderImpl private[compiler](segment: SegmentBuilder, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, dataOffset, pointers, dataSize, pointerCount) {
 
-        def getDataWordCount: Short = {
+        def datawordcount: Short = {
           _getShortField(7)
         }
 
-        def setDataWordCount(value: Short) {
+        def datawordcount_=(value: Short) {
           _setShortField(7, value)
         }
 
-        def getPointerCount: Short = {
+        def pointercount: Short = {
           _getShortField(12)
         }
 
-        def setPointerCount(value: Short) {
+        def pointercount_=(value: Short) {
           _setShortField(12, value)
         }
 
-        def getPreferredListEncoding: CapnpSchema.ElementSize.ElementSize = {
+        def preferredlistencoding: CapnpSchema.ElementSize.ElementSize = {
           _getShortField(13) match {
             case 0 =>
               CapnpSchema.ElementSize.EMPTY
@@ -545,31 +545,31 @@ object CapnpSchema {
           }
         }
 
-        def setPreferredListEncoding(value: CapnpSchema.ElementSize.ElementSize) {
+        def preferredlistencoding_=(value: CapnpSchema.ElementSize.ElementSize) {
           _setShortField(13, value.id.toShort)
         }
 
-        def getIsGroup: Boolean = {
+        def isgroup: Boolean = {
           _getBooleanField(224)
         }
 
-        def setIsGroup(value: Boolean) {
+        def isgroup_=(value: Boolean) {
           _setBooleanField(224, value)
         }
 
-        def getDiscriminantCount: Short = {
+        def discriminantcount: Short = {
           _getShortField(15)
         }
 
-        def setDiscriminantCount(value: Short) {
+        def discriminantcount_=(value: Short) {
           _setShortField(15, value)
         }
 
-        def getDiscriminantOffset: Int = {
+        def discriminantoffset: Int = {
           _getIntField(8)
         }
 
-        def setDiscriminantOffset(value: Int) {
+        def discriminantoffset_=(value: Int) {
           _setIntField(8, value)
         }
 
@@ -577,11 +577,11 @@ object CapnpSchema {
           !_pointerFieldIsNull(3)
         }
 
-        def getFields: CapnpSchema.Field.List.Builder = {
+        def fields: CapnpSchema.Field.List.Builder = {
           _getPointerField(CapnpSchema.Field.List, 3, null, 0)
         }
 
-        def setFields(value: CapnpSchema.Field.List.Reader) {
+        def fields_=(value: CapnpSchema.Field.List.Reader) {
           _setPointerField(CapnpSchema.Field.List)(3, value)
         }
 
@@ -590,16 +590,16 @@ object CapnpSchema {
         }
       }
 
-      final class ReaderImpl private[schema](segment: SegmentReader, data: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, data, pointers, dataSize, pointerCount, nestingLimit) {
-        def getDataWordCount: Short = {
+      final class ReaderImpl private[compiler](segment: SegmentReader, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit) {
+        def datawordcount: Short = {
           _getShortField(7)
         }
 
-        def getPointerCount: Short = {
+        def pointercount: Short = {
           _getShortField(12)
         }
 
-        def getPreferredListEncoding: CapnpSchema.ElementSize.ElementSize = {
+        def preferredlistencoding: CapnpSchema.ElementSize.ElementSize = {
           _getShortField(13) match {
             case 0 =>
               CapnpSchema.ElementSize.EMPTY
@@ -622,15 +622,15 @@ object CapnpSchema {
           }
         }
 
-        def getIsGroup: Boolean = {
+        def isgroup: Boolean = {
           _getBooleanField(224)
         }
 
-        def getDiscriminantCount: Short = {
+        def discriminantcount: Short = {
           _getShortField(15)
         }
 
-        def getDiscriminantOffset: Int = {
+        def discriminantoffset: Int = {
           _getIntField(8)
         }
 
@@ -638,7 +638,7 @@ object CapnpSchema {
           !_pointerFieldIsNull(3)
         }
 
-        def getFields: CapnpSchema.Field.List.Reader = {
+        def fields: CapnpSchema.Field.List.Reader = {
           _getPointerField(CapnpSchema.Field.List, 3, null, 0)
         }
       }
@@ -659,17 +659,17 @@ object CapnpSchema {
 
       val STRUCT_SIZE: StructSize = new StructSize(5.toShort, 6.toShort)
 
-      final class BuilderImpl private[schema](segment: SegmentBuilder, data: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, data, pointers, dataSize, pointerCount) {
+      final class BuilderImpl private[compiler](segment: SegmentBuilder, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, dataOffset, pointers, dataSize, pointerCount) {
 
         def hasEnumerants: Boolean = {
           !_pointerFieldIsNull(3)
         }
 
-        def getEnumerants: CapnpSchema.Enumerant.List.Builder = {
+        def enumerants: CapnpSchema.Enumerant.List.Builder = {
           _getPointerField(CapnpSchema.Enumerant.List, 3, null, 0)
         }
 
-        def setEnumerants(value: CapnpSchema.Enumerant.List.Reader) {
+        def enumerants_=(value: CapnpSchema.Enumerant.List.Reader) {
           _setPointerField(CapnpSchema.Enumerant.List)(3, value)
         }
 
@@ -678,12 +678,12 @@ object CapnpSchema {
         }
       }
 
-      final class ReaderImpl private[schema](segment: SegmentReader, data: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, data, pointers, dataSize, pointerCount, nestingLimit) {
+      final class ReaderImpl private[compiler](segment: SegmentReader, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit) {
         def hasEnumerants: Boolean = {
           !_pointerFieldIsNull(3)
         }
 
-        def getEnumerants: CapnpSchema.Enumerant.List.Reader = {
+        def enumerants: CapnpSchema.Enumerant.List.Reader = {
           _getPointerField(CapnpSchema.Enumerant.List, 3, null, 0)
         }
       }
@@ -704,17 +704,17 @@ object CapnpSchema {
 
       val STRUCT_SIZE: StructSize = new StructSize(5.toShort, 6.toShort)
 
-      final class BuilderImpl private[schema](segment: SegmentBuilder, data: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, data, pointers, dataSize, pointerCount) {
+      final class BuilderImpl private[compiler](segment: SegmentBuilder, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, dataOffset, pointers, dataSize, pointerCount) {
 
         def hasMethods: Boolean = {
           !_pointerFieldIsNull(3)
         }
 
-        def getMethods: CapnpSchema.Method.List.Builder = {
+        def methods: CapnpSchema.Method.List.Builder = {
           _getPointerField(CapnpSchema.Method.List, 3, null, 0)
         }
 
-        def setMethods(value: CapnpSchema.Method.List.Reader) {
+        def methods_=(value: CapnpSchema.Method.List.Reader) {
           _setPointerField(CapnpSchema.Method.List)(3, value)
         }
 
@@ -726,11 +726,11 @@ object CapnpSchema {
           !_pointerFieldIsNull(4)
         }
 
-        def getSuperclasses: CapnpSchema.Superclass.List.Builder = {
+        def superclasses: CapnpSchema.Superclass.List.Builder = {
           _getPointerField(CapnpSchema.Superclass.List, 4, null, 0)
         }
 
-        def setSuperclasses(value: CapnpSchema.Superclass.List.Reader) {
+        def superclasses_=(value: CapnpSchema.Superclass.List.Reader) {
           _setPointerField(CapnpSchema.Superclass.List)(4, value)
         }
 
@@ -739,12 +739,12 @@ object CapnpSchema {
         }
       }
 
-      final class ReaderImpl private[schema](segment: SegmentReader, data: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, data, pointers, dataSize, pointerCount, nestingLimit) {
+      final class ReaderImpl private[compiler](segment: SegmentReader, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit) {
         def hasMethods: Boolean = {
           !_pointerFieldIsNull(3)
         }
 
-        def getMethods: CapnpSchema.Method.List.Reader = {
+        def methods: CapnpSchema.Method.List.Reader = {
           _getPointerField(CapnpSchema.Method.List, 3, null, 0)
         }
 
@@ -752,7 +752,7 @@ object CapnpSchema {
           !_pointerFieldIsNull(4)
         }
 
-        def getSuperclasses: CapnpSchema.Superclass.List.Reader = {
+        def superclasses: CapnpSchema.Superclass.List.Reader = {
           _getPointerField(CapnpSchema.Superclass.List, 4, null, 0)
         }
       }
@@ -773,13 +773,13 @@ object CapnpSchema {
 
       val STRUCT_SIZE: StructSize = new StructSize(5.toShort, 6.toShort)
 
-      final class BuilderImpl private[schema](segment: SegmentBuilder, data: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, data, pointers, dataSize, pointerCount) {
+      final class BuilderImpl private[compiler](segment: SegmentBuilder, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, dataOffset, pointers, dataSize, pointerCount) {
 
-        def getType: CapnpSchema.Type.Builder = {
+        def capnpType: CapnpSchema.Type.Builder = {
           _getPointerField(CapnpSchema.Type, 3, null, 0)
         }
 
-        def setType(value: CapnpSchema.Type.Reader) {
+        def capnpType_=(value: CapnpSchema.Type.Reader) {
           _setPointerField(CapnpSchema.Type)(3, value)
         }
 
@@ -787,11 +787,11 @@ object CapnpSchema {
           _initPointerField(CapnpSchema.Type, 3, 0)
         }
 
-        def getValue: CapnpSchema.Value.Builder = {
+        def value: CapnpSchema.Value.Builder = {
           _getPointerField(CapnpSchema.Value, 4, null, 0)
         }
 
-        def setValue(value: CapnpSchema.Value.Reader) {
+        def value_=(value: CapnpSchema.Value.Reader) {
           _setPointerField(CapnpSchema.Value)(4, value)
         }
 
@@ -800,12 +800,12 @@ object CapnpSchema {
         }
       }
 
-      final class ReaderImpl private[schema](segment: SegmentReader, data: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, data, pointers, dataSize, pointerCount, nestingLimit) {
+      final class ReaderImpl private[compiler](segment: SegmentReader, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit) {
         def hasType: Boolean = {
           !_pointerFieldIsNull(3)
         }
 
-        def getType: CapnpSchema.Type.Reader = {
+        def capnpType: CapnpSchema.Type.Reader = {
           _getPointerField(CapnpSchema.Type, 3, null, 0)
         }
 
@@ -813,7 +813,7 @@ object CapnpSchema {
           !_pointerFieldIsNull(4)
         }
 
-        def getValue: CapnpSchema.Value.Reader = {
+        def value: CapnpSchema.Value.Reader = {
           _getPointerField(CapnpSchema.Value, 4, null, 0)
         }
       }
@@ -834,13 +834,13 @@ object CapnpSchema {
 
       val STRUCT_SIZE: StructSize = new StructSize(5.toShort, 6.toShort)
 
-      final class BuilderImpl private[schema](segment: SegmentBuilder, data: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, data, pointers, dataSize, pointerCount) {
+      final class BuilderImpl private[compiler](segment: SegmentBuilder, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, dataOffset, pointers, dataSize, pointerCount) {
 
-        def getType: CapnpSchema.Type.Builder = {
+        def capnpType: CapnpSchema.Type.Builder = {
           _getPointerField(CapnpSchema.Type, 3, null, 0)
         }
 
-        def setType(value: CapnpSchema.Type.Reader) {
+        def capnpType_=(value: CapnpSchema.Type.Reader) {
           _setPointerField(CapnpSchema.Type)(3, value)
         }
 
@@ -848,157 +848,157 @@ object CapnpSchema {
           _initPointerField(CapnpSchema.Type, 3, 0)
         }
 
-        def getTargetsFile: Boolean = {
+        def targetsfile: Boolean = {
           _getBooleanField(112)
         }
 
-        def setTargetsFile(value: Boolean) {
+        def targetsfile_=(value: Boolean) {
           _setBooleanField(112, value)
         }
 
-        def getTargetsConst: Boolean = {
+        def targetsconst: Boolean = {
           _getBooleanField(113)
         }
 
-        def setTargetsConst(value: Boolean) {
+        def targetsconst_=(value: Boolean) {
           _setBooleanField(113, value)
         }
 
-        def getTargetsEnum: Boolean = {
+        def targetsenum: Boolean = {
           _getBooleanField(114)
         }
 
-        def setTargetsEnum(value: Boolean) {
+        def targetsenum_=(value: Boolean) {
           _setBooleanField(114, value)
         }
 
-        def getTargetsEnumerant: Boolean = {
+        def targetsenumerant: Boolean = {
           _getBooleanField(115)
         }
 
-        def setTargetsEnumerant(value: Boolean) {
+        def targetsenumerant_=(value: Boolean) {
           _setBooleanField(115, value)
         }
 
-        def getTargetsStruct: Boolean = {
+        def targetsstruct: Boolean = {
           _getBooleanField(116)
         }
 
-        def setTargetsStruct(value: Boolean) {
+        def targetsstruct_=(value: Boolean) {
           _setBooleanField(116, value)
         }
 
-        def getTargetsField: Boolean = {
+        def targetsfield: Boolean = {
           _getBooleanField(117)
         }
 
-        def setTargetsField(value: Boolean) {
+        def targetsfield_=(value: Boolean) {
           _setBooleanField(117, value)
         }
 
-        def getTargetsUnion: Boolean = {
+        def targetsunion: Boolean = {
           _getBooleanField(118)
         }
 
-        def setTargetsUnion(value: Boolean) {
+        def targetsunion_=(value: Boolean) {
           _setBooleanField(118, value)
         }
 
-        def getTargetsGroup: Boolean = {
+        def targetsgroup: Boolean = {
           _getBooleanField(119)
         }
 
-        def setTargetsGroup(value: Boolean) {
+        def targetsgroup_=(value: Boolean) {
           _setBooleanField(119, value)
         }
 
-        def getTargetsInterface: Boolean = {
+        def targetsinterface: Boolean = {
           _getBooleanField(120)
         }
 
-        def setTargetsInterface(value: Boolean) {
+        def targetsinterface_=(value: Boolean) {
           _setBooleanField(120, value)
         }
 
-        def getTargetsMethod: Boolean = {
+        def targetsmethod: Boolean = {
           _getBooleanField(121)
         }
 
-        def setTargetsMethod(value: Boolean) {
+        def targetsmethod_=(value: Boolean) {
           _setBooleanField(121, value)
         }
 
-        def getTargetsParam: Boolean = {
+        def targetsparam: Boolean = {
           _getBooleanField(122)
         }
 
-        def setTargetsParam(value: Boolean) {
+        def targetsparam_=(value: Boolean) {
           _setBooleanField(122, value)
         }
 
-        def getTargetsAnnotation: Boolean = {
+        def targetsannotation: Boolean = {
           _getBooleanField(123)
         }
 
-        def setTargetsAnnotation(value: Boolean) {
+        def targetsannotation_=(value: Boolean) {
           _setBooleanField(123, value)
         }
       }
 
-      final class ReaderImpl private[schema](segment: SegmentReader, data: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, data, pointers, dataSize, pointerCount, nestingLimit) {
+      final class ReaderImpl private[compiler](segment: SegmentReader, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit) {
         def hasType: Boolean = {
           !_pointerFieldIsNull(3)
         }
 
-        def getType: CapnpSchema.Type.Reader = {
+        def capnpType: CapnpSchema.Type.Reader = {
           _getPointerField(CapnpSchema.Type, 3, null, 0)
         }
 
-        def getTargetsFile: Boolean = {
+        def targetsfile: Boolean = {
           _getBooleanField(112)
         }
 
-        def getTargetsConst: Boolean = {
+        def targetsconst: Boolean = {
           _getBooleanField(113)
         }
 
-        def getTargetsEnum: Boolean = {
+        def targetsenum: Boolean = {
           _getBooleanField(114)
         }
 
-        def getTargetsEnumerant: Boolean = {
+        def targetsenumerant: Boolean = {
           _getBooleanField(115)
         }
 
-        def getTargetsStruct: Boolean = {
+        def targetsstruct: Boolean = {
           _getBooleanField(116)
         }
 
-        def getTargetsField: Boolean = {
+        def targetsfield: Boolean = {
           _getBooleanField(117)
         }
 
-        def getTargetsUnion: Boolean = {
+        def targetsunion: Boolean = {
           _getBooleanField(118)
         }
 
-        def getTargetsGroup: Boolean = {
+        def targetsgroup: Boolean = {
           _getBooleanField(119)
         }
 
-        def getTargetsInterface: Boolean = {
+        def targetsinterface: Boolean = {
           _getBooleanField(120)
         }
 
-        def getTargetsMethod: Boolean = {
+        def targetsmethod: Boolean = {
           _getBooleanField(121)
         }
 
-        def getTargetsParam: Boolean = {
+        def targetsparam: Boolean = {
           _getBooleanField(122)
         }
 
-        def getTargetsAnnotation: Boolean = {
+        def targetsannotation: Boolean = {
           _getBooleanField(123)
         }
       }
@@ -1020,7 +1020,7 @@ object CapnpSchema {
 
     val STRUCT_SIZE: StructSize = new StructSize(3.toShort, 4.toShort)
 
-    final class BuilderImpl private[schema](segment: SegmentBuilder, data: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, data, pointers, dataSize, pointerCount) {
+    final class BuilderImpl private[compiler](segment: SegmentBuilder, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, dataOffset, pointers, dataSize, pointerCount) {
       def which: CapnpSchema.Field.Which.Which = {
         _getShortField(4) match {
           case 0 =>
@@ -1036,15 +1036,15 @@ object CapnpSchema {
         !_pointerFieldIsNull(0)
       }
 
-      def getName: Text.Builder = {
+      def name: Text.Builder = {
         _getPointerField(org.capnproto.Text, 0, null, 0, 0)
       }
 
-      def setName(value: Text.Reader) {
+      def name_=(value: Text.Reader) {
         _setPointerField(org.capnproto.Text)(0, value)
       }
 
-      def setName(value: String) {
+      def name_=(value: String) {
         _setPointerField(org.capnproto.Text)(0, new Text.Reader(value))
       }
 
@@ -1052,11 +1052,11 @@ object CapnpSchema {
         _initPointerField(org.capnproto.Text, 0, size)
       }
 
-      def getCodeOrder: Short = {
+      def codeorder: Short = {
         _getShortField(0)
       }
 
-      def setCodeOrder(value: Short) {
+      def codeorder_=(value: Short) {
         _setShortField(0, value)
       }
 
@@ -1064,11 +1064,11 @@ object CapnpSchema {
         !_pointerFieldIsNull(1)
       }
 
-      def getAnnotations: CapnpSchema.Annotation.List.Builder = {
+      def annotations: CapnpSchema.Annotation.List.Builder = {
         _getPointerField(CapnpSchema.Annotation.List, 1, null, 0)
       }
 
-      def setAnnotations(value: CapnpSchema.Annotation.List.Reader) {
+      def annotations_=(value: CapnpSchema.Annotation.List.Reader) {
         _setPointerField(CapnpSchema.Annotation.List)(1, value)
       }
 
@@ -1076,11 +1076,11 @@ object CapnpSchema {
         _initPointerField(CapnpSchema.Annotation.List, 1, size)
       }
 
-      def getDiscriminantValue: Short = {
+      def discriminantvalue: Short = {
         _getShortField(1, (-1).toShort)
       }
 
-      def setDiscriminantValue(value: Short) {
+      def discriminantvalue_=(value: Short) {
         _setShortField(1, value, (-1).toShort)
       }
 
@@ -1088,8 +1088,8 @@ object CapnpSchema {
         which == Field.Which.SLOT
       }
 
-      def getSlot: CapnpSchema.Field.Slot.Builder = {
-        new CapnpSchema.Field.Slot.Builder(segment, data, pointers, dataSize, pointerCount)
+      def slot: CapnpSchema.Field.Slot.Builder = {
+        CapnpSchema.Field.Slot.Builder(segment, dataOffset, pointers, dataSize, pointerCount)
       }
 
       def initSlot: CapnpSchema.Field.Slot.Builder = {
@@ -1098,35 +1098,35 @@ object CapnpSchema {
         _setBooleanField(128, value = false)
         _clearPointerField(2)
         _clearPointerField(3)
-        new CapnpSchema.Field.Slot.Builder(segment, data, pointers, dataSize, pointerCount)
+        CapnpSchema.Field.Slot.Builder(segment, dataOffset, pointers, dataSize, pointerCount)
       }
 
       def isGroup: Boolean = {
         which == Field.Which.GROUP
       }
 
-      def getGroup: CapnpSchema.Field.Group.Builder = {
-        new CapnpSchema.Field.Group.Builder(segment, data, pointers, dataSize, pointerCount)
+      def group: CapnpSchema.Field.Group.Builder = {
+        CapnpSchema.Field.Group.Builder(segment, dataOffset, pointers, dataSize, pointerCount)
       }
 
       def initGroup: CapnpSchema.Field.Group.Builder = {
         _setShortField(4, Field.Which.GROUP.id.toShort)
         _setLongField(2, 0L)
-        new CapnpSchema.Field.Group.Builder(segment, data, pointers, dataSize, pointerCount)
+        CapnpSchema.Field.Group.Builder(segment, dataOffset, pointers, dataSize, pointerCount)
       }
 
-      def getOrdinal: CapnpSchema.Field.Ordinal.Builder = {
-        new CapnpSchema.Field.Ordinal.Builder(segment, data, pointers, dataSize, pointerCount)
+      def ordinal: CapnpSchema.Field.Ordinal.Builder = {
+        CapnpSchema.Field.Ordinal.Builder(segment, dataOffset, pointers, dataSize, pointerCount)
       }
 
       def initOrdinal: CapnpSchema.Field.Ordinal.Builder = {
         _setShortField(5, 0.toShort)
         _setShortField(6, 0.toShort)
-        new CapnpSchema.Field.Ordinal.Builder(segment, data, pointers, dataSize, pointerCount)
+        CapnpSchema.Field.Ordinal.Builder(segment, dataOffset, pointers, dataSize, pointerCount)
       }
     }
 
-    final class ReaderImpl private[schema](segment: SegmentReader, data: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, data, pointers, dataSize, pointerCount, nestingLimit) {
+    final class ReaderImpl private[compiler](segment: SegmentReader, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit) {
       def which: CapnpSchema.Field.Which.Which = {
         _getShortField(4) match {
           case 0 =>
@@ -1142,11 +1142,11 @@ object CapnpSchema {
         !_pointerFieldIsNull(0)
       }
 
-      def getName: Text.Reader = {
+      def name: Text.Reader = {
         _getPointerField(org.capnproto.Text, 0, null, 0, 0)
       }
 
-      def getCodeOrder: Short = {
+      def codeorder: Short = {
         _getShortField(0)
       }
 
@@ -1154,11 +1154,11 @@ object CapnpSchema {
         !_pointerFieldIsNull(1)
       }
 
-      def getAnnotations: CapnpSchema.Annotation.List.Reader = {
+      def annotations: CapnpSchema.Annotation.List.Reader = {
         _getPointerField(CapnpSchema.Annotation.List, 1, null, 0)
       }
 
-      def getDiscriminantValue: Short = {
+      def discriminantvalue: Short = {
         _getShortField(1, (-1).toShort)
       }
 
@@ -1166,20 +1166,20 @@ object CapnpSchema {
         which == Field.Which.SLOT
       }
 
-      def getSlot: CapnpSchema.Field.Slot.Reader = {
-        new CapnpSchema.Field.Slot.Reader(segment, data, pointers, dataSize, pointerCount, nestingLimit)
+      def slot: CapnpSchema.Field.Slot.Reader = {
+        CapnpSchema.Field.Slot.Reader(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit)
       }
 
       def isGroup: Boolean = {
         which == Field.Which.GROUP
       }
 
-      def getGroup: CapnpSchema.Field.Group.Reader = {
-        new CapnpSchema.Field.Group.Reader(segment, data, pointers, dataSize, pointerCount, nestingLimit)
+      def group: CapnpSchema.Field.Group.Reader = {
+        CapnpSchema.Field.Group.Reader(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit)
       }
 
-      def getOrdinal: CapnpSchema.Field.Ordinal.Reader = {
-        new CapnpSchema.Field.Ordinal.Reader(segment, data, pointers, dataSize, pointerCount, nestingLimit)
+      def ordinal: CapnpSchema.Field.Ordinal.Reader = {
+        CapnpSchema.Field.Ordinal.Reader(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit)
       }
     }
 
@@ -1204,21 +1204,21 @@ object CapnpSchema {
 
       val STRUCT_SIZE: StructSize = new StructSize(3.toShort, 4.toShort)
 
-      final class BuilderImpl private[schema](segment: SegmentBuilder, data: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, data, pointers, dataSize, pointerCount) {
+      final class BuilderImpl private[compiler](segment: SegmentBuilder, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, dataOffset, pointers, dataSize, pointerCount) {
 
-        def getOffset: Int = {
+        def offset: Int = {
           _getIntField(1)
         }
 
-        def setOffset(value: Int) {
+        def offset_=(value: Int) {
           _setIntField(1, value)
         }
 
-        def getType: CapnpSchema.Type.Builder = {
+        def capnpType: CapnpSchema.Type.Builder = {
           _getPointerField(CapnpSchema.Type, 2, null, 0)
         }
 
-        def setType(value: CapnpSchema.Type.Reader) {
+        def capnpType_=(value: CapnpSchema.Type.Reader) {
           _setPointerField(CapnpSchema.Type)(2, value)
         }
 
@@ -1226,11 +1226,11 @@ object CapnpSchema {
           _initPointerField(CapnpSchema.Type, 2, 0)
         }
 
-        def getDefaultValue: CapnpSchema.Value.Builder = {
+        def defaultvalue: CapnpSchema.Value.Builder = {
           _getPointerField(CapnpSchema.Value, 3, null, 0)
         }
 
-        def setDefaultValue(value: CapnpSchema.Value.Reader) {
+        def defaultvalue_=(value: CapnpSchema.Value.Reader) {
           _setPointerField(CapnpSchema.Value)(3, value)
         }
 
@@ -1238,17 +1238,17 @@ object CapnpSchema {
           _initPointerField(CapnpSchema.Value, 3, 0)
         }
 
-        def getHadExplicitDefault: Boolean = {
+        def hadexplicitdefault: Boolean = {
           _getBooleanField(128)
         }
 
-        def setHadExplicitDefault(value: Boolean) {
+        def hadexplicitdefault_=(value: Boolean) {
           _setBooleanField(128, value)
         }
       }
 
-      final class ReaderImpl private[schema](segment: SegmentReader, data: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, data, pointers, dataSize, pointerCount, nestingLimit) {
-        def getOffset: Int = {
+      final class ReaderImpl private[compiler](segment: SegmentReader, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit) {
+        def offset: Int = {
           _getIntField(1)
         }
 
@@ -1256,7 +1256,7 @@ object CapnpSchema {
           !_pointerFieldIsNull(2)
         }
 
-        def getType: CapnpSchema.Type.Reader = {
+        def capnpType: CapnpSchema.Type.Reader = {
           _getPointerField(CapnpSchema.Type, 2, null, 0)
         }
 
@@ -1264,11 +1264,11 @@ object CapnpSchema {
           !_pointerFieldIsNull(3)
         }
 
-        def getDefaultValue: CapnpSchema.Value.Reader = {
+        def defaultvalue: CapnpSchema.Value.Reader = {
           _getPointerField(CapnpSchema.Value, 3, null, 0)
         }
 
-        def getHadExplicitDefault: Boolean = {
+        def hadexplicitdefault: Boolean = {
           _getBooleanField(128)
         }
       }
@@ -1288,19 +1288,19 @@ object CapnpSchema {
 
       val STRUCT_SIZE: StructSize = new StructSize(3.toShort, 4.toShort)
 
-      final class BuilderImpl private[schema](segment: SegmentBuilder, data: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, data, pointers, dataSize, pointerCount) {
+      final class BuilderImpl private[compiler](segment: SegmentBuilder, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, dataOffset, pointers, dataSize, pointerCount) {
 
-        def getTypeId: Long = {
+        def capnpTypeid: Long = {
           _getLongField(2)
         }
 
-        def setTypeId(value: Long) {
+        def capnpTypeid_=(value: Long) {
           _setLongField(2, value)
         }
       }
 
-      final class ReaderImpl private[schema](segment: SegmentReader, data: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, data, pointers, dataSize, pointerCount, nestingLimit) {
-        def getTypeId: Long = {
+      final class ReaderImpl private[compiler](segment: SegmentReader, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit) {
+        def capnpTypeid: Long = {
           _getLongField(2)
         }
       }
@@ -1320,7 +1320,7 @@ object CapnpSchema {
 
       val STRUCT_SIZE: StructSize = new StructSize(3.toShort, 4.toShort)
 
-      final class BuilderImpl private[schema](segment: SegmentBuilder, data: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, data, pointers, dataSize, pointerCount) {
+      final class BuilderImpl private[compiler](segment: SegmentBuilder, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, dataOffset, pointers, dataSize, pointerCount) {
         def which: CapnpSchema.Field.Ordinal.Which.Which = {
           _getShortField(5) match {
             case 0 =>
@@ -1332,35 +1332,35 @@ object CapnpSchema {
           }
         }
 
-        def isImplicit: Boolean = {
+        def isImplicitOrdinal: Boolean = {
           which == Field.Ordinal.Which.IMPLICIT
         }
 
-        def getImplicit: Void = {
+        def implicitOrdinal: Void = {
           assert(which == Field.Ordinal.Which.IMPLICIT, "Must check which() before get()ing a union member.")
           org.capnproto.Void.VOID
         }
 
-        def setImplicit(value: Void) {
+        def implicitOrdinal_=(value: Void) {
           _setShortField(5, Field.Ordinal.Which.IMPLICIT.id.toShort)
         }
 
-        def isExplicit: Boolean = {
+        def isExplicitOrdinal: Boolean = {
           which == Field.Ordinal.Which.EXPLICIT
         }
 
-        def getExplicit: Short = {
+        def explicitOrdinal: Short = {
           assert(which == Field.Ordinal.Which.EXPLICIT, "Must check which() before get()ing a union member.")
           _getShortField(6)
         }
 
-        def setExplicit(value: Short) {
+        def explicit_=(value: Short) {
           _setShortField(5, Field.Ordinal.Which.EXPLICIT.id.toShort)
           _setShortField(6, value)
         }
       }
 
-      final class ReaderImpl private[schema](segment: SegmentReader, data: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, data, pointers, dataSize, pointerCount, nestingLimit) {
+      final class ReaderImpl private[compiler](segment: SegmentReader, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit) {
         def which: CapnpSchema.Field.Ordinal.Which.Which = {
           _getShortField(5) match {
             case 0 =>
@@ -1372,20 +1372,20 @@ object CapnpSchema {
           }
         }
 
-        def isImplicit: Boolean = {
+        def isImplicitOrdinal: Boolean = {
           which == Field.Ordinal.Which.IMPLICIT
         }
 
-        def getImplicit: Void = {
+        def implicitOrdinal: Void = {
           assert(which == Field.Ordinal.Which.IMPLICIT, "Must check which() before get()ing a union member.")
           org.capnproto.Void.VOID
         }
 
-        def isExplicit: Boolean = {
+        def isExplicitOrdinal: Boolean = {
           which == Field.Ordinal.Which.EXPLICIT
         }
 
-        def getExplicit: Short = {
+        def explicitOrdinal: Short = {
           assert(which == Field.Ordinal.Which.EXPLICIT, "Must check which() before get()ing a union member.")
           _getShortField(6)
         }
@@ -1413,21 +1413,21 @@ object CapnpSchema {
 
     val STRUCT_SIZE: StructSize = new StructSize(1.toShort, 2.toShort)
 
-    final class BuilderImpl private[schema](segment: SegmentBuilder, data: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, data, pointers, dataSize, pointerCount) {
+    final class BuilderImpl private[compiler](segment: SegmentBuilder, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, dataOffset, pointers, dataSize, pointerCount) {
 
       def hasName: Boolean = {
         !_pointerFieldIsNull(0)
       }
 
-      def getName: Text.Builder = {
+      def name: Text.Builder = {
         _getPointerField(org.capnproto.Text, 0, null, 0, 0)
       }
 
-      def setName(value: Text.Reader) {
+      def name_=(value: Text.Reader) {
         _setPointerField(org.capnproto.Text)(0, value)
       }
 
-      def setName(value: String) {
+      def name_=(value: String) {
         _setPointerField(org.capnproto.Text)(0, new Text.Reader(value))
       }
 
@@ -1435,11 +1435,11 @@ object CapnpSchema {
         _initPointerField(org.capnproto.Text, 0, size)
       }
 
-      def getCodeOrder: Short = {
+      def codeorder: Short = {
         _getShortField(0)
       }
 
-      def setCodeOrder(value: Short) {
+      def codeorder_=(value: Short) {
         _setShortField(0, value)
       }
 
@@ -1447,11 +1447,11 @@ object CapnpSchema {
         !_pointerFieldIsNull(1)
       }
 
-      def getAnnotations: CapnpSchema.Annotation.List.Builder = {
+      def annotations: CapnpSchema.Annotation.List.Builder = {
         _getPointerField(CapnpSchema.Annotation.List, 1, null, 0)
       }
 
-      def setAnnotations(value: CapnpSchema.Annotation.List.Reader) {
+      def annotations_=(value: CapnpSchema.Annotation.List.Reader) {
         _setPointerField(CapnpSchema.Annotation.List)(1, value)
       }
 
@@ -1460,16 +1460,16 @@ object CapnpSchema {
       }
     }
 
-    final class ReaderImpl private[schema](segment: SegmentReader, data: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, data, pointers, dataSize, pointerCount, nestingLimit) {
+    final class ReaderImpl private[compiler](segment: SegmentReader, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit) {
       def hasName: Boolean = {
         !_pointerFieldIsNull(0)
       }
 
-      def getName: Text.Reader = {
+      def name: Text.Reader = {
         _getPointerField(org.capnproto.Text, 0, null, 0, 0)
       }
 
-      def getCodeOrder: Short = {
+      def codeorder: Short = {
         _getShortField(0)
       }
 
@@ -1477,7 +1477,7 @@ object CapnpSchema {
         !_pointerFieldIsNull(1)
       }
 
-      def getAnnotations: CapnpSchema.Annotation.List.Reader = {
+      def annotations: CapnpSchema.Annotation.List.Reader = {
         _getPointerField(CapnpSchema.Annotation.List, 1, null, 0)
       }
     }
@@ -1497,21 +1497,21 @@ object CapnpSchema {
 
     val STRUCT_SIZE: StructSize = new StructSize(1.toShort, 1.toShort)
 
-    final class BuilderImpl private[schema](segment: SegmentBuilder, data: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, data, pointers, dataSize, pointerCount) {
+    final class BuilderImpl private[compiler](segment: SegmentBuilder, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, dataOffset, pointers, dataSize, pointerCount) {
 
-      def getId: Long = {
+      def id: Long = {
         _getLongField(0)
       }
 
-      def setId(value: Long) {
+      def id_=(value: Long) {
         _setLongField(0, value)
       }
 
-      def getBrand: CapnpSchema.Brand.Builder = {
+      def brand: CapnpSchema.Brand.Builder = {
         _getPointerField(CapnpSchema.Brand, 0, null, 0)
       }
 
-      def setBrand(value: CapnpSchema.Brand.Reader) {
+      def brand_=(value: CapnpSchema.Brand.Reader) {
         _setPointerField(CapnpSchema.Brand)(0, value)
       }
 
@@ -1520,8 +1520,8 @@ object CapnpSchema {
       }
     }
 
-    final class ReaderImpl private[schema](segment: SegmentReader, data: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, data, pointers, dataSize, pointerCount, nestingLimit) {
-      def getId: Long = {
+    final class ReaderImpl private[compiler](segment: SegmentReader, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit) {
+      def id: Long = {
         _getLongField(0)
       }
 
@@ -1529,7 +1529,7 @@ object CapnpSchema {
         !_pointerFieldIsNull(0)
       }
 
-      def getBrand: CapnpSchema.Brand.Reader = {
+      def brand: CapnpSchema.Brand.Reader = {
         _getPointerField(CapnpSchema.Brand, 0, null, 0)
       }
     }
@@ -1549,21 +1549,21 @@ object CapnpSchema {
 
     val STRUCT_SIZE: StructSize = new StructSize(3.toShort, 5.toShort)
 
-    final class BuilderImpl private[schema](segment: SegmentBuilder, data: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, data, pointers, dataSize, pointerCount) {
+    final class BuilderImpl private[compiler](segment: SegmentBuilder, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, dataOffset, pointers, dataSize, pointerCount) {
 
       def hasName: Boolean = {
         !_pointerFieldIsNull(0)
       }
 
-      def getName: Text.Builder = {
+      def name: Text.Builder = {
         _getPointerField(org.capnproto.Text, 0, null, 0, 0)
       }
 
-      def setName(value: Text.Reader) {
+      def name_=(value: Text.Reader) {
         _setPointerField(org.capnproto.Text)(0, value)
       }
 
-      def setName(value: String) {
+      def name_=(value: String) {
         _setPointerField(org.capnproto.Text)(0, new Text.Reader(value))
       }
 
@@ -1571,27 +1571,27 @@ object CapnpSchema {
         _initPointerField(org.capnproto.Text, 0, size)
       }
 
-      def getCodeOrder: Short = {
+      def codeorder: Short = {
         _getShortField(0)
       }
 
-      def setCodeOrder(value: Short) {
+      def codeorder_=(value: Short) {
         _setShortField(0, value)
       }
 
-      def getParamStructType: Long = {
+      def paramstructtype: Long = {
         _getLongField(1)
       }
 
-      def setParamStructType(value: Long) {
+      def paramstructtype_=(value: Long) {
         _setLongField(1, value)
       }
 
-      def getResultStructType: Long = {
+      def resultstructtype: Long = {
         _getLongField(2)
       }
 
-      def setResultStructType(value: Long) {
+      def resultstructtype_=(value: Long) {
         _setLongField(2, value)
       }
 
@@ -1599,11 +1599,11 @@ object CapnpSchema {
         !_pointerFieldIsNull(1)
       }
 
-      def getAnnotations: CapnpSchema.Annotation.List.Builder = {
+      def annotations: CapnpSchema.Annotation.List.Builder = {
         _getPointerField(CapnpSchema.Annotation.List, 1, null, 0)
       }
 
-      def setAnnotations(value: CapnpSchema.Annotation.List.Reader) {
+      def annotations_=(value: CapnpSchema.Annotation.List.Reader) {
         _setPointerField(CapnpSchema.Annotation.List)(1, value)
       }
 
@@ -1611,11 +1611,11 @@ object CapnpSchema {
         _initPointerField(CapnpSchema.Annotation.List, 1, size)
       }
 
-      def getParamBrand: CapnpSchema.Brand.Builder = {
+      def parambrand: CapnpSchema.Brand.Builder = {
         _getPointerField(CapnpSchema.Brand, 2, null, 0)
       }
 
-      def setParamBrand(value: CapnpSchema.Brand.Reader) {
+      def parambrand_=(value: CapnpSchema.Brand.Reader) {
         _setPointerField(CapnpSchema.Brand)(2, value)
       }
 
@@ -1623,11 +1623,11 @@ object CapnpSchema {
         _initPointerField(CapnpSchema.Brand, 2, 0)
       }
 
-      def getResultBrand: CapnpSchema.Brand.Builder = {
+      def resultbrand: CapnpSchema.Brand.Builder = {
         _getPointerField(CapnpSchema.Brand, 3, null, 0)
       }
 
-      def setResultBrand(value: CapnpSchema.Brand.Reader) {
+      def resultbrand_=(value: CapnpSchema.Brand.Reader) {
         _setPointerField(CapnpSchema.Brand)(3, value)
       }
 
@@ -1639,11 +1639,11 @@ object CapnpSchema {
         !_pointerFieldIsNull(4)
       }
 
-      def getImplicitParameters: CapnpSchema.Node.Parameter.List.Builder = {
+      def implicitparameters: CapnpSchema.Node.Parameter.List.Builder = {
         _getPointerField(CapnpSchema.Node.Parameter.List, 4, null, 0)
       }
 
-      def setImplicitParameters(value: CapnpSchema.Node.Parameter.List.Reader) {
+      def implicitparameters_=(value: CapnpSchema.Node.Parameter.List.Reader) {
         _setPointerField(CapnpSchema.Node.Parameter.List)(4, value)
       }
 
@@ -1652,24 +1652,24 @@ object CapnpSchema {
       }
     }
 
-    final class ReaderImpl private[schema](segment: SegmentReader, data: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, data, pointers, dataSize, pointerCount, nestingLimit) {
+    final class ReaderImpl private[compiler](segment: SegmentReader, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit) {
       def hasName: Boolean = {
         !_pointerFieldIsNull(0)
       }
 
-      def getName: Text.Reader = {
+      def name: Text.Reader = {
         _getPointerField(org.capnproto.Text, 0, null, 0, 0)
       }
 
-      def getCodeOrder: Short = {
+      def codeorder: Short = {
         _getShortField(0)
       }
 
-      def getParamStructType: Long = {
+      def paramstructtype: Long = {
         _getLongField(1)
       }
 
-      def getResultStructType: Long = {
+      def resultstructtype: Long = {
         _getLongField(2)
       }
 
@@ -1677,7 +1677,7 @@ object CapnpSchema {
         !_pointerFieldIsNull(1)
       }
 
-      def getAnnotations: CapnpSchema.Annotation.List.Reader = {
+      def annotations: CapnpSchema.Annotation.List.Reader = {
         _getPointerField(CapnpSchema.Annotation.List, 1, null, 0)
       }
 
@@ -1685,7 +1685,7 @@ object CapnpSchema {
         !_pointerFieldIsNull(2)
       }
 
-      def getParamBrand: CapnpSchema.Brand.Reader = {
+      def parambrand: CapnpSchema.Brand.Reader = {
         _getPointerField(CapnpSchema.Brand, 2, null, 0)
       }
 
@@ -1693,7 +1693,7 @@ object CapnpSchema {
         !_pointerFieldIsNull(3)
       }
 
-      def getResultBrand: CapnpSchema.Brand.Reader = {
+      def resultbrand: CapnpSchema.Brand.Reader = {
         _getPointerField(CapnpSchema.Brand, 3, null, 0)
       }
 
@@ -1701,7 +1701,7 @@ object CapnpSchema {
         !_pointerFieldIsNull(4)
       }
 
-      def getImplicitParameters: CapnpSchema.Node.Parameter.List.Reader = {
+      def implicitparameters: CapnpSchema.Node.Parameter.List.Reader = {
         _getPointerField(CapnpSchema.Node.Parameter.List, 4, null, 0)
       }
     }
@@ -1721,7 +1721,7 @@ object CapnpSchema {
 
     val STRUCT_SIZE: StructSize = new StructSize(2.toShort, 1.toShort)
 
-    final class BuilderImpl private[schema](segment: SegmentBuilder, data: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, data, pointers, dataSize, pointerCount) {
+    final class BuilderImpl private[compiler](segment: SegmentBuilder, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, dataOffset, pointers, dataSize, pointerCount) {
       def which: CapnpSchema.Type.Which.Which = {
         _getShortField(0) match {
           case 0 =>
@@ -1771,12 +1771,12 @@ object CapnpSchema {
         which == Type.Which.VOID
       }
 
-      def getVoid: Void = {
+      def void: Void = {
         assert(which == Type.Which.VOID, "Must check which() before get()ing a union member.")
         org.capnproto.Void.VOID
       }
 
-      def setVoid(value: Void) {
+      def void_=(value: Void) {
         _setShortField(0, Type.Which.VOID.id.toShort)
       }
 
@@ -1784,12 +1784,12 @@ object CapnpSchema {
         which == Type.Which.BOOL
       }
 
-      def getBool: Void = {
+      def bool: Void = {
         assert(which == Type.Which.BOOL, "Must check which() before get()ing a union member.")
         org.capnproto.Void.VOID
       }
 
-      def setBool(value: Void) {
+      def bool_=(value: Void) {
         _setShortField(0, Type.Which.BOOL.id.toShort)
       }
 
@@ -1797,12 +1797,12 @@ object CapnpSchema {
         which == Type.Which.INT8
       }
 
-      def getInt8: Void = {
+      def int8: Void = {
         assert(which == Type.Which.INT8, "Must check which() before get()ing a union member.")
         org.capnproto.Void.VOID
       }
 
-      def setInt8(value: Void) {
+      def int8_=(value: Void) {
         _setShortField(0, Type.Which.INT8.id.toShort)
       }
 
@@ -1810,12 +1810,12 @@ object CapnpSchema {
         which == Type.Which.INT16
       }
 
-      def getInt16: Void = {
+      def int16: Void = {
         assert(which == Type.Which.INT16, "Must check which() before get()ing a union member.")
         org.capnproto.Void.VOID
       }
 
-      def setInt16(value: Void) {
+      def int16_=(value: Void) {
         _setShortField(0, Type.Which.INT16.id.toShort)
       }
 
@@ -1823,12 +1823,12 @@ object CapnpSchema {
         which == Type.Which.INT32
       }
 
-      def getInt32: Void = {
+      def int32: Void = {
         assert(which == Type.Which.INT32, "Must check which() before get()ing a union member.")
         org.capnproto.Void.VOID
       }
 
-      def setInt32(value: Void) {
+      def int32_=(value: Void) {
         _setShortField(0, Type.Which.INT32.id.toShort)
       }
 
@@ -1836,12 +1836,12 @@ object CapnpSchema {
         which == Type.Which.INT64
       }
 
-      def getInt64: Void = {
+      def int64: Void = {
         assert(which == Type.Which.INT64, "Must check which() before get()ing a union member.")
         org.capnproto.Void.VOID
       }
 
-      def setInt64(value: Void) {
+      def int64_=(value: Void) {
         _setShortField(0, Type.Which.INT64.id.toShort)
       }
 
@@ -1849,12 +1849,12 @@ object CapnpSchema {
         which == Type.Which.UINT8
       }
 
-      def getUint8: Void = {
+      def uint8: Void = {
         assert(which == Type.Which.UINT8, "Must check which() before get()ing a union member.")
         org.capnproto.Void.VOID
       }
 
-      def setUint8(value: Void) {
+      def uint8_=(value: Void) {
         _setShortField(0, Type.Which.UINT8.id.toShort)
       }
 
@@ -1862,12 +1862,12 @@ object CapnpSchema {
         which == Type.Which.UINT16
       }
 
-      def getUint16: Void = {
+      def uint16: Void = {
         assert(which == Type.Which.UINT16, "Must check which() before get()ing a union member.")
         org.capnproto.Void.VOID
       }
 
-      def setUint16(value: Void) {
+      def uint16_=(value: Void) {
         _setShortField(0, Type.Which.UINT16.id.toShort)
       }
 
@@ -1875,12 +1875,12 @@ object CapnpSchema {
         which == Type.Which.UINT32
       }
 
-      def getUint32: Void = {
+      def uint32: Void = {
         assert(which == Type.Which.UINT32, "Must check which() before get()ing a union member.")
         org.capnproto.Void.VOID
       }
 
-      def setUint32(value: Void) {
+      def uint32_=(value: Void) {
         _setShortField(0, Type.Which.UINT32.id.toShort)
       }
 
@@ -1888,12 +1888,12 @@ object CapnpSchema {
         which == Type.Which.UINT64
       }
 
-      def getUint64: Void = {
+      def uint64: Void = {
         assert(which == Type.Which.UINT64, "Must check which() before get()ing a union member.")
         org.capnproto.Void.VOID
       }
 
-      def setUint64(value: Void) {
+      def uint64_=(value: Void) {
         _setShortField(0, Type.Which.UINT64.id.toShort)
       }
 
@@ -1901,12 +1901,12 @@ object CapnpSchema {
         which == Type.Which.FLOAT32
       }
 
-      def getFloat32: Void = {
+      def float32: Void = {
         assert(which == Type.Which.FLOAT32, "Must check which() before get()ing a union member.")
         org.capnproto.Void.VOID
       }
 
-      def setFloat32(value: Void) {
+      def float32_=(value: Void) {
         _setShortField(0, Type.Which.FLOAT32.id.toShort)
       }
 
@@ -1914,12 +1914,12 @@ object CapnpSchema {
         which == Type.Which.FLOAT64
       }
 
-      def getFloat64: Void = {
+      def float64: Void = {
         assert(which == Type.Which.FLOAT64, "Must check which() before get()ing a union member.")
         org.capnproto.Void.VOID
       }
 
-      def setFloat64(value: Void) {
+      def float64_=(value: Void) {
         _setShortField(0, Type.Which.FLOAT64.id.toShort)
       }
 
@@ -1927,12 +1927,12 @@ object CapnpSchema {
         which == Type.Which.TEXT
       }
 
-      def getText: Void = {
+      def text: Void = {
         assert(which == Type.Which.TEXT, "Must check which() before get()ing a union member.")
         org.capnproto.Void.VOID
       }
 
-      def setText(value: Void) {
+      def text_=(value: Void) {
         _setShortField(0, Type.Which.TEXT.id.toShort)
       }
 
@@ -1940,12 +1940,12 @@ object CapnpSchema {
         which == Type.Which.DATA
       }
 
-      def getData: Void = {
+      def data: Void = {
         assert(which == Type.Which.DATA, "Must check which() before get()ing a union member.")
         org.capnproto.Void.VOID
       }
 
-      def setData(value: Void) {
+      def data_=(value: Void) {
         _setShortField(0, Type.Which.DATA.id.toShort)
       }
 
@@ -1953,67 +1953,67 @@ object CapnpSchema {
         which == Type.Which.LIST
       }
 
-      def getList: CapnpSchema.Type.List.Builder = {
-        new CapnpSchema.Type.List.Builder(segment, data, pointers, dataSize, pointerCount)
+      def list: CapnpSchema.Type.CList.Builder = {
+        CapnpSchema.Type.CList.Builder(segment, dataOffset, pointers, dataSize, pointerCount)
       }
 
-      def initList: CapnpSchema.Type.List.Builder = {
+      def initList: CapnpSchema.Type.CList.Builder = {
         _setShortField(0, Type.Which.LIST.id.toShort)
         _clearPointerField(0)
-        new CapnpSchema.Type.List.Builder(segment, data, pointers, dataSize, pointerCount)
+        CapnpSchema.Type.CList.Builder(segment, dataOffset, pointers, dataSize, pointerCount)
       }
 
       def isEnum: Boolean = {
         which == Type.Which.ENUM
       }
 
-      def getEnum: CapnpSchema.Type.Enum.Builder = {
-        new CapnpSchema.Type.Enum.Builder(segment, data, pointers, dataSize, pointerCount)
+      def enum: CapnpSchema.Type.Enum.Builder = {
+        CapnpSchema.Type.Enum.Builder(segment, dataOffset, pointers, dataSize, pointerCount)
       }
 
       def initEnum: CapnpSchema.Type.Enum.Builder = {
         _setShortField(0, Type.Which.ENUM.id.toShort)
         _setLongField(1, 0L)
         _clearPointerField(0)
-        new CapnpSchema.Type.Enum.Builder(segment, data, pointers, dataSize, pointerCount)
+        CapnpSchema.Type.Enum.Builder(segment, dataOffset, pointers, dataSize, pointerCount)
       }
 
       def isStruct: Boolean = {
         which == Type.Which.STRUCT
       }
 
-      def getStruct: CapnpSchema.Type.Struct.Builder = {
-        new CapnpSchema.Type.Struct.Builder(segment, data, pointers, dataSize, pointerCount)
+      def struct: CapnpSchema.Type.Struct.Builder = {
+        CapnpSchema.Type.Struct.Builder(segment, dataOffset, pointers, dataSize, pointerCount)
       }
 
       def initStruct: CapnpSchema.Type.Struct.Builder = {
         _setShortField(0, Type.Which.STRUCT.id.toShort)
         _setLongField(1, 0L)
         _clearPointerField(0)
-        new CapnpSchema.Type.Struct.Builder(segment, data, pointers, dataSize, pointerCount)
+        CapnpSchema.Type.Struct.Builder(segment, dataOffset, pointers, dataSize, pointerCount)
       }
 
       def isInterface: Boolean = {
         which == Type.Which.INTERFACE
       }
 
-      def getInterface: CapnpSchema.Type.Interface.Builder = {
-        new CapnpSchema.Type.Interface.Builder(segment, data, pointers, dataSize, pointerCount)
+      def interface: CapnpSchema.Type.Interface.Builder = {
+        CapnpSchema.Type.Interface.Builder(segment, dataOffset, pointers, dataSize, pointerCount)
       }
 
       def initInterface: CapnpSchema.Type.Interface.Builder = {
         _setShortField(0, Type.Which.INTERFACE.id.toShort)
         _setLongField(1, 0L)
         _clearPointerField(0)
-        new CapnpSchema.Type.Interface.Builder(segment, data, pointers, dataSize, pointerCount)
+        CapnpSchema.Type.Interface.Builder(segment, dataOffset, pointers, dataSize, pointerCount)
       }
 
       def isAnyPointer: Boolean = {
         which == Type.Which.ANY_POINTER
       }
 
-      def getAnyPointer: CapnpSchema.Type.AnyPointer.Builder = {
-        new CapnpSchema.Type.AnyPointer.Builder(segment, data, pointers, dataSize, pointerCount)
+      def anypointer: CapnpSchema.Type.AnyPointer.Builder = {
+        CapnpSchema.Type.AnyPointer.Builder(segment, dataOffset, pointers, dataSize, pointerCount)
       }
 
       def initAnyPointer: CapnpSchema.Type.AnyPointer.Builder = {
@@ -2021,11 +2021,11 @@ object CapnpSchema {
         _setShortField(1, 0.toShort)
         _setShortField(2, 0.toShort)
         _setLongField(1, 0L)
-        new CapnpSchema.Type.AnyPointer.Builder(segment, data, pointers, dataSize, pointerCount)
+        CapnpSchema.Type.AnyPointer.Builder(segment, dataOffset, pointers, dataSize, pointerCount)
       }
     }
 
-    final class ReaderImpl private[schema](segment: SegmentReader, data: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, data, pointers, dataSize, pointerCount, nestingLimit) {
+    final class ReaderImpl private[compiler](segment: SegmentReader, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit) {
       def which: CapnpSchema.Type.Which.Which = {
         _getShortField(0) match {
           case 0 =>
@@ -2075,7 +2075,7 @@ object CapnpSchema {
         which == Type.Which.VOID
       }
 
-      def getVoid: Void = {
+      def void: Void = {
         assert(which == Type.Which.VOID, "Must check which() before get()ing a union member.")
         org.capnproto.Void.VOID
       }
@@ -2084,7 +2084,7 @@ object CapnpSchema {
         which == Type.Which.BOOL
       }
 
-      def getBool: Void = {
+      def bool: Void = {
         assert(which == Type.Which.BOOL, "Must check which() before get()ing a union member.")
         org.capnproto.Void.VOID
       }
@@ -2093,7 +2093,7 @@ object CapnpSchema {
         which == Type.Which.INT8
       }
 
-      def getInt8: Void = {
+      def int8: Void = {
         assert(which == Type.Which.INT8, "Must check which() before get()ing a union member.")
         org.capnproto.Void.VOID
       }
@@ -2102,7 +2102,7 @@ object CapnpSchema {
         which == Type.Which.INT16
       }
 
-      def getInt16: Void = {
+      def int16: Void = {
         assert(which == Type.Which.INT16, "Must check which() before get()ing a union member.")
         org.capnproto.Void.VOID
       }
@@ -2111,7 +2111,7 @@ object CapnpSchema {
         which == Type.Which.INT32
       }
 
-      def getInt32: Void = {
+      def int32: Void = {
         assert(which == Type.Which.INT32, "Must check which() before get()ing a union member.")
         org.capnproto.Void.VOID
       }
@@ -2120,7 +2120,7 @@ object CapnpSchema {
         which == Type.Which.INT64
       }
 
-      def getInt64: Void = {
+      def int64: Void = {
         assert(which == Type.Which.INT64, "Must check which() before get()ing a union member.")
         org.capnproto.Void.VOID
       }
@@ -2129,7 +2129,7 @@ object CapnpSchema {
         which == Type.Which.UINT8
       }
 
-      def getUint8: Void = {
+      def uint8: Void = {
         assert(which == Type.Which.UINT8, "Must check which() before get()ing a union member.")
         org.capnproto.Void.VOID
       }
@@ -2138,7 +2138,7 @@ object CapnpSchema {
         which == Type.Which.UINT16
       }
 
-      def getUint16: Void = {
+      def uint16: Void = {
         assert(which == Type.Which.UINT16, "Must check which() before get()ing a union member.")
         org.capnproto.Void.VOID
       }
@@ -2147,7 +2147,7 @@ object CapnpSchema {
         which == Type.Which.UINT32
       }
 
-      def getUint32: Void = {
+      def uint32: Void = {
         assert(which == Type.Which.UINT32, "Must check which() before get()ing a union member.")
         org.capnproto.Void.VOID
       }
@@ -2156,7 +2156,7 @@ object CapnpSchema {
         which == Type.Which.UINT64
       }
 
-      def getUint64: Void = {
+      def uint64: Void = {
         assert(which == Type.Which.UINT64, "Must check which() before get()ing a union member.")
         org.capnproto.Void.VOID
       }
@@ -2165,7 +2165,7 @@ object CapnpSchema {
         which == Type.Which.FLOAT32
       }
 
-      def getFloat32: Void = {
+      def float32: Void = {
         assert(which == Type.Which.FLOAT32, "Must check which() before get()ing a union member.")
         org.capnproto.Void.VOID
       }
@@ -2174,7 +2174,7 @@ object CapnpSchema {
         which == Type.Which.FLOAT64
       }
 
-      def getFloat64: Void = {
+      def float64: Void = {
         assert(which == Type.Which.FLOAT64, "Must check which() before get()ing a union member.")
         org.capnproto.Void.VOID
       }
@@ -2183,7 +2183,7 @@ object CapnpSchema {
         which == Type.Which.TEXT
       }
 
-      def getText: Void = {
+      def text: Void = {
         assert(which == Type.Which.TEXT, "Must check which() before get()ing a union member.")
         org.capnproto.Void.VOID
       }
@@ -2192,7 +2192,7 @@ object CapnpSchema {
         which == Type.Which.DATA
       }
 
-      def getData: Void = {
+      def data: Void = {
         assert(which == Type.Which.DATA, "Must check which() before get()ing a union member.")
         org.capnproto.Void.VOID
       }
@@ -2201,40 +2201,40 @@ object CapnpSchema {
         which == Type.Which.LIST
       }
 
-      def getList: CapnpSchema.Type.List.Reader = {
-        new CapnpSchema.Type.List.Reader(segment, data, pointers, dataSize, pointerCount, nestingLimit)
+      def list: CapnpSchema.Type.CList.Reader = {
+        CapnpSchema.Type.CList.Reader(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit)
       }
 
       def isEnum: Boolean = {
         which == Type.Which.ENUM
       }
 
-      def getEnum: CapnpSchema.Type.Enum.Reader = {
-        new CapnpSchema.Type.Enum.Reader(segment, data, pointers, dataSize, pointerCount, nestingLimit)
+      def enum: CapnpSchema.Type.Enum.Reader = {
+        CapnpSchema.Type.Enum.Reader(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit)
       }
 
       def isStruct: Boolean = {
         which == Type.Which.STRUCT
       }
 
-      def getStruct: CapnpSchema.Type.Struct.Reader = {
-        new CapnpSchema.Type.Struct.Reader(segment, data, pointers, dataSize, pointerCount, nestingLimit)
+      def struct: CapnpSchema.Type.Struct.Reader = {
+        CapnpSchema.Type.Struct.Reader(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit)
       }
 
       def isInterface: Boolean = {
         which == Type.Which.INTERFACE
       }
 
-      def getInterface: CapnpSchema.Type.Interface.Reader = {
-        new CapnpSchema.Type.Interface.Reader(segment, data, pointers, dataSize, pointerCount, nestingLimit)
+      def interface: CapnpSchema.Type.Interface.Reader = {
+        CapnpSchema.Type.Interface.Reader(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit)
       }
 
       def isAnyPointer: Boolean = {
         which == Type.Which.ANY_POINTER
       }
 
-      def getAnyPointer: CapnpSchema.Type.AnyPointer.Reader = {
-        new CapnpSchema.Type.AnyPointer.Reader(segment, data, pointers, dataSize, pointerCount, nestingLimit)
+      def anypointer: CapnpSchema.Type.AnyPointer.Reader = {
+        CapnpSchema.Type.AnyPointer.Reader(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit)
       }
     }
 
@@ -2243,7 +2243,7 @@ object CapnpSchema {
       val VOID, BOOL, INT8, INT16, INT32, INT64, UINT8, UINT16, UINT32, UINT64, FLOAT32, FLOAT64, TEXT, DATA, LIST, ENUM, STRUCT, INTERFACE, ANY_POINTER, _NOT_IN_SCHEMA = Value
     }
 
-    object List extends org.capnproto.Struct {
+    object CList extends org.capnproto.Struct {
       type Builder = BuilderImpl
       type Reader = ReaderImpl
 
@@ -2251,18 +2251,18 @@ object CapnpSchema {
       override val Reader: (SegmentReader, Int, Int, Int, Short, Int) => Reader = new ReaderImpl(_, _, _, _, _, _)
 
       def structSize: StructSize = {
-        Type.List.STRUCT_SIZE
+        Type.CList.STRUCT_SIZE
       }
 
       val STRUCT_SIZE: StructSize = new StructSize(2.toShort, 1.toShort)
 
-      final class BuilderImpl private[schema](segment: SegmentBuilder, data: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, data, pointers, dataSize, pointerCount) {
+      final class BuilderImpl private[compiler](segment: SegmentBuilder, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, dataOffset, pointers, dataSize, pointerCount) {
 
-        def getElementType: CapnpSchema.Type.Builder = {
+        def elementtype: CapnpSchema.Type.Builder = {
           _getPointerField(CapnpSchema.Type, 0, null, 0)
         }
 
-        def setElementType(value: CapnpSchema.Type.Reader) {
+        def elementtype_=(value: CapnpSchema.Type.Reader) {
           _setPointerField(CapnpSchema.Type)(0, value)
         }
 
@@ -2271,12 +2271,12 @@ object CapnpSchema {
         }
       }
 
-      final class ReaderImpl private[schema](segment: SegmentReader, data: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, data, pointers, dataSize, pointerCount, nestingLimit) {
+      final class ReaderImpl private[compiler](segment: SegmentReader, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit) {
         def hasElementType: Boolean = {
           !_pointerFieldIsNull(0)
         }
 
-        def getElementType: CapnpSchema.Type.Reader = {
+        def elementtype: CapnpSchema.Type.Reader = {
           _getPointerField(CapnpSchema.Type, 0, null, 0)
         }
       }
@@ -2296,21 +2296,21 @@ object CapnpSchema {
 
       val STRUCT_SIZE: StructSize = new StructSize(2.toShort, 1.toShort)
 
-      final class BuilderImpl private[schema](segment: SegmentBuilder, data: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, data, pointers, dataSize, pointerCount) {
+      final class BuilderImpl private[compiler](segment: SegmentBuilder, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, dataOffset, pointers, dataSize, pointerCount) {
 
-        def getTypeId: Long = {
+        def capnpTypeid: Long = {
           _getLongField(1)
         }
 
-        def setTypeId(value: Long) {
+        def capnpTypeid_=(value: Long) {
           _setLongField(1, value)
         }
 
-        def getBrand: CapnpSchema.Brand.Builder = {
+        def brand: CapnpSchema.Brand.Builder = {
           _getPointerField(CapnpSchema.Brand, 0, null, 0)
         }
 
-        def setBrand(value: CapnpSchema.Brand.Reader) {
+        def brand_=(value: CapnpSchema.Brand.Reader) {
           _setPointerField(CapnpSchema.Brand)(0, value)
         }
 
@@ -2319,8 +2319,8 @@ object CapnpSchema {
         }
       }
 
-      final class ReaderImpl private[schema](segment: SegmentReader, data: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, data, pointers, dataSize, pointerCount, nestingLimit) {
-        def getTypeId: Long = {
+      final class ReaderImpl private[compiler](segment: SegmentReader, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit) {
+        def capnpTypeid: Long = {
           _getLongField(1)
         }
 
@@ -2328,7 +2328,7 @@ object CapnpSchema {
           !_pointerFieldIsNull(0)
         }
 
-        def getBrand: CapnpSchema.Brand.Reader = {
+        def brand: CapnpSchema.Brand.Reader = {
           _getPointerField(CapnpSchema.Brand, 0, null, 0)
         }
       }
@@ -2348,21 +2348,21 @@ object CapnpSchema {
 
       val STRUCT_SIZE: StructSize = new StructSize(2.toShort, 1.toShort)
 
-      final class BuilderImpl private[schema](segment: SegmentBuilder, data: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, data, pointers, dataSize, pointerCount) {
+      final class BuilderImpl private[compiler](segment: SegmentBuilder, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, dataOffset, pointers, dataSize, pointerCount) {
 
-        def getTypeId: Long = {
+        def capnpTypeid: Long = {
           _getLongField(1)
         }
 
-        def setTypeId(value: Long) {
+        def capnpTypeid_=(value: Long) {
           _setLongField(1, value)
         }
 
-        def getBrand: CapnpSchema.Brand.Builder = {
+        def brand: CapnpSchema.Brand.Builder = {
           _getPointerField(CapnpSchema.Brand, 0, null, 0)
         }
 
-        def setBrand(value: CapnpSchema.Brand.Reader) {
+        def brand_=(value: CapnpSchema.Brand.Reader) {
           _setPointerField(CapnpSchema.Brand)(0, value)
         }
 
@@ -2371,8 +2371,8 @@ object CapnpSchema {
         }
       }
 
-      final class ReaderImpl private[schema](segment: SegmentReader, data: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, data, pointers, dataSize, pointerCount, nestingLimit) {
-        def getTypeId: Long = {
+      final class ReaderImpl private[compiler](segment: SegmentReader, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit) {
+        def capnpTypeid: Long = {
           _getLongField(1)
         }
 
@@ -2380,7 +2380,7 @@ object CapnpSchema {
           !_pointerFieldIsNull(0)
         }
 
-        def getBrand: CapnpSchema.Brand.Reader = {
+        def brand: CapnpSchema.Brand.Reader = {
           _getPointerField(CapnpSchema.Brand, 0, null, 0)
         }
       }
@@ -2400,21 +2400,21 @@ object CapnpSchema {
 
       val STRUCT_SIZE: StructSize = new StructSize(2.toShort, 1.toShort)
 
-      final class BuilderImpl private[schema](segment: SegmentBuilder, data: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, data, pointers, dataSize, pointerCount) {
+      final class BuilderImpl private[compiler](segment: SegmentBuilder, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, dataOffset, pointers, dataSize, pointerCount) {
 
-        def getTypeId: Long = {
+        def capnpTypeid: Long = {
           _getLongField(1)
         }
 
-        def setTypeId(value: Long) {
+        def capnpTypeid_=(value: Long) {
           _setLongField(1, value)
         }
 
-        def getBrand: CapnpSchema.Brand.Builder = {
+        def brand: CapnpSchema.Brand.Builder = {
           _getPointerField(CapnpSchema.Brand, 0, null, 0)
         }
 
-        def setBrand(value: CapnpSchema.Brand.Reader) {
+        def brand_=(value: CapnpSchema.Brand.Reader) {
           _setPointerField(CapnpSchema.Brand)(0, value)
         }
 
@@ -2423,8 +2423,8 @@ object CapnpSchema {
         }
       }
 
-      final class ReaderImpl private[schema](segment: SegmentReader, data: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, data, pointers, dataSize, pointerCount, nestingLimit) {
-        def getTypeId: Long = {
+      final class ReaderImpl private[compiler](segment: SegmentReader, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit) {
+        def capnpTypeid: Long = {
           _getLongField(1)
         }
 
@@ -2432,7 +2432,7 @@ object CapnpSchema {
           !_pointerFieldIsNull(0)
         }
 
-        def getBrand: CapnpSchema.Brand.Reader = {
+        def brand: CapnpSchema.Brand.Reader = {
           _getPointerField(CapnpSchema.Brand, 0, null, 0)
         }
       }
@@ -2452,7 +2452,7 @@ object CapnpSchema {
 
       val STRUCT_SIZE: StructSize = new StructSize(2.toShort, 1.toShort)
 
-      final class BuilderImpl private[schema](segment: SegmentBuilder, data: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, data, pointers, dataSize, pointerCount) {
+      final class BuilderImpl private[compiler](segment: SegmentBuilder, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, dataOffset, pointers, dataSize, pointerCount) {
         def which: CapnpSchema.Type.AnyPointer.Which.Which = {
           _getShortField(2) match {
             case 0 =>
@@ -2470,47 +2470,47 @@ object CapnpSchema {
           which == Type.AnyPointer.Which.UNCONSTRAINED
         }
 
-        def getUnconstrained: CapnpSchema.Type.AnyPointer.Unconstrained.Builder = {
-          new CapnpSchema.Type.AnyPointer.Unconstrained.Builder(segment, data, pointers, dataSize, pointerCount)
+        def unconstrained: CapnpSchema.Type.AnyPointer.Unconstrained.Builder = {
+          CapnpSchema.Type.AnyPointer.Unconstrained.Builder(segment, dataOffset, pointers, dataSize, pointerCount)
         }
 
         def initUnconstrained: CapnpSchema.Type.AnyPointer.Unconstrained.Builder = {
           _setShortField(2, Type.AnyPointer.Which.UNCONSTRAINED.id.toShort)
           _setShortField(1, 0.toShort)
-          new CapnpSchema.Type.AnyPointer.Unconstrained.Builder(segment, data, pointers, dataSize, pointerCount)
+          CapnpSchema.Type.AnyPointer.Unconstrained.Builder(segment, dataOffset, pointers, dataSize, pointerCount)
         }
 
         def isParameter: Boolean = {
           which == Type.AnyPointer.Which.PARAMETER
         }
 
-        def getParameter: CapnpSchema.Type.AnyPointer.Parameter.Builder = {
-          new CapnpSchema.Type.AnyPointer.Parameter.Builder(segment, data, pointers, dataSize, pointerCount)
+        def parameter: CapnpSchema.Type.AnyPointer.Parameter.Builder = {
+          CapnpSchema.Type.AnyPointer.Parameter.Builder(segment, dataOffset, pointers, dataSize, pointerCount)
         }
 
         def initParameter: CapnpSchema.Type.AnyPointer.Parameter.Builder = {
           _setShortField(2, Type.AnyPointer.Which.PARAMETER.id.toShort)
           _setShortField(1, 0.toShort)
           _setLongField(1, 0L)
-          new CapnpSchema.Type.AnyPointer.Parameter.Builder(segment, data, pointers, dataSize, pointerCount)
+          CapnpSchema.Type.AnyPointer.Parameter.Builder(segment, dataOffset, pointers, dataSize, pointerCount)
         }
 
         def isImplicitMethodParameter: Boolean = {
           which == Type.AnyPointer.Which.IMPLICIT_METHOD_PARAMETER
         }
 
-        def getImplicitMethodParameter: CapnpSchema.Type.AnyPointer.ImplicitMethodParameter.Builder = {
-          new CapnpSchema.Type.AnyPointer.ImplicitMethodParameter.Builder(segment, data, pointers, dataSize, pointerCount)
+        def implicitmethodparameter: CapnpSchema.Type.AnyPointer.ImplicitMethodParameter.Builder = {
+          CapnpSchema.Type.AnyPointer.ImplicitMethodParameter.Builder(segment, dataOffset, pointers, dataSize, pointerCount)
         }
 
         def initImplicitMethodParameter: CapnpSchema.Type.AnyPointer.ImplicitMethodParameter.Builder = {
           _setShortField(2, Type.AnyPointer.Which.IMPLICIT_METHOD_PARAMETER.id.toShort)
           _setShortField(1, 0.toShort)
-          new CapnpSchema.Type.AnyPointer.ImplicitMethodParameter.Builder(segment, data, pointers, dataSize, pointerCount)
+          CapnpSchema.Type.AnyPointer.ImplicitMethodParameter.Builder(segment, dataOffset, pointers, dataSize, pointerCount)
         }
       }
 
-      final class ReaderImpl private[schema](segment: SegmentReader, data: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, data, pointers, dataSize, pointerCount, nestingLimit) {
+      final class ReaderImpl private[compiler](segment: SegmentReader, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit) {
         def which: CapnpSchema.Type.AnyPointer.Which.Which = {
           _getShortField(2) match {
             case 0 =>
@@ -2528,24 +2528,24 @@ object CapnpSchema {
           which == Type.AnyPointer.Which.UNCONSTRAINED
         }
 
-        def getUnconstrained: CapnpSchema.Type.AnyPointer.Unconstrained.Reader = {
-          new CapnpSchema.Type.AnyPointer.Unconstrained.Reader(segment, data, pointers, dataSize, pointerCount, nestingLimit)
+        def unconstrained: CapnpSchema.Type.AnyPointer.Unconstrained.Reader = {
+          CapnpSchema.Type.AnyPointer.Unconstrained.Reader(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit)
         }
 
         def isParameter: Boolean = {
           which == Type.AnyPointer.Which.PARAMETER
         }
 
-        def getParameter: CapnpSchema.Type.AnyPointer.Parameter.Reader = {
-          new CapnpSchema.Type.AnyPointer.Parameter.Reader(segment, data, pointers, dataSize, pointerCount, nestingLimit)
+        def parameter: CapnpSchema.Type.AnyPointer.Parameter.Reader = {
+          CapnpSchema.Type.AnyPointer.Parameter.Reader(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit)
         }
 
         def isImplicitMethodParameter: Boolean = {
           which == Type.AnyPointer.Which.IMPLICIT_METHOD_PARAMETER
         }
 
-        def getImplicitMethodParameter: CapnpSchema.Type.AnyPointer.ImplicitMethodParameter.Reader = {
-          new CapnpSchema.Type.AnyPointer.ImplicitMethodParameter.Reader(segment, data, pointers, dataSize, pointerCount, nestingLimit)
+        def implicitmethodparameter: CapnpSchema.Type.AnyPointer.ImplicitMethodParameter.Reader = {
+          CapnpSchema.Type.AnyPointer.ImplicitMethodParameter.Reader(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit)
         }
       }
 
@@ -2567,7 +2567,7 @@ object CapnpSchema {
 
         val STRUCT_SIZE: StructSize = new StructSize(2.toShort, 1.toShort)
 
-        final class BuilderImpl private[schema](segment: SegmentBuilder, data: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, data, pointers, dataSize, pointerCount) {
+        final class BuilderImpl private[compiler](segment: SegmentBuilder, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, dataOffset, pointers, dataSize, pointerCount) {
           def which: CapnpSchema.Type.AnyPointer.Unconstrained.Which.Which = {
             _getShortField(1) match {
               case 0 =>
@@ -2587,12 +2587,12 @@ object CapnpSchema {
             which == Type.AnyPointer.Unconstrained.Which.ANY_KIND
           }
 
-          def getAnyKind: Void = {
+          def anykind: Void = {
             assert(which == Type.AnyPointer.Unconstrained.Which.ANY_KIND, "Must check which() before get()ing a union member.")
             org.capnproto.Void.VOID
           }
 
-          def setAnyKind(value: Void) {
+          def anykind_=(value: Void) {
             _setShortField(1, Type.AnyPointer.Unconstrained.Which.ANY_KIND.id.toShort)
           }
 
@@ -2600,12 +2600,12 @@ object CapnpSchema {
             which == Type.AnyPointer.Unconstrained.Which.STRUCT
           }
 
-          def getStruct: Void = {
+          def struct: Void = {
             assert(which == Type.AnyPointer.Unconstrained.Which.STRUCT, "Must check which() before get()ing a union member.")
             org.capnproto.Void.VOID
           }
 
-          def setStruct(value: Void) {
+          def struct_=(value: Void) {
             _setShortField(1, Type.AnyPointer.Unconstrained.Which.STRUCT.id.toShort)
           }
 
@@ -2613,12 +2613,12 @@ object CapnpSchema {
             which == Type.AnyPointer.Unconstrained.Which.LIST
           }
 
-          def getList: Void = {
+          def list: Void = {
             assert(which == Type.AnyPointer.Unconstrained.Which.LIST, "Must check which() before get()ing a union member.")
             org.capnproto.Void.VOID
           }
 
-          def setList(value: Void) {
+          def list_=(value: Void) {
             _setShortField(1, Type.AnyPointer.Unconstrained.Which.LIST.id.toShort)
           }
 
@@ -2626,17 +2626,17 @@ object CapnpSchema {
             which == Type.AnyPointer.Unconstrained.Which.CAPABILITY
           }
 
-          def getCapability: Void = {
+          def capability: Void = {
             assert(which == Type.AnyPointer.Unconstrained.Which.CAPABILITY, "Must check which() before get()ing a union member.")
             org.capnproto.Void.VOID
           }
 
-          def setCapability(value: Void) {
+          def capability_=(value: Void) {
             _setShortField(1, Type.AnyPointer.Unconstrained.Which.CAPABILITY.id.toShort)
           }
         }
 
-        final class ReaderImpl private[schema](segment: SegmentReader, data: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, data, pointers, dataSize, pointerCount, nestingLimit) {
+        final class ReaderImpl private[compiler](segment: SegmentReader, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit) {
           def which: CapnpSchema.Type.AnyPointer.Unconstrained.Which.Which = {
             _getShortField(1) match {
               case 0 =>
@@ -2656,7 +2656,7 @@ object CapnpSchema {
             which == Type.AnyPointer.Unconstrained.Which.ANY_KIND
           }
 
-          def getAnyKind: Void = {
+          def anykind: Void = {
             assert(which == Type.AnyPointer.Unconstrained.Which.ANY_KIND, "Must check which() before get()ing a union member.")
             org.capnproto.Void.VOID
           }
@@ -2665,7 +2665,7 @@ object CapnpSchema {
             which == Type.AnyPointer.Unconstrained.Which.STRUCT
           }
 
-          def getStruct: Void = {
+          def struct: Void = {
             assert(which == Type.AnyPointer.Unconstrained.Which.STRUCT, "Must check which() before get()ing a union member.")
             org.capnproto.Void.VOID
           }
@@ -2674,7 +2674,7 @@ object CapnpSchema {
             which == Type.AnyPointer.Unconstrained.Which.LIST
           }
 
-          def getList: Void = {
+          def list: Void = {
             assert(which == Type.AnyPointer.Unconstrained.Which.LIST, "Must check which() before get()ing a union member.")
             org.capnproto.Void.VOID
           }
@@ -2683,7 +2683,7 @@ object CapnpSchema {
             which == Type.AnyPointer.Unconstrained.Which.CAPABILITY
           }
 
-          def getCapability: Void = {
+          def capability: Void = {
             assert(which == Type.AnyPointer.Unconstrained.Which.CAPABILITY, "Must check which() before get()ing a union member.")
             org.capnproto.Void.VOID
           }
@@ -2700,8 +2700,8 @@ object CapnpSchema {
         type Builder = BuilderImpl
         type Reader = ReaderImpl
 
-        override val Builder: (SegmentBuilder, Int, Int, Int, Short) => Builder = new BuilderImpl(_, _, _, _, _)
-        override val Reader: (SegmentReader, Int, Int, Int, Short, Int) => Reader = new ReaderImpl(_, _, _, _, _, _)
+        override def Builder: (SegmentBuilder, Int, Int, Int, Short) => Builder = new BuilderImpl(_, _, _, _, _)
+        override def Reader: (SegmentReader, Int, Int, Int, Short, Int) => Reader = new ReaderImpl(_, _, _, _, _, _)
 
         def structSize: StructSize = {
           Type.AnyPointer.Parameter.STRUCT_SIZE
@@ -2709,31 +2709,31 @@ object CapnpSchema {
 
         val STRUCT_SIZE: StructSize = new StructSize(2.toShort, 1.toShort)
 
-        final class BuilderImpl private[schema](segment: SegmentBuilder, data: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, data, pointers, dataSize, pointerCount) {
+        final class BuilderImpl private[compiler](segment: SegmentBuilder, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, dataOffset, pointers, dataSize, pointerCount) {
 
-          def getScopeId: Long = {
+          def scopeid: Long = {
             _getLongField(1)
           }
 
-          def setScopeId(value: Long) {
+          def scopeid_=(value: Long) {
             _setLongField(1, value)
           }
 
-          def getParameterIndex: Short = {
+          def parameterindex: Short = {
             _getShortField(1)
           }
 
-          def setParameterIndex(value: Short) {
+          def parameterindex_=(value: Short) {
             _setShortField(1, value)
           }
         }
 
-        final class ReaderImpl private[schema](segment: SegmentReader, data: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, data, pointers, dataSize, pointerCount, nestingLimit) {
-          def getScopeId: Long = {
+        final class ReaderImpl private[compiler](segment: SegmentReader, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit) {
+          def scopeid: Long = {
             _getLongField(1)
           }
 
-          def getParameterIndex: Short = {
+          def parameterindex: Short = {
             _getShortField(1)
           }
         }
@@ -2753,19 +2753,19 @@ object CapnpSchema {
 
         val STRUCT_SIZE: StructSize = new StructSize(2.toShort, 1.toShort)
 
-        final class BuilderImpl private[schema](segment: SegmentBuilder, data: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, data, pointers, dataSize, pointerCount) {
+        final class BuilderImpl private[compiler](segment: SegmentBuilder, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, dataOffset, pointers, dataSize, pointerCount) {
 
-          def getParameterIndex: Short = {
+          def parameterindex: Short = {
             _getShortField(1)
           }
 
-          def setParameterIndex(value: Short) {
+          def parameterindex_=(value: Short) {
             _setShortField(1, value)
           }
         }
 
-        final class ReaderImpl private[schema](segment: SegmentReader, data: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, data, pointers, dataSize, pointerCount, nestingLimit) {
-          def getParameterIndex: Short = {
+        final class ReaderImpl private[compiler](segment: SegmentReader, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit) {
+          def parameterindex: Short = {
             _getShortField(1)
           }
         }
@@ -2789,17 +2789,17 @@ object CapnpSchema {
 
     val STRUCT_SIZE: StructSize = new StructSize(0.toShort, 1.toShort)
 
-    final class BuilderImpl private[schema](segment: SegmentBuilder, data: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, data, pointers, dataSize, pointerCount) {
+    final class BuilderImpl private[compiler](segment: SegmentBuilder, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, dataOffset, pointers, dataSize, pointerCount) {
 
       def hasScopes: Boolean = {
         !_pointerFieldIsNull(0)
       }
 
-      def getScopes: CapnpSchema.Brand.Scope.List.Builder = {
+      def scopes: CapnpSchema.Brand.Scope.List.Builder = {
         _getPointerField(CapnpSchema.Brand.Scope.List, 0, null, 0)
       }
 
-      def setScopes(value: CapnpSchema.Brand.Scope.List.Reader) {
+      def scopes_=(value: CapnpSchema.Brand.Scope.List.Reader) {
         _setPointerField(CapnpSchema.Brand.Scope.List)(0, value)
       }
 
@@ -2808,12 +2808,12 @@ object CapnpSchema {
       }
     }
 
-    final class ReaderImpl private[schema](segment: SegmentReader, data: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, data, pointers, dataSize, pointerCount, nestingLimit) {
+    final class ReaderImpl private[compiler](segment: SegmentReader, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit) {
       def hasScopes: Boolean = {
         !_pointerFieldIsNull(0)
       }
 
-      def getScopes: CapnpSchema.Brand.Scope.List.Reader = {
+      def scopes: CapnpSchema.Brand.Scope.List.Reader = {
         _getPointerField(CapnpSchema.Brand.Scope.List, 0, null, 0)
       }
     }
@@ -2831,7 +2831,7 @@ object CapnpSchema {
 
       val STRUCT_SIZE: StructSize = new StructSize(2.toShort, 1.toShort)
 
-      final class BuilderImpl private[schema](segment: SegmentBuilder, data: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, data, pointers, dataSize, pointerCount) {
+      final class BuilderImpl private[compiler](segment: SegmentBuilder, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, dataOffset, pointers, dataSize, pointerCount) {
         def which: CapnpSchema.Brand.Scope.Which.Which = {
           _getShortField(4) match {
             case 0 =>
@@ -2843,11 +2843,11 @@ object CapnpSchema {
           }
         }
 
-        def getScopeId: Long = {
+        def scopeid: Long = {
           _getLongField(0)
         }
 
-        def setScopeId(value: Long) {
+        def scopeid_=(value: Long) {
           _setLongField(0, value)
         }
 
@@ -2859,11 +2859,11 @@ object CapnpSchema {
           !_pointerFieldIsNull(0)
         }
 
-        def getBind: CapnpSchema.Brand.Binding.List.Builder = {
+        def bind: CapnpSchema.Brand.Binding.List.Builder = {
           _getPointerField(CapnpSchema.Brand.Binding.List, 0, null, 0)
         }
 
-        def setBind(value: CapnpSchema.Brand.Binding.List.Reader) {
+        def bind_=(value: CapnpSchema.Brand.Binding.List.Reader) {
           _setPointerField(CapnpSchema.Brand.Binding.List)(0, value)
         }
 
@@ -2875,17 +2875,17 @@ object CapnpSchema {
           which == Brand.Scope.Which.INHERIT
         }
 
-        def getInherit: Void = {
+        def inherit: Void = {
           assert(which == Brand.Scope.Which.INHERIT, "Must check which() before get()ing a union member.")
           org.capnproto.Void.VOID
         }
 
-        def setInherit(value: Void) {
+        def inherit_=(value: Void) {
           _setShortField(4, Brand.Scope.Which.INHERIT.id.toShort)
         }
       }
 
-      final class ReaderImpl private[schema](segment: SegmentReader, data: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, data, pointers, dataSize, pointerCount, nestingLimit) {
+      final class ReaderImpl private[compiler](segment: SegmentReader, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit) {
         def which: CapnpSchema.Brand.Scope.Which.Which = {
           _getShortField(4) match {
             case 0 =>
@@ -2897,7 +2897,7 @@ object CapnpSchema {
           }
         }
 
-        def getScopeId: Long = {
+        def scopeid: Long = {
           _getLongField(0)
         }
 
@@ -2909,7 +2909,7 @@ object CapnpSchema {
           !_pointerFieldIsNull(0)
         }
 
-        def getBind: CapnpSchema.Brand.Binding.List.Reader = {
+        def bind: CapnpSchema.Brand.Binding.List.Reader = {
           _getPointerField(CapnpSchema.Brand.Binding.List, 0, null, 0)
         }
 
@@ -2917,7 +2917,7 @@ object CapnpSchema {
           which == Brand.Scope.Which.INHERIT
         }
 
-        def getInherit: Void = {
+        def inherit: Void = {
           assert(which == Brand.Scope.Which.INHERIT, "Must check which() before get()ing a union member.")
           org.capnproto.Void.VOID
         }
@@ -2943,7 +2943,7 @@ object CapnpSchema {
 
       val STRUCT_SIZE: StructSize = new StructSize(1.toShort, 1.toShort)
 
-      final class BuilderImpl private[schema](segment: SegmentBuilder, data: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, data, pointers, dataSize, pointerCount) {
+      final class BuilderImpl private[compiler](segment: SegmentBuilder, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, dataOffset, pointers, dataSize, pointerCount) {
         def which: CapnpSchema.Brand.Binding.Which.Which = {
           _getShortField(0) match {
             case 0 =>
@@ -2959,12 +2959,12 @@ object CapnpSchema {
           which == Brand.Binding.Which.UNBOUND
         }
 
-        def getUnbound: Void = {
+        def unbound: Void = {
           assert(which == Brand.Binding.Which.UNBOUND, "Must check which() before get()ing a union member.")
           org.capnproto.Void.VOID
         }
 
-        def setUnbound(value: Void) {
+        def unbound_=(value: Void) {
           _setShortField(0, Brand.Binding.Which.UNBOUND.id.toShort)
         }
 
@@ -2972,12 +2972,12 @@ object CapnpSchema {
           which == Brand.Binding.Which.TYPE
         }
 
-        def getType: CapnpSchema.Type.Builder = {
+        def capnpType: CapnpSchema.Type.Builder = {
           assert(which == Brand.Binding.Which.TYPE, "Must check which() before get()ing a union member.")
           _getPointerField(CapnpSchema.Type, 0, null, 0)
         }
 
-        def setType(value: CapnpSchema.Type.Reader) {
+        def capnpType_=(value: CapnpSchema.Type.Reader) {
           _setShortField(0, Brand.Binding.Which.TYPE.id.toShort)
           _setPointerField(CapnpSchema.Type)(0, value)
         }
@@ -2988,7 +2988,7 @@ object CapnpSchema {
         }
       }
 
-      final class ReaderImpl private[schema](segment: SegmentReader, data: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, data, pointers, dataSize, pointerCount, nestingLimit) {
+      final class ReaderImpl private[compiler](segment: SegmentReader, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit) {
         def which: CapnpSchema.Brand.Binding.Which.Which = {
           _getShortField(0) match {
             case 0 =>
@@ -3004,7 +3004,7 @@ object CapnpSchema {
           which == Brand.Binding.Which.UNBOUND
         }
 
-        def getUnbound: Void = {
+        def unbound: Void = {
           assert(which == Brand.Binding.Which.UNBOUND, "Must check which() before get()ing a union member.")
           org.capnproto.Void.VOID
         }
@@ -3017,7 +3017,7 @@ object CapnpSchema {
           !_pointerFieldIsNull(0)
         }
 
-        def getType: CapnpSchema.Type.Reader = {
+        def capnpType: CapnpSchema.Type.Reader = {
           assert(which == Brand.Binding.Which.TYPE, "Must check which() before get()ing a union member.")
           _getPointerField(CapnpSchema.Type, 0, null, 0)
         }
@@ -3045,7 +3045,7 @@ object CapnpSchema {
 
     val STRUCT_SIZE: StructSize = new StructSize(2.toShort, 1.toShort)
 
-    final class BuilderImpl private[schema](segment: SegmentBuilder, data: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, data, pointers, dataSize, pointerCount) {
+    final class BuilderImpl private[compiler](segment: SegmentBuilder, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, dataOffset, pointers, dataSize, pointerCount) {
       def which: CapnpSchema.Value.Which.Which = {
         _getShortField(0) match {
           case 0 =>
@@ -3095,12 +3095,12 @@ object CapnpSchema {
         which == Value.Which.VOID
       }
 
-      def getVoid: Void = {
+      def void: Void = {
         assert(which == Value.Which.VOID, "Must check which() before get()ing a union member.")
         org.capnproto.Void.VOID
       }
 
-      def setVoid(value: Void) {
+      def void_=(value: Void) {
         _setShortField(0, Value.Which.VOID.id.toShort)
       }
 
@@ -3108,12 +3108,12 @@ object CapnpSchema {
         which == Value.Which.BOOL
       }
 
-      def getBool: Boolean = {
+      def bool: Boolean = {
         assert(which == Value.Which.BOOL, "Must check which() before get()ing a union member.")
         _getBooleanField(16)
       }
 
-      def setBool(value: Boolean) {
+      def bool_=(value: Boolean) {
         _setShortField(0, Value.Which.BOOL.id.toShort)
         _setBooleanField(16, value)
       }
@@ -3122,12 +3122,12 @@ object CapnpSchema {
         which == Value.Which.INT8
       }
 
-      def getInt8: Byte = {
+      def int8: Byte = {
         assert(which == Value.Which.INT8, "Must check which() before get()ing a union member.")
         _getByteField(2)
       }
 
-      def setInt8(value: Byte) {
+      def int8_=(value: Byte) {
         _setShortField(0, Value.Which.INT8.id.toShort)
         _setByteField(2, value)
       }
@@ -3136,12 +3136,12 @@ object CapnpSchema {
         which == Value.Which.INT16
       }
 
-      def getInt16: Short = {
+      def int16: Short = {
         assert(which == Value.Which.INT16, "Must check which() before get()ing a union member.")
         _getShortField(1)
       }
 
-      def setInt16(value: Short) {
+      def int16_=(value: Short) {
         _setShortField(0, Value.Which.INT16.id.toShort)
         _setShortField(1, value)
       }
@@ -3150,12 +3150,12 @@ object CapnpSchema {
         which == Value.Which.INT32
       }
 
-      def getInt32: Int = {
+      def int32: Int = {
         assert(which == Value.Which.INT32, "Must check which() before get()ing a union member.")
         _getIntField(1)
       }
 
-      def setInt32(value: Int) {
+      def int32_=(value: Int) {
         _setShortField(0, Value.Which.INT32.id.toShort)
         _setIntField(1, value)
       }
@@ -3164,12 +3164,12 @@ object CapnpSchema {
         which == Value.Which.INT64
       }
 
-      def getInt64: Long = {
+      def int64: Long = {
         assert(which == Value.Which.INT64, "Must check which() before get()ing a union member.")
         _getLongField(1)
       }
 
-      def setInt64(value: Long) {
+      def int64_=(value: Long) {
         _setShortField(0, Value.Which.INT64.id.toShort)
         _setLongField(1, value)
       }
@@ -3178,12 +3178,12 @@ object CapnpSchema {
         which == Value.Which.UINT8
       }
 
-      def getUint8: Byte = {
+      def uint8: Byte = {
         assert(which == Value.Which.UINT8, "Must check which() before get()ing a union member.")
         _getByteField(2)
       }
 
-      def setUint8(value: Byte) {
+      def uint8_=(value: Byte) {
         _setShortField(0, Value.Which.UINT8.id.toShort)
         _setByteField(2, value)
       }
@@ -3192,12 +3192,12 @@ object CapnpSchema {
         which == Value.Which.UINT16
       }
 
-      def getUint16: Short = {
+      def uint16: Short = {
         assert(which == Value.Which.UINT16, "Must check which() before get()ing a union member.")
         _getShortField(1)
       }
 
-      def setUint16(value: Short) {
+      def uint16_=(value: Short) {
         _setShortField(0, Value.Which.UINT16.id.toShort)
         _setShortField(1, value)
       }
@@ -3206,12 +3206,12 @@ object CapnpSchema {
         which == Value.Which.UINT32
       }
 
-      def getUint32: Int = {
+      def uint32: Int = {
         assert(which == Value.Which.UINT32, "Must check which() before get()ing a union member.")
         _getIntField(1)
       }
 
-      def setUint32(value: Int) {
+      def uint32_=(value: Int) {
         _setShortField(0, Value.Which.UINT32.id.toShort)
         _setIntField(1, value)
       }
@@ -3220,12 +3220,12 @@ object CapnpSchema {
         which == Value.Which.UINT64
       }
 
-      def getUint64: Long = {
+      def uint64: Long = {
         assert(which == Value.Which.UINT64, "Must check which() before get()ing a union member.")
         _getLongField(1)
       }
 
-      def setUint64(value: Long) {
+      def uint64_=(value: Long) {
         _setShortField(0, Value.Which.UINT64.id.toShort)
         _setLongField(1, value)
       }
@@ -3234,12 +3234,12 @@ object CapnpSchema {
         which == Value.Which.FLOAT32
       }
 
-      def getFloat32: Float = {
+      def float32: Float = {
         assert(which == Value.Which.FLOAT32, "Must check which() before get()ing a union member.")
         _getFloatField(1)
       }
 
-      def setFloat32(value: Float) {
+      def float32_=(value: Float) {
         _setShortField(0, Value.Which.FLOAT32.id.toShort)
         _setFloatField(1, value)
       }
@@ -3248,12 +3248,12 @@ object CapnpSchema {
         which == Value.Which.FLOAT64
       }
 
-      def getFloat64: Double = {
+      def float64: Double = {
         assert(which == Value.Which.FLOAT64, "Must check which() before get()ing a union member.")
         _getDoubleField(1)
       }
 
-      def setFloat64(value: Double) {
+      def float64_=(value: Double) {
         _setShortField(0, Value.Which.FLOAT64.id.toShort)
         _setDoubleField(1, value)
       }
@@ -3267,16 +3267,16 @@ object CapnpSchema {
         !_pointerFieldIsNull(0)
       }
 
-      def getText: Text.Builder = {
+      def text: Text.Builder = {
         _getPointerField(org.capnproto.Text, 0, null, 0, 0)
       }
 
-      def setText(value: Text.Reader) {
+      def text_=(value: Text.Reader) {
         _setShortField(0, Value.Which.TEXT.id.toShort)
         _setPointerField(org.capnproto.Text)(0, value)
       }
 
-      def setText(value: String) {
+      def text_=(value: String) {
         _setShortField(0, Value.Which.TEXT.id.toShort)
         _setPointerField(org.capnproto.Text)(0, new Text.Reader(value))
       }
@@ -3294,16 +3294,16 @@ object CapnpSchema {
         !_pointerFieldIsNull(0)
       }
 
-      def getData: Data.Builder = {
+      def data: Data.Builder = {
         _getPointerField(org.capnproto.Data, 0, null, 0, 0)
       }
 
-      def setData(value: Data.Reader) {
+      def data_=(value: Data.Reader) {
         _setShortField(0, Value.Which.DATA.id.toShort)
         _setPointerField(org.capnproto.Data)(0, value)
       }
 
-      def setData(value: Array[Byte]) {
+      def data_=(value: Array[Byte]) {
         _setShortField(0, Value.Which.DATA.id.toShort)
         _setPointerField(org.capnproto.Data)(0, new Data.Reader(value))
       }
@@ -3320,7 +3320,7 @@ object CapnpSchema {
         !_pointerFieldIsNull(0)
       }
 
-      def getList: AnyPointer.Builder = {
+      def list: AnyPointer.Builder = {
         assert(which == Value.Which.LIST, "Must check which() before get()ing a union member.")
         _getPointerField(org.capnproto.AnyPointer, 0)
       }
@@ -3339,12 +3339,12 @@ object CapnpSchema {
         which == Value.Which.ENUM
       }
 
-      def getEnum: Short = {
+      def enum: Short = {
         assert(which == Value.Which.ENUM, "Must check which() before get()ing a union member.")
         _getShortField(1)
       }
 
-      def setEnum(value: Short) {
+      def enum_=(value: Short) {
         _setShortField(0, Value.Which.ENUM.id.toShort)
         _setShortField(1, value)
       }
@@ -3357,7 +3357,7 @@ object CapnpSchema {
         !_pointerFieldIsNull(0)
       }
 
-      def getStruct: AnyPointer.Builder = {
+      def struct: AnyPointer.Builder = {
         assert(which == Value.Which.STRUCT, "Must check which() before get()ing a union member.")
         _getPointerField(org.capnproto.AnyPointer, 0)
       }
@@ -3376,12 +3376,12 @@ object CapnpSchema {
         which == Value.Which.INTERFACE
       }
 
-      def getInterface: Void = {
+      def interface: Void = {
         assert(which == Value.Which.INTERFACE, "Must check which() before get()ing a union member.")
         org.capnproto.Void.VOID
       }
 
-      def setInterface(value: Void) {
+      def interface_=(value: Void) {
         _setShortField(0, Value.Which.INTERFACE.id.toShort)
       }
 
@@ -3393,7 +3393,7 @@ object CapnpSchema {
         !_pointerFieldIsNull(0)
       }
 
-      def getAnyPointer: AnyPointer.Builder = {
+      def anypointer: AnyPointer.Builder = {
         assert(which == Value.Which.ANY_POINTER, "Must check which() before get()ing a union member.")
         _getPointerField(org.capnproto.AnyPointer, 0)
       }
@@ -3409,7 +3409,7 @@ object CapnpSchema {
       }
     }
 
-    final class ReaderImpl private[schema](segment: SegmentReader, data: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, data, pointers, dataSize, pointerCount, nestingLimit) {
+    final class ReaderImpl private[compiler](segment: SegmentReader, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit) {
       def which: CapnpSchema.Value.Which.Which = {
         _getShortField(0) match {
           case 0 =>
@@ -3459,7 +3459,7 @@ object CapnpSchema {
         which == Value.Which.VOID
       }
 
-      def getVoid: Void = {
+      def void: Void = {
         assert(which == Value.Which.VOID, "Must check which() before get()ing a union member.")
         org.capnproto.Void.VOID
       }
@@ -3468,7 +3468,7 @@ object CapnpSchema {
         which == Value.Which.BOOL
       }
 
-      def getBool: Boolean = {
+      def bool: Boolean = {
         assert(which == Value.Which.BOOL, "Must check which() before get()ing a union member.")
         _getBooleanField(16)
       }
@@ -3477,7 +3477,7 @@ object CapnpSchema {
         which == Value.Which.INT8
       }
 
-      def getInt8: Byte = {
+      def int8: Byte = {
         assert(which == Value.Which.INT8, "Must check which() before get()ing a union member.")
         _getByteField(2)
       }
@@ -3486,7 +3486,7 @@ object CapnpSchema {
         which == Value.Which.INT16
       }
 
-      def getInt16: Short = {
+      def int16: Short = {
         assert(which == Value.Which.INT16, "Must check which() before get()ing a union member.")
         _getShortField(1)
       }
@@ -3495,7 +3495,7 @@ object CapnpSchema {
         which == Value.Which.INT32
       }
 
-      def getInt32: Int = {
+      def int32: Int = {
         assert(which == Value.Which.INT32, "Must check which() before get()ing a union member.")
         _getIntField(1)
       }
@@ -3504,7 +3504,7 @@ object CapnpSchema {
         which == Value.Which.INT64
       }
 
-      def getInt64: Long = {
+      def int64: Long = {
         assert(which == Value.Which.INT64, "Must check which() before get()ing a union member.")
         _getLongField(1)
       }
@@ -3513,7 +3513,7 @@ object CapnpSchema {
         which == Value.Which.UINT8
       }
 
-      def getUint8: Byte = {
+      def uint8: Byte = {
         assert(which == Value.Which.UINT8, "Must check which() before get()ing a union member.")
         _getByteField(2)
       }
@@ -3522,7 +3522,7 @@ object CapnpSchema {
         which == Value.Which.UINT16
       }
 
-      def getUint16: Short = {
+      def uint16: Short = {
         assert(which == Value.Which.UINT16, "Must check which() before get()ing a union member.")
         _getShortField(1)
       }
@@ -3531,7 +3531,7 @@ object CapnpSchema {
         which == Value.Which.UINT32
       }
 
-      def getUint32: Int = {
+      def uint32: Int = {
         assert(which == Value.Which.UINT32, "Must check which() before get()ing a union member.")
         _getIntField(1)
       }
@@ -3540,7 +3540,7 @@ object CapnpSchema {
         which == Value.Which.UINT64
       }
 
-      def getUint64: Long = {
+      def uint64: Long = {
         assert(which == Value.Which.UINT64, "Must check which() before get()ing a union member.")
         _getLongField(1)
       }
@@ -3549,7 +3549,7 @@ object CapnpSchema {
         which == Value.Which.FLOAT32
       }
 
-      def getFloat32: Float = {
+      def float32: Float = {
         assert(which == Value.Which.FLOAT32, "Must check which() before get()ing a union member.")
         _getFloatField(1)
       }
@@ -3558,7 +3558,7 @@ object CapnpSchema {
         which == Value.Which.FLOAT64
       }
 
-      def getFloat64: Double = {
+      def float64: Double = {
         assert(which == Value.Which.FLOAT64, "Must check which() before get()ing a union member.")
         _getDoubleField(1)
       }
@@ -3572,7 +3572,7 @@ object CapnpSchema {
         !_pointerFieldIsNull(0)
       }
 
-      def getText: Text.Reader = {
+      def text: Text.Reader = {
         _getPointerField(org.capnproto.Text, 0, null, 0, 0)
       }
 
@@ -3585,7 +3585,7 @@ object CapnpSchema {
         !_pointerFieldIsNull(0)
       }
 
-      def getData: Data.Reader = {
+      def data: Data.Reader = {
         _getPointerField(org.capnproto.Data, 0, null, 0, 0)
       }
 
@@ -3598,7 +3598,7 @@ object CapnpSchema {
         !_pointerFieldIsNull(0)
       }
 
-      def getList: AnyPointer.Reader = {
+      def list: AnyPointer.Reader = {
         assert(which == Value.Which.LIST, "Must check which() before get()ing a union member.")
         _getPointerField(org.capnproto.AnyPointer, 0)
       }
@@ -3607,7 +3607,7 @@ object CapnpSchema {
         which == Value.Which.ENUM
       }
 
-      def getEnum: Short = {
+      def enum: Short = {
         assert(which == Value.Which.ENUM, "Must check which() before get()ing a union member.")
         _getShortField(1)
       }
@@ -3621,7 +3621,7 @@ object CapnpSchema {
         !_pointerFieldIsNull(0)
       }
 
-      def getStruct: AnyPointer.Reader = {
+      def struct: AnyPointer.Reader = {
         assert(which == Value.Which.STRUCT, "Must check which() before get()ing a union member.")
         _getPointerField(org.capnproto.AnyPointer, 0)
       }
@@ -3630,7 +3630,7 @@ object CapnpSchema {
         which == Value.Which.INTERFACE
       }
 
-      def getInterface: Void = {
+      def interface: Void = {
         assert(which == Value.Which.INTERFACE, "Must check which() before get()ing a union member.")
         org.capnproto.Void.VOID
       }
@@ -3644,7 +3644,7 @@ object CapnpSchema {
         !_pointerFieldIsNull(0)
       }
 
-      def getAnyPointer: AnyPointer.Reader = {
+      def anypointer: AnyPointer.Reader = {
         assert(which == Value.Which.ANY_POINTER, "Must check which() before get()ing a union member.")
         _getPointerField(org.capnproto.AnyPointer, 0)
       }
@@ -3670,21 +3670,21 @@ object CapnpSchema {
 
     val STRUCT_SIZE: StructSize = new StructSize(1.toShort, 2.toShort)
 
-    final class BuilderImpl private[schema](segment: SegmentBuilder, data: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, data, pointers, dataSize, pointerCount) {
+    final class BuilderImpl private[compiler](segment: SegmentBuilder, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, dataOffset, pointers, dataSize, pointerCount) {
 
-      def getId: Long = {
+      def id: Long = {
         _getLongField(0)
       }
 
-      def setId(value: Long) {
+      def id_=(value: Long) {
         _setLongField(0, value)
       }
 
-      def getValue: CapnpSchema.Value.Builder = {
+      def value: CapnpSchema.Value.Builder = {
         _getPointerField(CapnpSchema.Value, 0, null, 0)
       }
 
-      def setValue(value: CapnpSchema.Value.Reader) {
+      def value_=(value: CapnpSchema.Value.Reader) {
         _setPointerField(CapnpSchema.Value)(0, value)
       }
 
@@ -3692,11 +3692,11 @@ object CapnpSchema {
         _initPointerField(CapnpSchema.Value, 0, 0)
       }
 
-      def getBrand: CapnpSchema.Brand.Builder = {
+      def brand: CapnpSchema.Brand.Builder = {
         _getPointerField(CapnpSchema.Brand, 1, null, 0)
       }
 
-      def setBrand(value: CapnpSchema.Brand.Reader) {
+      def brand_=(value: CapnpSchema.Brand.Reader) {
         _setPointerField(CapnpSchema.Brand)(1, value)
       }
 
@@ -3705,8 +3705,8 @@ object CapnpSchema {
       }
     }
 
-    final class ReaderImpl private[schema](segment: SegmentReader, data: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, data, pointers, dataSize, pointerCount, nestingLimit) {
-      def getId: Long = {
+    final class ReaderImpl private[compiler](segment: SegmentReader, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit) {
+      def id: Long = {
         _getLongField(0)
       }
 
@@ -3714,7 +3714,7 @@ object CapnpSchema {
         !_pointerFieldIsNull(0)
       }
 
-      def getValue: CapnpSchema.Value.Reader = {
+      def value: CapnpSchema.Value.Reader = {
         _getPointerField(CapnpSchema.Value, 0, null, 0)
       }
 
@@ -3722,7 +3722,7 @@ object CapnpSchema {
         !_pointerFieldIsNull(1)
       }
 
-      def getBrand: CapnpSchema.Brand.Reader = {
+      def brand: CapnpSchema.Brand.Reader = {
         _getPointerField(CapnpSchema.Brand, 1, null, 0)
       }
     }
@@ -3747,17 +3747,17 @@ object CapnpSchema {
 
     val STRUCT_SIZE: StructSize = new StructSize(0.toShort, 2.toShort)
 
-    final class BuilderImpl private[schema](segment: SegmentBuilder, data: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, data, pointers, dataSize, pointerCount) {
+    final class BuilderImpl private[compiler](segment: SegmentBuilder, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, dataOffset, pointers, dataSize, pointerCount) {
 
       def hasNodes: Boolean = {
         !_pointerFieldIsNull(0)
       }
 
-      def getNodes: CapnpSchema.Node.List.Builder = {
+      def nodes: CapnpSchema.Node.List.Builder = {
         _getPointerField(CapnpSchema.Node.List, 0, null, 0)
       }
 
-      def setNodes(value: CapnpSchema.Node.List.Reader) {
+      def nodes_=(value: CapnpSchema.Node.List.Reader) {
         _setPointerField(CapnpSchema.Node.List)(0, value)
       }
 
@@ -3769,11 +3769,11 @@ object CapnpSchema {
         !_pointerFieldIsNull(1)
       }
 
-      def getRequestedFiles: CapnpSchema.CodeGeneratorRequest.RequestedFile.List.Builder = {
+      def requestedfiles: CapnpSchema.CodeGeneratorRequest.RequestedFile.List.Builder = {
         _getPointerField(CapnpSchema.CodeGeneratorRequest.RequestedFile.List, 1, null, 0)
       }
 
-      def setRequestedFiles(value: CapnpSchema.CodeGeneratorRequest.RequestedFile.List.Reader) {
+      def requestedfiles_=(value: CapnpSchema.CodeGeneratorRequest.RequestedFile.List.Reader) {
         _setPointerField(CapnpSchema.CodeGeneratorRequest.RequestedFile.List)(1, value)
       }
 
@@ -3782,12 +3782,12 @@ object CapnpSchema {
       }
     }
 
-    final class ReaderImpl private[schema](segment: SegmentReader, data: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, data, pointers, dataSize, pointerCount, nestingLimit) {
+    final class ReaderImpl private[compiler](segment: SegmentReader, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit) {
       def hasNodes: Boolean = {
         !_pointerFieldIsNull(0)
       }
 
-      def getNodes: CapnpSchema.Node.List.Reader = {
+      def nodes: CapnpSchema.Node.List.Reader = {
         _getPointerField(CapnpSchema.Node.List, 0, null, 0)
       }
 
@@ -3795,7 +3795,7 @@ object CapnpSchema {
         !_pointerFieldIsNull(1)
       }
 
-      def getRequestedFiles: CapnpSchema.CodeGeneratorRequest.RequestedFile.List.Reader = {
+      def requestedfiles: CapnpSchema.CodeGeneratorRequest.RequestedFile.List.Reader = {
         _getPointerField(CapnpSchema.CodeGeneratorRequest.RequestedFile.List, 1, null, 0)
       }
     }
@@ -3813,13 +3813,13 @@ object CapnpSchema {
 
       val STRUCT_SIZE: StructSize = new StructSize(1.toShort, 2.toShort)
 
-      final class BuilderImpl private[schema](segment: SegmentBuilder, data: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, data, pointers, dataSize, pointerCount) {
+      final class BuilderImpl private[compiler](segment: SegmentBuilder, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, dataOffset, pointers, dataSize, pointerCount) {
 
-        def getId: Long = {
+        def id: Long = {
           _getLongField(0)
         }
 
-        def setId(value: Long) {
+        def id_=(value: Long) {
           _setLongField(0, value)
         }
 
@@ -3827,15 +3827,15 @@ object CapnpSchema {
           !_pointerFieldIsNull(0)
         }
 
-        def getFilename: Text.Builder = {
+        def filename: Text.Builder = {
           _getPointerField(org.capnproto.Text, 0, null, 0, 0)
         }
 
-        def setFilename(value: Text.Reader) {
+        def filename_=(value: Text.Reader) {
           _setPointerField(org.capnproto.Text)(0, value)
         }
 
-        def setFilename(value: String) {
+        def filename_=(value: String) {
           _setPointerField(org.capnproto.Text)(0, new Text.Reader(value))
         }
 
@@ -3847,11 +3847,11 @@ object CapnpSchema {
           !_pointerFieldIsNull(1)
         }
 
-        def getImports: CapnpSchema.CodeGeneratorRequest.RequestedFile.Import.List.Builder = {
+        def imports: CapnpSchema.CodeGeneratorRequest.RequestedFile.Import.List.Builder = {
           _getPointerField(CapnpSchema.CodeGeneratorRequest.RequestedFile.Import.List, 1, null, 0)
         }
 
-        def setImports(value: CapnpSchema.CodeGeneratorRequest.RequestedFile.Import.List.Reader) {
+        def imports_=(value: CapnpSchema.CodeGeneratorRequest.RequestedFile.Import.List.Reader) {
           _setPointerField(CapnpSchema.CodeGeneratorRequest.RequestedFile.Import.List)(1, value)
         }
 
@@ -3860,8 +3860,8 @@ object CapnpSchema {
         }
       }
 
-      final class ReaderImpl private[schema](segment: SegmentReader, data: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, data, pointers, dataSize, pointerCount, nestingLimit) {
-        def getId: Long = {
+      final class ReaderImpl private[compiler](segment: SegmentReader, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit) {
+        def id: Long = {
           _getLongField(0)
         }
 
@@ -3869,7 +3869,7 @@ object CapnpSchema {
           !_pointerFieldIsNull(0)
         }
 
-        def getFilename: Text.Reader = {
+        def filename: Text.Reader = {
           _getPointerField(org.capnproto.Text, 0, null, 0, 0)
         }
 
@@ -3877,7 +3877,7 @@ object CapnpSchema {
           !_pointerFieldIsNull(1)
         }
 
-        def getImports: CapnpSchema.CodeGeneratorRequest.RequestedFile.Import.List.Reader = {
+        def imports: CapnpSchema.CodeGeneratorRequest.RequestedFile.Import.List.Reader = {
           _getPointerField(CapnpSchema.CodeGeneratorRequest.RequestedFile.Import.List, 1, null, 0)
         }
       }
@@ -3895,13 +3895,13 @@ object CapnpSchema {
 
         val STRUCT_SIZE: StructSize = new StructSize(1.toShort, 1.toShort)
 
-        final class BuilderImpl private[schema](segment: SegmentBuilder, data: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, data, pointers, dataSize, pointerCount) {
+        final class BuilderImpl private[compiler](segment: SegmentBuilder, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, dataOffset, pointers, dataSize, pointerCount) {
 
-          def getId: Long = {
+          def id: Long = {
             _getLongField(0)
           }
 
-          def setId(value: Long) {
+          def id_=(value: Long) {
             _setLongField(0, value)
           }
 
@@ -3909,15 +3909,15 @@ object CapnpSchema {
             !_pointerFieldIsNull(0)
           }
 
-          def getName: Text.Builder = {
+          def name: Text.Builder = {
             _getPointerField(org.capnproto.Text, 0, null, 0, 0)
           }
 
-          def setName(value: Text.Reader) {
+          def name_=(value: Text.Reader) {
             _setPointerField(org.capnproto.Text)(0, value)
           }
 
-          def setName(value: String) {
+          def name_=(value: String) {
             _setPointerField(org.capnproto.Text)(0, new Text.Reader(value))
           }
 
@@ -3926,8 +3926,8 @@ object CapnpSchema {
           }
         }
 
-        final class ReaderImpl private[schema](segment: SegmentReader, data: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, data, pointers, dataSize, pointerCount, nestingLimit) {
-          def getId: Long = {
+        final class ReaderImpl private[compiler](segment: SegmentReader, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit) {
+          def id: Long = {
             _getLongField(0)
           }
 
@@ -3935,7 +3935,7 @@ object CapnpSchema {
             !_pointerFieldIsNull(0)
           }
 
-          def getName: Text.Reader = {
+          def name: Text.Reader = {
             _getPointerField(org.capnproto.Text, 0, null, 0, 0)
           }
         }

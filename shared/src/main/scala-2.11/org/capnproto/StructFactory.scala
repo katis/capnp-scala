@@ -11,7 +11,7 @@ trait Struct
   struct =>
 
   type Builder <: BuilderBase
-  type Reader <: BuilderBase
+  type Reader <: ReaderBase
 
   object List extends List[struct.Builder, struct.Reader](ElementSize.INLINE_COMPOSITE) {
     override type Builder = BuilderImpl
@@ -118,36 +118,12 @@ trait Struct
   }
 
   def setPointerBuilder(segment: SegmentBuilder, pointer: Int, value: Reader) {
-    WireHelpers.setStructPointer(segment, pointer, value)
+    WireHelpers.setStructPointer(segment, pointer, value.asInstanceOf[StructReader])
   }
 
   def asReader(builder: BuilderBase): Reader = builder.asReader
 }
 
-object Date extends Struct {
-  type Builder = BuilderImpl
-  type Reader = ReaderImpl
-
-  val Builder = new BuilderImpl(_, _, _, _, _)
-  val Reader = new ReaderImpl(_, _, _, _, _, _)
-  val structSize = new StructSize(2, 2)
-
-  class BuilderImpl(segment: SegmentBuilder,
-                    data: Int,
-                    pointers: Int,
-                    dataSize: Int,
-                    pointerCount: Short) extends super.BuilderBase(segment, data, pointers, dataSize, pointerCount) {
-  }
-
-  class ReaderImpl(segment: SegmentReader,
-                   data: Int,
-                   pointers: Int,
-                   dataSize: Int,
-                   pointerCount: Short,
-                   nestingLimit: Int) extends super.ReaderBase(segment, data, pointers, dataSize, pointerCount, nestingLimit) {
-
-  }
-}
 
 /*
 trait StructFactory[Builder, Reader <: StructReader]

@@ -26,13 +26,13 @@ class MessageBuilder(val arena: BuilderArena = new BuilderArena(BuilderArena.SUG
     }
   }
 
-  def getRoot[T](factory: FromPointerBuilder[T]): T = this.getRootInternal.getAs(factory)
+  def getRoot(factory: FromPointerBuilderTF): factory.Builder = this.getRootInternal.getAs(factory).asInstanceOf
 
-  def setRoot[T, U](factory: SetPointerBuilder[T, U], reader: U) {
-    this.getRootInternal.setAs(factory, reader)
+  def setRoot(factory: SetPointerBuilderTF)(reader: factory.Reader) {
+    this.getRootInternal.setAs(factory)(reader)
   }
 
-  def initRoot[T](factory: FromPointerBuilder[T]): T = this.getRootInternal.initAs(factory)
+  def initRoot(factory: FromPointerBuilderTF): factory.Builder = this.getRootInternal.initAs(factory).asInstanceOf
 
   def getSegmentsForOutput(): Array[java.nio.ByteBuffer] = this.arena.getSegmentsForOutput
 }
