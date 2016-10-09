@@ -2,7 +2,7 @@ package org.capnproto.compiler
 
 import java.nio.channels.Channels
 
-import org.capnproto.Serialize
+import org.capnproto.runtime.Serialize
 import org.capnproto.compiler.CapnpSchema.CodeGeneratorRequest
 
 object Compiler {

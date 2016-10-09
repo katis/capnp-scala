@@ -1,7 +1,7 @@
 package org.capnproto.javascript
 
 import scala.scalajs.js.typedarray._
-import org.capnproto.{MessageReader, Serialize}
+import org.capnproto.runtime.{MessageReader, Serialize}
 import org.scalajs.dom.{Event, MessageEvent}
 import org.scalajs.dom.raw.WebSocket
 
