@@ -12,6 +12,8 @@ object Compiler {
 
     val request = messageReader.getRoot(CodeGeneratorRequest)
 
-
+    for (node <- request.nodes) {
+      println(s"Node: ${node.displayname.toString}")
+    }
   }
 }

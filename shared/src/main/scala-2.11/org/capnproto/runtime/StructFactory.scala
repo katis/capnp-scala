@@ -30,7 +30,11 @@ trait Struct
                       elementCount: Int,
                       step: Int,
                       structDataSize: Int,
-                      structPointerCount: Short) extends BuilderBase(segment, ptr, elementCount, step, structDataSize, structPointerCount) {
+                      structPointerCount: Short)
+        extends BuilderBase(segment, ptr, elementCount, step, structDataSize, structPointerCount)
+          with Iterable[struct.Builder] {
+
+      override def size: Int = super[BuilderBase].size()
 
       def apply(idx: Int): struct.Builder = _getStructElement(struct, idx)
 
@@ -53,7 +57,11 @@ trait Struct
                   step: Int,
                   structDataSize: Int,
                   structPointerCount: Short,
-                  nestingLimit: Int) extends ReaderBase(segment, ptr, elementCount, step, structDataSize, structPointerCount, nestingLimit) {
+                  nestingLimit: Int)
+        extends ReaderBase(segment, ptr, elementCount, step, structDataSize, structPointerCount, nestingLimit)
+        with Iterable[struct.Reader] {
+
+      override def size: Int = super[ReaderBase].size()
 
       def apply(idx: Int): struct.Reader = _getStructElement(struct, idx)
 
