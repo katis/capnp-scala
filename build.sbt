@@ -24,6 +24,6 @@ lazy val capnProto = crossProject.in(file(".")).
   )
 
 lazy val capnProtoJVM = capnProto.jvm
-mainClass in capnProtoJVM := Some("org.capnproto.compiler.package")
+mainClass in capnProtoJVM := Some("org.capnproto.compiler.Compiler")
 lazy val capnProtoJS = capnProto.js
 mainClass in capnProtoJS := Some("org.capnproto.javascript.Main")

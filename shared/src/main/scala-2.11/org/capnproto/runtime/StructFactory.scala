@@ -34,16 +34,23 @@ trait Struct
         extends BuilderBase(segment, ptr, elementCount, step, structDataSize, structPointerCount)
           with Iterable[struct.Builder] {
 
-      override def size: Int = super[BuilderBase].size()
+      builder =>
+
+      override def size: Int = super[BuilderBase].size
 
       def apply(idx: Int): struct.Builder = _getStructElement(struct, idx)
 
       def iterator(): Iterator[struct.Builder] = new Iterator[struct.Builder] {
+        println(s"SIZE IS: ${size}")
         private var idx: Int = 0
 
-        def next(): struct.Builder = _getStructElement(struct, {idx += 1; idx - 1})
+        def next(): struct.Builder = {
+          val i = idx
+          idx += 1
+          _getStructElement(struct, i)
+        }
 
-        def hasNext(): Boolean = idx < size
+        def hasNext(): Boolean = idx < builder.size
 
         def remove() {
           throw new UnsupportedOperationException()
@@ -61,16 +68,22 @@ trait Struct
         extends ReaderBase(segment, ptr, elementCount, step, structDataSize, structPointerCount, nestingLimit)
         with Iterable[struct.Reader] {
 
-      override def size: Int = super[ReaderBase].size()
+      reader =>
+
+      override def size: Int = super[ReaderBase].size
 
       def apply(idx: Int): struct.Reader = _getStructElement(struct, idx)
 
       def iterator(): Iterator[struct.Reader] = new Iterator[struct.Reader] {
         private var idx: Int = 0
 
-        def next(): struct.Reader = _getStructElement(struct, {idx += 1; idx - 1})
+        def next(): struct.Reader = {
+          val i = idx
+          idx += 1
+          _getStructElement(struct, i)
+        }
 
-        def hasNext(): Boolean = idx < size
+        def hasNext(): Boolean = idx < reader.size
 
         def remove() {
           throw new UnsupportedOperationException()
@@ -84,7 +97,6 @@ trait Struct
                              pointers: Int,
                              dataSize: Int,
                              pointerCount: Short) extends StructBuilder(segment, data, pointers, dataSize, pointerCount) {
-
     def asReader: Reader = Reader(segment, data, pointers, dataSize, pointerCount, 0x7fffffff)
   }
 
