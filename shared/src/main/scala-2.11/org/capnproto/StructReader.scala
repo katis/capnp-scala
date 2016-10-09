@@ -24,12 +24,12 @@ object StructReader {
   }
 }
 
-class StructReader(val segment: SegmentReader = SegmentReader.EMPTY,
-                   val dataOffset: Int = 0,
-                   val pointers: Int = 0,
-                   val dataSize: Int = 0,
-                   val pointerCount: Short = 1,
-                   val nestingLimit: Int = 0x80000000) {
+class StructReader(private[capnproto] val segment: SegmentReader = SegmentReader.EMPTY,
+                   private[capnproto] val dataOffset: Int = 0,
+                   private[capnproto] val pointers: Int = 0,
+                   private[capnproto] val dataSize: Int = 0,
+                   private[capnproto] val pointerCount: Short = 1,
+                   private[capnproto] val nestingLimit: Int = 0x80000000) {
 
   protected def _getBooleanField(offset: Int): Boolean = {
     if (offset < this.dataSize) {
