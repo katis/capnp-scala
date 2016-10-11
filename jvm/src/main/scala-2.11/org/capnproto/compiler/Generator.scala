@@ -5,6 +5,26 @@ import org.capnproto.runtime.{MessageReader, Text}
 
 import scala.collection.mutable
 
+sealed trait Leaf {
+  import Leaf._
+
+  override def toString: String = this match {
+    case Reader => "Reader"
+    case Builder => "Builder"
+    case Owned => "Owned"
+    case Client => "Client"
+    case Pipeline => "Pipeline"
+  }
+}
+
+object Leaf {
+  object Reader extends Leaf
+  object Builder extends Leaf
+  object Owned extends Leaf
+  object Client extends Leaf
+  object Pipeline extends Leaf
+}
+
 class Generator(message: MessageReader) {
   private val request = message.getRoot(CodeGeneratorRequest)
   private val nodeMap = mutable.HashMap[Long, Node.Reader]()
@@ -213,5 +233,130 @@ class Generator(message: MessageReader) {
   def moduleName(name: Text.Reader): String = {
     val nameStr = name.toString
     if (keywords.contains(nameStr)) nameStr+"_" else nameStr
+  }
+
+  def doBranding(nodeId: Long, brand: Brand.Reader, leaf: Leaf, module: String, _parentScopeId: Option[Long]): String = {
+    var parentScopeId = _parentScopeId
+
+    val scopes = brand.scopes
+    val brandScopes = mutable.HashMap[Long, Brand.Scope.Reader](scopes.map(s => (s.scopeid, s)).toSeq:_*)
+    var currentNodeId = nodeId
+    val accumulator = mutable.ArrayBuffer[Seq[String]]()
+
+    while (true) {
+      nodeMap.get(currentNodeId) match {
+        case None =>
+        case Some(currentNode) =>
+          val params = currentNode.parameters
+          val arguments = mutable.ArrayBuffer[String]()
+          brandScopes.get(currentNodeId) match {
+            case None =>
+              for (_ <- params) {
+                arguments += "::capnp::any_pointer::Owned"
+              }
+            case Some(scope) =>
+              scope.which match {
+                case Brand.Scope.Which.INHERIT =>
+                  arguments ++= params.map(_.name.toString)
+                case Brand.Scope.Which.BIND =>
+                  val bindingsList = scope.bind
+                  assert(bindingsList.size == params.size)
+                  arguments ++= bindingsList.map {
+                    case v if v.which == Brand.Binding.Which.UNBOUND =>
+                      "::capnp::any_pointer::Owned"
+                    case t if t.which == Brand.Binding.Which.TYPE =>
+                      typeString(t.capnpType, Leaf.Owned)
+                  }
+              }
+          }
+
+          accumulator += arguments
+          currentNodeId = currentNode.scopeid
+          (currentNodeId, parentScopeId) match {
+            case (0, Some(id)) => currentNodeId = id
+            case _ =>
+          }
+
+          parentScopeId = None
+      }
+    }
+
+    val arguments = if (accumulator.isEmpty) {
+      ""
+    } else {
+      val argStr = accumulator.reverse.mkString(", ")
+      s"[$argStr]"
+    }
+
+    s"$module.${leaf.toString}$arguments"
+  }
+
+  def typeString(typ: CapnpSchema.Type.Reader, module: Leaf): String = {
+    import Type.Which._
+    typ.which match {
+      case VOID => "org.capnproto.runtime.Void"
+      case BOOL => "Boolean"
+      case INT8 => "Byte"
+      case INT16 => "Short"
+      case INT32 => "Int"
+      case INT64 => "Long"
+      case UINT8 => "Byte"
+      case UINT16 => "Short"
+      case UINT32 => "Int"
+      case UINT64 => "Long"
+      case FLOAT32 => "Float"
+      case FLOAT64 => "Double"
+      case TEXT => s"org.capnproto.runtime.Text.$module"
+      case DATA => s"org.capnproto.runtime.Data.$module"
+      case STRUCT =>
+        val st = typ.struct
+        doBranding(st.capnpTypeid, st.brand, module, scopeMap(st.capnpTypeid).mkString("."), None)
+      case INTERFACE =>
+        val interface = typ.interface
+        doBranding(interface.capnpTypeid, interface.brand, module, scopeMap(interface.capnpTypeid).mkString("."), None)
+      case LIST =>
+        val ot1 = typ.list
+        val elType = ot1.elementtype
+        elType.which match {
+          case STRUCT =>
+            s"$module.List"
+          case ENUM =>
+            ???
+          case LIST =>
+            ???
+          case TEXT => s"org.capnproto.runtime.Text.$module"
+          case DATA => s"org.capnproto.runtime.Data.$module"
+          case INTERFACE => ???
+          case ANY_POINTER => ???
+          case _ =>
+            s"org.capnproto.runtime.PrimitiveList.$module"
+        }
+      case ENUM =>
+        val enum = typ.enum
+        val scope = scopeMap(enum.capnpTypeid)
+        scope.mkString(".")
+      case ANY_POINTER =>
+        import Type.AnyPointer.Which._
+        val pointer = typ.anypointer
+        pointer.which match {
+          case PARAMETER =>
+            val definition = pointer.parameter
+            val theStruct = nodeMap(definition.scopeid)
+            val parameters = theStruct.parameters
+            val parameter = parameters(definition.parameterindex)
+            val parameterName = parameter.name
+            module match {
+              case Leaf.Owned => parameterName.toString
+              case Leaf.Reader => s"$parameterName.Reader"
+              case Leaf.Builder => s"$parameterName.Builder"
+              case _ => ???
+            }
+          case _ =>
+            module match {
+              case Leaf.Reader => "org.capnproto.runtime.AnyPointer.Reader"
+              case Leaf.Builder => "org.capnproto.runtime.AnyPointer.Builder"
+            }
+        }
+    }
   }
 }

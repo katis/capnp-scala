@@ -71,5 +71,4 @@ package object compiler {
       }
     }
   }
-
 }
