@@ -3,14 +3,15 @@ package org.capnproto.compiler
 import java.nio.channels.Channels
 
 import org.capnproto.runtime.Serialize
-import org.capnproto.compiler.CapnpSchema.CodeGeneratorRequest
+
+import scala.compat.Platform
 
 sealed trait FormattedText {
   def lines(indent: Int = 0): Seq[String]
 
   def stringify() =
     lines()
-      .foldLeft(new StringBuilder)((a, b) => a.append(b))
+      .foldLeft(new StringBuilder)((a, b) => a.append(b).append(Platform.EOL))
       .toString()
 }
 
@@ -37,13 +38,12 @@ object Compiler {
     val chan = Channels.newChannel(System.in)
     val messageReader = Serialize.read(chan)
 
-    val request = messageReader.getRoot(CodeGeneratorRequest)
+    val generator = new Generator(messageReader)
 
-    for (node <- request.nodes) {
-      node match {
-        case n if n.isStruct => procStruct(n.displayname.toString, n.struct)
-        case n => println(s"Node(${n.which}): '${n.displayname}'")
-      }
+    for (requestedFile <- generator.request.requestedfiles) {
+      val id = requestedFile.id
+      val lines = generator.generateNode(id, "rootName")
+      println(lines.stringify())
     }
   }
 

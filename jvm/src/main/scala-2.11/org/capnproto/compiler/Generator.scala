@@ -26,7 +26,7 @@ object Leaf {
 }
 
 class Generator(message: MessageReader) {
-  private val request = message.getRoot(CodeGeneratorRequest)
+  val request = message.getRoot(CodeGeneratorRequest)
   private val nodeMap = mutable.HashMap[Long, Node.Reader]()
   private val scopeMap = mutable.HashMap[Long, Seq[String]]()
 
@@ -39,19 +39,27 @@ class Generator(message: MessageReader) {
     val imports = requestedFile.imports
     for (imp <- imports) {
       val importPath = imp.name
-      val rootName = s"PLACEHOLDER" // TODO: how does this work
-
+      val rootName = s"""${importPath.toString.replace("-", "_")}""" // TODO: how does this work
+      populateScope(Seq(rootName), imp.id)
     }
+
+    val rootName = requestedFile.filename
+    val rootModule = rootName.toString.replace("-", "_")
+    populateScope(Seq(rootModule), id)
   }
 
-  val structTypePreamble = Seq(
+  def structTypePreamble(data: Int, pointers: Int) = Seq(Indent(Branch(
+    Line(s"val STRUCT_SIZE: StructSize = new StructSize($data, $pointers)"),
+    BlankLine,
     Line("override type Reader = ReaderImpl"),
     Line("override type Builder = BuilderImpl"),
     BlankLine,
     Line("override val Builder: (SegmentBuilder, Int, Int, Int, Short) => Builder = new BuilderImpl(_, _, _, _, _)"),
-    Line("override val Reader: (SegmentReader, Int, Int, Int, Short, Int) => Reader = new ReaderImpl(_, _, _, _, _, _)"))
+    Line("override val Reader: (SegmentReader, Int, Int, Int, Short, Int) => Reader = new ReaderImpl(_, _, _, _, _, _)"),
+    BlankLine)
+  ))
 
-  def generateNode(nodeId: Long, nodeName: String, parentNodeId: Long = null): FormattedText = {
+  def generateNode(nodeId: Long, nodeName: String, parentNodeId: Option[Long] = null): FormattedText = {
     val output = mutable.ArrayBuffer[FormattedText]()
     val nestedOutput = mutable.ArrayBuffer[FormattedText]()
 
@@ -64,7 +72,7 @@ class Generator(message: MessageReader) {
 
     import Node.Which._
     nodeReader.which match {
-      case FILE => output += Branch(nestedOutput)
+      case FILE => output += Branch(nestedOutput:_*)
       case STRUCT =>
         val struct = nodeReader.struct
         val params = nodeReader.parametersTexts()
@@ -77,12 +85,18 @@ class Generator(message: MessageReader) {
           output += Line(s"object $nodeName extends org.capnproto.runtime.Struct { ")
         }
 
-        output ++= structTypePreamble
-
         val unionFields = mutable.ArrayBuffer[Field.Reader]()
         val pipelineImplInterior = mutable.ArrayBuffer[FormattedText]()
         val whichEnums = mutable.ArrayBuffer[FormattedText]()
+        val builderMembers = mutable.ArrayBuffer[FormattedText]()
         val readerMembers = mutable.ArrayBuffer[FormattedText]()
+
+        val dataSize = struct.datawordcount
+        val pointerSize = struct.pointercount
+        val discriminantCount = struct.discriminantcount
+        val discriminantOffset = struct.discriminantoffset
+
+        output ++= structTypePreamble(dataSize, pointerSize)
 
         val fields = struct.fields
         for (field <- fields) {
@@ -103,12 +117,49 @@ class Generator(message: MessageReader) {
               Line("}")
             )
 
+            val (tyB, getB) = getterText(field, false)
+            builderMembers += Branch(
+              Line(s"def $styledName: $tyB = {"),
+              Indent(getB),
+              Line("}")
+            )
+          }
+
+          builderMembers += generateSetter(discriminantOffset, styledName, field)
+          readerMembers += Line(s"// has$styledName()")
+          builderMembers += Line(s"// has$styledName()")
+
+          field.which match {
+            case Field.Which.GROUP =>
+              val id = field.group.capnpTypeid
+              val text = generateNode(id, scopeMap(id).last, None)
+              nestedOutput += text
+            case _ =>
+          }
+
+          if (discriminantCount > 0) {
+            // val (whichEnums1, unionGetter, typeDef) = generateUnion(discriminantOffset, unionFields, true, params)
           }
         }
 
+        output += Indent(Branch(
+          Line("class Reader(segment: SegmentReader, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit) {"),
+          Indent(Branch(readerMembers:_*)),
+          Line("}")
+        ))
+        output += Indent(Branch(
+          Line("class Builder(segment: SegmentBuilder, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, dataOffset, pointers, dataSize, pointerCount) {"),
+          Indent(Branch(builderMembers:_*)),
+          Line("}")
+        ))
+        output += Line("}")
     }
 
-    Branch(output)
+    Branch(output:_*)
+  }
+
+  def generatePipelineGetter(field: Field.Reader): FormattedText = {
+    Line("PIPELINED_GETTER")
   }
 
   def getterText(field: Field.Reader, isReader: Boolean): (String, FormattedText) = {
@@ -131,7 +182,7 @@ class Generator(message: MessageReader) {
         val member = moduleString
 
         val rawType = regField.capnpType
-        val typ = typeString(rawType, module)
+        val typ = typeString(rawType, if (isReader) Leaf.Reader else Leaf.Builder)
         val default = regField.defaultvalue.which
         val defaultVal = regField.defaultvalue
 
@@ -143,6 +194,14 @@ class Generator(message: MessageReader) {
           case _ => typ
         }
 
+        def primitiveCase[T](typ: String, offset: Long, default: T, zero: T): FormattedText = {
+          if (default == zero) {
+            Line(s"this._get${typ}Field($offset)")
+          } else {
+            Line(s"this._get${typ}Field($offset, $default)")
+          }
+        }
+
         import Type.{Which => WTyp}
         import Value.{Which => WVal}
         val getterCode = (rawType.which, default) match {
@@ -150,13 +209,204 @@ class Generator(message: MessageReader) {
           case (WTyp.BOOL, WVal.BOOL) =>
             if (defaultVal.bool) Line(s"_getBooleanField($offset, true)")
             else Line(s"_getBooleanField($offset)")
+          case (WTyp.INT8, WVal.INT8) => primitiveCase(typ, offset, defaultVal.int8, 0)
+          case (WTyp.INT16, WVal.INT16) => primitiveCase(typ, offset, defaultVal.int16, 0)
+          case (WTyp.INT32, WVal.INT32) => primitiveCase(typ, offset, defaultVal.int32, 0)
+          case (WTyp.INT64, WVal.INT64) => primitiveCase(typ, offset, defaultVal.int64, 0)
+          case (WTyp.UINT8, WVal.UINT8) => primitiveCase(typ, offset, defaultVal.uint8, 0)
+          case (WTyp.UINT16, WVal.UINT16) => primitiveCase(typ, offset, defaultVal.uint16, 0)
+          case (WTyp.UINT32, WVal.UINT32) => primitiveCase(typ, offset, defaultVal.uint32, 0)
+          case (WTyp.UINT64, WVal.UINT64) => primitiveCase(typ, offset, defaultVal.uint64, 0)
+          case (WTyp.FLOAT32, WVal.FLOAT32) => primitiveCase(typ, offset, defaultVal.float32, 0)
+          case (WTyp.FLOAT64, WVal.FLOAT64) => primitiveCase(typ, offset, defaultVal.float64, 0)
+          case (WTyp.TEXT, WVal.TEXT) => Line(s"_getPointerField(org.capnproto.runtime.Text, $offset)")
+          case (WTyp.DATA, WVal.DATA) => Line(s"_getPointerField(org.capnproto.runtime.Data, $offset)")
+          case (WTyp.LIST, WVal.LIST) => ???
+          case (WTyp.ENUM, WVal.ENUM) => ???
+          case (WTyp.STRUCT, WVal.STRUCT) => Line(s"_getStructElement($typ, $offset)")
+          case (WTyp.INTERFACE, WVal.INTERFACE) => ???
+          case (WTyp.ANY_POINTER, WVal.ANY_POINTER) => Line(s"_getPointerField($typ, $offset)")
+          case _ => throw new Error(s"Default value was of wrong type (expected ${rawType.which}, got $default)")
+        }
+
+        (resultType, getterCode)
+    }
+  }
+
+  def generateSetter(discriminantOffset: Int, styledName: String, field: Field.Reader): FormattedText = {
+    val setterInterior = mutable.ArrayBuffer[FormattedText]()
+    var setterParam = "value"
+    val initterInterior = mutable.ArrayBuffer[FormattedText]()
+    val initterParams = mutable.ArrayBuffer[String]()
+
+    val discriminantValue = field.discriminantvalue
+    if (discriminantValue != Field.NO_DISCRIMINANT) {
+      val doStr = java.lang.Long.toUnsignedString(discriminantOffset.toLong)
+      val dvStr = java.lang.Long.toUnsignedString(discriminantValue.toLong)
+      setterInterior += Line(s"_setShortField($doStr, $dvStr)")
+      initterInterior += Line(s"_setShortField($doStr, $dvStr)")
+    }
+
+    var setterGenericParam = ""
+    var returnResult = false
+    val result = mutable.ArrayBuffer[FormattedText]()
+
+    val (maybeReaderType, maybeBuilderType) = field.which match {
+      case Field.Which.GROUP =>
+        val group = field.group
+        val scope = scopeMap(group.capnpTypeid)
+        val module = scope.mkString(".")
+        initterInterior ++= Seq(
+          zeroFieldsOfGroup(group.capnpTypeid),
+          Line("What's this supposed to be"))
+
+        (None, Some(s"$module.Builder"))
+      case Field.Which.SLOT =>
+        val regField = field.slot
+        val offset = regField.offset
+        val typ = regField.capnpType
+        typ.which match {
+          case Type.Which.VOID =>
+            setterParam = "_value"
+            (Some("()"), None)
+          case Type.Which.BOOL =>
+            primitiveDefault(regField.defaultvalue) match {
+              case None => setterInterior += Line(s"_setBooleanField($offset, value)")
+              case Some(s) => setterInterior += Line(s"_setBooleanField($offset, value, $s)")
+            }
+            (Some("Boolean"), None)
+          case _ if typ.isPrimitive =>
+            val tstr = typeString(typ, Leaf.Reader)
+            primitiveDefault(regField.defaultvalue) match {
+              case None =>
+                setterInterior += Line(s"_set${tstr}Field($offset, value)")
+              case Some(s) =>
+                setterInterior += Line(s"_set${tstr}Field($offset, value, $s)")
+            }
+            (Some(tstr), None)
+          case Type.Which.TEXT =>
+            setterInterior += Line(s"""_setPointerField(org.capnproto.runtime.Text)(0, new org.capnproto.runtime.Text.ReaderImpl(value))""")
+            initterInterior += Line(s"_initPointerField(org.capnproto.runtime.Text, $offset, size)")
+            initterParams += "size: Int"
+            (Some("org.capnproto.runtime.Text.Reader"), Some("org.capnproto.runtime.Text.Builder"))
+          case Type.Which.DATA =>
+            setterInterior += Line(s"""_setPointerField(org.capnproto.runtime.Data)(0, value)""")
+            initterInterior += Line(s"_initPointerField(org.capnproto.runtime.Data, $offset, size)")
+            initterParams += "size: Int"
+            (Some("org.capnproto.runtime.Data.Reader"), Some("org.capnproto.runtime.Data.Builder"))
+          case Type.Which.LIST =>
+            ???
+          case Type.Which.ENUM => ???
+          case Type.Which.STRUCT =>
+            returnResult = true
+            initterInterior += Line(s"_initPointerField(${typeString(typ, Leaf.Builder)}, $offset, 0)")
+            if (typ.isBranded) {
+              setterInterior += Line(s"_setPointerField(${typeString(typ, Leaf.Builder)})($offset, value)")
+              (Some(typeString(typ, Leaf.Reader)), Some(typeString(typ, Leaf.Builder)))
+            } else {
+              setterInterior += Line(s"_setPointerBuilder(${typeString(typ, Leaf.Reader)})($offset, value)")
+              (Some(typeString(regField.capnpType, Leaf.Reader)), Some(typeString(regField.capnpType, Leaf.Builder)))
+            }
+          case Type.Which.INTERFACE => ???
+          case Type.Which.ANY_POINTER => ???
+          case _ => throw new Error("Unrecognized type")
         }
     }
 
+    maybeReaderType match {
+      case Some(readerType) =>
+        val retType = "Unit"
+        result ++= Seq(
+          Line(s"def ${styledName}_=($setterParam: $readerType): $retType = {"),
+          Indent(Branch(setterInterior:_*)),
+          Line(s"}")
+        )
+      case None =>
+    }
+
+    Branch(result:_*)
   }
 
-  def formattedText(): FormattedText = {
+  def primitiveDefault(value: Value.Reader): Option[String] = {
+    import Value.Which._
 
+    value.which match {
+      case BOOL => if (value.bool) Some("true") else None
+      case INT8 =>
+        val v = value.int8
+        if (v == 0) None else Some(v.toString)
+      case INT16 =>
+        val v = value.int16
+        if (v == 0) None else Some(v.toString)
+      case INT32 =>
+        val v = value.int32
+        if (v == 0) None else Some(v.toString)
+      case INT64 =>
+        val v = value.int64
+        if (v == 0) None else Some(v.toString)
+     case UINT8 =>
+        val v = value.uint8
+        if (v == 0) None else Some(v.toString)
+      case UINT16 =>
+        val v = value.uint16
+        if (v == 0) None else Some(v.toString)
+      case UINT32 =>
+        val v = value.uint32
+        if (v == 0) None else Some(v.toString)
+      case UINT64 =>
+        val v = value.uint64
+        if (v == 0) None else Some(v.toString)
+     case FLOAT32 =>
+        val v = value.float32
+        if (v == 0.0) None else Some(v.toString)
+      case FLOAT64 =>
+        val v = value.float64
+        if (v == 0.0) None else Some(v.toString)
+      case _ => throw new Error(s"Expected a primitive value, got ${value.which}")
+    }
+  }
+
+  def zeroFieldsOfGroup(nodeId: Long): FormattedText = {
+    val node = nodeMap(nodeId)
+    node.which match {
+      case Node.Which.STRUCT =>
+        val st = node.struct
+        val result = mutable.ArrayBuffer[FormattedText]()
+        if (st.discriminantcount != 0) {
+          result += Line(s"_setShortField(${st.discriminantoffset}, 0)")
+        }
+        val fields = st.fields
+        for (field <- fields) {
+          field.which match {
+            case Field.Which.GROUP => result += zeroFieldsOfGroup(field.group.capnpTypeid)
+            case Field.Which.SLOT =>
+              val slot = field.slot
+              val typ = slot.capnpType.which
+              typ match {
+                case Type.Which.VOID =>
+                case Type.Which.BOOL =>
+                  val line = Line(s"_setBooleanField(${slot.offset}, false)")
+                  if (result.contains(line)) {
+                    result += line
+                  }
+                case Type.Which.INT8 | Type.Which.INT16 | Type.Which.INT32 | Type.Which.INT64
+                    | Type.Which.UINT8 | Type.Which.UINT16 | Type.Which.UINT32 | Type.Which.UINT64
+                    | Type.Which.FLOAT32 | Type.Which.FLOAT64 =>
+                  val line = Line(s"_set${typ}Field(${typeString(slot.capnpType, Leaf.Builder)}, 0)")
+                  if (!result.contains(line)) result += line
+                case Type.Which.ENUM =>
+                  val line = Line(s"_setShortField(${slot.offset}, 0)")
+                  if (!result.contains(line)) result += line
+                case Type.Which.STRUCT | Type.Which.LIST | Type.Which.TEXT | Type.Which.DATA
+                     | Type.Which.ANY_POINTER | Type.Which.INTERFACE =>
+                  val line = Line(s"_getPointerField(${slot.offset})")
+                  if (!result.contains(line)) result += line
+              }
+          }
+        }
+        Branch(result:_*)
+      case _ => throw new Error("Expected a struct")
+    }
   }
 
   private def populateScope(scopeNames: Seq[String], nodeId: Long): Unit = {
@@ -201,6 +451,7 @@ class Generator(message: MessageReader) {
             case _ =>
           }
         }
+      case _ =>
     }
   }
 

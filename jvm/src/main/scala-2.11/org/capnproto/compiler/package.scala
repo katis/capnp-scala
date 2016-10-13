@@ -48,7 +48,11 @@ package object compiler {
   implicit class TypeInfo(val typ: CapnpSchema.Type.Reader) extends AnyVal {
     def isParameter: Boolean = {
       typ.which match {
-        case CapnpSchema.Type.AnyPointer.Which.PARAMETER => true
+        case CapnpSchema.Type.Which.ANY_POINTER =>
+          typ.anypointer.which match {
+            case CapnpSchema.Type.AnyPointer.Which.PARAMETER => true
+            case _ => false
+          }
         case _ => false
       }
     }
