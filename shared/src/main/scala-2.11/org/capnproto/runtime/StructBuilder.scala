@@ -174,6 +174,33 @@ class StructBuilder(
       defaultSize)
   }
 
+  protected def _getPointerFieldOption(factory: FromPointerBuilderTF, index: Int): Option[factory.Builder] = {
+    val ptr = this.pointers + index
+    if (_pointerFieldIsNull(ptr)) None
+    else Some(factory.fromPointerBuilder(this.segment, this.pointers + index))
+  }
+
+  protected def _getPointerFieldOption(factory: FromPointerBuilderRefDefaultTF,
+      index: Int,
+      defaultSegment: SegmentReader,
+      defaultOffset: Int): Option[factory.Builder] = {
+
+    val ptr = this.pointers + index
+    if (_pointerFieldIsNull(ptr)) None
+    else Some(factory.fromPointerBuilderRefDefault(this.segment, ptr, defaultSegment, defaultOffset))
+  }
+
+  protected def _getPointerFieldOption(factory: FromPointerBuilderBlobDefault,
+      index: Int,
+      defaultBuffer: java.nio.ByteBuffer,
+      defaultOffset: Int,
+      defaultSize: Int): Option[factory.Builder] = {
+    val ptr = this.pointers + index
+    if (_pointerFieldIsNull(ptr)) None
+    else Some(factory.fromPointerBuilderBlobDefault(this.segment, this.pointers + index, defaultBuffer, defaultOffset,
+      defaultSize))
+  }
+
   protected def _initPointerField(factory: FromPointerBuilderTF, index: Int, elementCount: Int): factory.Builder = {
     factory.initFromPointerBuilder(this.segment, this.pointers + index, elementCount)
   }

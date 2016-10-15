@@ -124,6 +124,16 @@ class StructReader(private[runtime] val segment: SegmentReader = SegmentReader.E
       0
   }
 
+  protected def _getPointerFieldOption(factory: FromPointerReaderTF, ptrIndex: Int): Option[factory.Reader] = {
+    if (_pointerFieldIsNull(ptrIndex)) {
+      None
+    } else if (ptrIndex < this.pointerCount) {
+      Some(factory.fromPointerReader(this.segment, this.pointers + ptrIndex, this.nestingLimit))
+    } else {
+      Some(factory.fromPointerReader(SegmentReader.EMPTY, 0, this.nestingLimit))
+    }
+  }
+
   protected def _getPointerField(factory: FromPointerReaderTF, ptrIndex: Int): factory.Reader = {
     if (ptrIndex < this.pointerCount) {
       factory.fromPointerReader(this.segment, this.pointers + ptrIndex, this.nestingLimit)

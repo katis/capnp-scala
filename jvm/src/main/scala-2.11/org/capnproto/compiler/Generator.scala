@@ -75,8 +75,6 @@ class Generator(message: MessageReader) {
       nestedOutput += generateNode(id, scopeMap(id).last)
     }
 
-    println(s"Processing node '${nodeReader.displayname.toString}'")
-
     import Node.Which._
     nodeReader.which match {
       case FILE => output += Branch(nestedOutput:_*)
@@ -116,7 +114,6 @@ class Generator(message: MessageReader) {
           if (isUnionField) {
             unionFields += field
           } else {
-            println("Not union field")
             pipelineImplInterior += generatePipelineGetter(field)
             val (ty, get) = getterText(field, true)
             readerMembers += Branch(
@@ -133,14 +130,10 @@ class Generator(message: MessageReader) {
             )
           }
 
-          println("generating setter")
           builderMembers += generateSetter(discriminantOffset, styledName, field)
-          readerMembers += Line(s"// has$styledName()")
-          builderMembers += Line(s"// has$styledName()")
 
           field.which match {
             case Field.Which.GROUP =>
-              println("is group field")
               val id = field.group.capnpTypeid
               val text = generateNode(id, scopeMap(id).last, None)
               nestedOutput += text
@@ -170,25 +163,33 @@ class Generator(message: MessageReader) {
         val names = scopeMap(nodeId)
         val enumClassName = names.last.capitalize
         output += BlankLine
-        val members, matchBranches = mutable.ArrayBuffer[FormattedText]()
+        val members, enumerantValues = mutable.ArrayBuffer[FormattedText]()
         val enumerants = enumReader.enumerants
-        for (i <- 0 until enumerants.size) {
+
+        val enumerantsSize = enumerants.size
+        for (i <- 0 until enumerantsSize) {
           val enumerant = enumerants(i)
 
           val enumerantName = enumerant.name.toString.capitalize
           members += Line(s"object $enumerantName extends $enumClassName($i)")
-          matchBranches += Line(s"case $i => $enumClassName.$enumerantName")
+
+          if (i < enumerantsSize - 1) {
+            enumerantValues += Line(s"Some($enumClassName.$enumerantName),")
+          } else {
+            enumerantValues += Line(s"Some($enumClassName.$enumerantName)")
+          }
         }
-        matchBranches += Line(s"case n => throw org.capnproto.runtime.NotInSchema.enumMember(n)")
 
         output += Branch(
           Line(s"sealed class $enumClassName(index: Short) extends org.capnproto.runtime.Enum(index)"),
           Line(s"object $enumClassName {"),
           Indent(Branch(
             Branch(
-              Line(s"def apply(value: Short): $enumClassName = value match {"),
-              Indent(Branch(matchBranches:_*)),
-              Line("}")),
+              Line("private val _values = Array("),
+              Indent(Branch(enumerantValues:_*)),
+              Line(")"),
+              Line(s"def apply(value: Short): Option[$enumClassName] = if (value >= 0 && value < _values.length) _values(value) else None")
+            ),
             Branch(members:_*)
           )),
           Line("}")
@@ -215,7 +216,6 @@ class Generator(message: MessageReader) {
           (s"$module.Builder", Line(""))
         }
       case SLOT =>
-        println("is slot")
         val regField = field.slot
         val offset = regField.offset
         val moduleString = if (isReader) "Reader" else "Builder"
@@ -228,14 +228,14 @@ class Generator(message: MessageReader) {
         val defaultVal = regField.defaultvalue
 
         val resultType = rawType.which match {
-          case Type.Which.ENUM =>typ
+          case Type.Which.STRUCT | Type.Which.TEXT | Type.Which.DATA | Type.Which.ENUM =>
+            s"Option[$typ]"
           case Type.Which.ANY_POINTER if rawType.isParameter => typ
           case Type.Which.INTERFACE => ???
           case _ if rawType.isPrimitive => typ
           case _ => typ
         }
 
-        println(s"Result type = ${resultType}")
         def primitiveCase[T](typ: String, offset: Long, default: T, zero: T): FormattedText = {
           if (default == zero) {
             Line(s"this._get${typ}Field($offset)")
@@ -261,17 +261,17 @@ class Generator(message: MessageReader) {
           case (WTyp.UINT64, WVal.UINT64) => primitiveCase(typ, offset, defaultVal.uint64, 0)
           case (WTyp.FLOAT32, WVal.FLOAT32) => primitiveCase(typ, offset, defaultVal.float32, 0)
           case (WTyp.FLOAT64, WVal.FLOAT64) => primitiveCase(typ, offset, defaultVal.float64, 0)
-          case (WTyp.TEXT, WVal.TEXT) => Line(s"_getPointerField(org.capnproto.runtime.Text, $offset)")
-          case (WTyp.DATA, WVal.DATA) => Line(s"_getPointerField(org.capnproto.runtime.Data, $offset)")
+          case (WTyp.TEXT, WVal.TEXT) => Line(s"_getPointerFieldOption(org.capnproto.runtime.Text, $offset)")
+          case (WTyp.DATA, WVal.DATA) => Line(s"_getPointerFieldOption(org.capnproto.runtime.Data, $offset)")
           case (WTyp.LIST, WVal.LIST) => ???
           case (WTyp.ENUM, WVal.ENUM) =>
             val module = typeString(rawType, Leaf.Module)
             Line(s"$module(_getShortField($offset))")
           case (WTyp.STRUCT, WVal.STRUCT) =>
             val module = typeString(rawType, Leaf.Module)
-            Line(s"_getPointerField($module, $offset)")
+            Line(s"_getPointerFieldOption($module, $offset)")
           case (WTyp.INTERFACE, WVal.INTERFACE) => ???
-          case (WTyp.ANY_POINTER, WVal.ANY_POINTER) => Line(s"_getPointerField($typ, $offset)")
+          case (WTyp.ANY_POINTER, WVal.ANY_POINTER) => Line(s"_getPointerFieldOption($typ, $offset)")
           case _ => throw new Error(s"Default value was of wrong type (expected ${rawType.which}, got $default)")
         }
 
