@@ -30,13 +30,11 @@ object DataList extends List[Data.Builder, Data.Reader](ElementSize.POINTER.toBy
       structDataSize: Int, 
       structPointerCount: Short, 
       nestingLimit: Int) extends ReaderBase(segment, ptr, elementCount, step, structDataSize, structPointerCount,
-    nestingLimit) with Iterable[Data.Reader] {
-
-    override def size: Int = super[ReaderBase].size()
+    nestingLimit) {
 
     def apply(idx: Int): Data.Reader = _getPointerElement(Data, idx)
 
-    def iterator(): Iterator[Data.Reader] = new Iterator[Data.Reader] {
+    override def iterator: Iterator[Data.Reader] = new Iterator[Data.Reader] {
       var idx: Int = 0
 
       def next(): Data.Reader = {
@@ -57,9 +55,7 @@ object DataList extends List[Data.Builder, Data.Reader](ElementSize.POINTER.toBy
       step: Int, 
       structDataSize: Int, 
       structPointerCount: Short) extends BuilderBase(segment, ptr, elementCount, step, structDataSize,
-    structPointerCount) with Iterable[Data.Builder] {
-
-    override def size: Int = super[BuilderBase].size()
+    structPointerCount) {
 
     def apply(idx: Int): Data.Builder = _getPointerElement(Data, idx)
 
@@ -67,7 +63,7 @@ object DataList extends List[Data.Builder, Data.Reader](ElementSize.POINTER.toBy
       _setPointerElement(Data)(index, value)
     }
 
-    def iterator(): Iterator[Data.Builder] = new Iterator[Data.Builder] {
+    override def iterator: Iterator[Data.Builder] = new Iterator[Data.Builder] {
       var idx: Int = 0
 
       def next(): Data.Builder = {

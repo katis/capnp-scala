@@ -8,11 +8,12 @@ struct Person {
   name @0 :Text;
   email @1 :Text;
   birthdate @3 :Date;
-  phone @2 :PhoneNumber;
+  phone @2 :List(PhoneNumber);
+  bar @4 :List(Int16);
 
   struct PhoneNumber {
     number @0 :Text;
-    type @1 :Type;
+    type @1 :List(Type);
 
     enum Type {
       mobile @0;

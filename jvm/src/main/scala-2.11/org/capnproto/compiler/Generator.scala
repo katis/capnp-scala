@@ -16,7 +16,10 @@ sealed trait Leaf {
     case Owned => "Owned"
     case Client => "Client"
     case Pipeline => "Pipeline"
-    case Module => "Module"
+    case Module => ""
+    case List => "List"
+    case ListBuilder => "List.Builder"
+    case ListReader => "List.Reader"
   }
 }
 
@@ -27,6 +30,9 @@ object Leaf {
   object Client extends Leaf
   object Pipeline extends Leaf
   object Module extends Leaf
+  object List extends Leaf
+  object ListBuilder extends Leaf
+  object ListReader extends Leaf
 }
 
 class Generator(message: MessageReader) {
@@ -114,7 +120,6 @@ class Generator(message: MessageReader) {
           if (isUnionField) {
             unionFields += field
           } else {
-            pipelineImplInterior += generatePipelineGetter(field)
             val (ty, get) = getterText(field, true)
             readerMembers += Branch(
               Line(s"def ${methodName(styledName)}: $ty = {"),
@@ -182,12 +187,13 @@ class Generator(message: MessageReader) {
 
         output += Branch(
           Line(s"sealed class $enumClassName(index: Short) extends org.capnproto.runtime.Enum(index)"),
-          Line(s"object $enumClassName {"),
+          Line(s"object $enumClassName extends org.capnproto.runtime.EnumModule[$enumClassName] {"),
           Indent(Branch(
             Branch(
               Line("private val _values = Array("),
               Indent(Branch(enumerantValues:_*)),
               Line(")"),
+              Line(s"override val enumValues: Seq[$enumClassName] = _values.map(_.get)"),
               Line(s"def apply(value: Short): Option[$enumClassName] = if (value >= 0 && value < _values.length) _values(value) else None")
             ),
             Branch(members:_*)
@@ -221,15 +227,19 @@ class Generator(message: MessageReader) {
         val moduleString = if (isReader) "Reader" else "Builder"
         val module = if (isReader) "" else ""
         val member = moduleString
+        val leaf = if (isReader) Leaf.Reader else Leaf.Builder
 
         val rawType = regField.capnpType
-        val typ = typeString(rawType, if (isReader) Leaf.Reader else Leaf.Builder)
+        val typ = typeString(rawType, leaf)
         val default = regField.defaultvalue.which
         val defaultVal = regField.defaultvalue
 
         val resultType = rawType.which match {
           case Type.Which.STRUCT | Type.Which.TEXT | Type.Which.DATA | Type.Which.ENUM =>
             s"Option[$typ]"
+          case Type.Which.LIST =>
+            val listType = typeString(rawType, leaf)
+            s"Option[$listType]"
           case Type.Which.ANY_POINTER if rawType.isParameter => typ
           case Type.Which.INTERFACE => ???
           case _ if rawType.isPrimitive => typ
@@ -263,7 +273,8 @@ class Generator(message: MessageReader) {
           case (WTyp.FLOAT64, WVal.FLOAT64) => primitiveCase(typ, offset, defaultVal.float64, 0)
           case (WTyp.TEXT, WVal.TEXT) => Line(s"_getPointerFieldOption(org.capnproto.runtime.Text, $offset)")
           case (WTyp.DATA, WVal.DATA) => Line(s"_getPointerFieldOption(org.capnproto.runtime.Data, $offset)")
-          case (WTyp.LIST, WVal.LIST) => ???
+          case (WTyp.LIST, WVal.LIST) =>
+            Line(s"_getPointerFieldOption(${typeString(rawType, Leaf.Module)}, $offset)")
           case (WTyp.ENUM, WVal.ENUM) =>
             val module = typeString(rawType, Leaf.Module)
             Line(s"$module(_getShortField($offset))")
@@ -280,10 +291,10 @@ class Generator(message: MessageReader) {
   }
 
   def generateSetter(discriminantOffset: Int, styledName: String, field: Field.Reader): FormattedText = {
-    val setterInterior = mutable.ArrayBuffer[FormattedText]()
+    val initterInterior, setterInterior = mutable.ArrayBuffer[FormattedText]()
     var setterParam = "value"
-    val initterInterior = mutable.ArrayBuffer[FormattedText]()
     val initterParams = mutable.ArrayBuffer[String]()
+    var textSetterInterior: Option[FormattedText] = None
 
     val discriminantValue = field.discriminantvalue
     if (discriminantValue != Field.NO_DISCRIMINANT) {
@@ -331,17 +342,22 @@ class Generator(message: MessageReader) {
             }
             (Some(tstr), None)
           case Type.Which.TEXT =>
-            setterInterior += Line(s"""_setPointerField(org.capnproto.runtime.Text)(0, value)""")
+            setterInterior += Line(s"""_setPointerField(org.capnproto.runtime.Text)($offset, value)""")
             initterInterior += Line(s"_initPointerField(org.capnproto.runtime.Text, $offset, size)")
+            textSetterInterior = Some(Line(s"_setPointerField(org.capnproto.runtime.Text)($offset, org.capnproto.runtime.Text.Reader(value))"))
             initterParams += "size: Int"
             (Some("org.capnproto.runtime.Text.Reader"), Some("org.capnproto.runtime.Text.Builder"))
           case Type.Which.DATA =>
-            setterInterior += Line(s"""_setPointerField(org.capnproto.runtime.Data)(0, value)""")
+            setterInterior += Line(s"""_setPointerField(org.capnproto.runtime.Data)($offset, value)""")
             initterInterior += Line(s"_initPointerField(org.capnproto.runtime.Data, $offset, size)")
             initterParams += "size: Int"
             (Some("org.capnproto.runtime.Data.Reader"), Some("org.capnproto.runtime.Data.Builder"))
           case Type.Which.LIST =>
-            ???
+            val elementFactory = typeString(typ, Leaf.Module)
+            setterInterior += Line(s"""_setPointerField($elementFactory)($offset, value)""")
+            initterInterior += Line(s"_initPointerField($elementFactory, $offset, size)")
+            initterParams += "size: Int"
+            (Some(s"$elementFactory.Reader"), Some(s"$elementFactory.Builder"))
           case Type.Which.ENUM =>
             val ty = typeString(typ, Leaf.Builder)
             setterInterior += Line(s"_setShortField(value.index, $offset)")
@@ -368,6 +384,25 @@ class Generator(message: MessageReader) {
         result ++= Seq(
           Line(s"def ${styledName}_=($setterParam: $readerType): $retType = {"),
           Indent(Branch(setterInterior:_*)),
+          Line(s"}")
+        )
+
+        textSetterInterior.foreach(interior => {
+          result ++= Seq(
+            Line(s"def ${styledName}_=($setterParam: String): $retType = {"),
+            Indent(Branch(interior)),
+            Line(s"}")
+          )
+        })
+      case None =>
+    }
+
+    maybeBuilderType match {
+      case Some(builderType) =>
+        val args = initterParams.mkString(", ")
+        result ++= Seq(
+          Line(s"def init${styledName.capitalize}($args): $builderType = {"),
+          Indent(Branch(initterInterior:_*)),
           Line(s"}")
         )
       case None =>
@@ -601,6 +636,11 @@ class Generator(message: MessageReader) {
 
   def typeString(typ: CapnpSchema.Type.Reader, module: Leaf): String = {
     import Type.Which._
+    val moduleSuffix = module match {
+      case Leaf.Module => ""
+      case leaf => s".$leaf"
+    }
+
     typ.which match {
       case VOID => "org.capnproto.runtime.Void"
       case BOOL => "Boolean"
@@ -614,8 +654,8 @@ class Generator(message: MessageReader) {
       case UINT64 => "Long"
       case FLOAT32 => "Float"
       case FLOAT64 => "Double"
-      case TEXT => s"org.capnproto.runtime.Text.$module"
-      case DATA => s"org.capnproto.runtime.Data.$module"
+      case TEXT => s"org.capnproto.runtime.Text$moduleSuffix"
+      case DATA => s"org.capnproto.runtime.Data$moduleSuffix"
       case STRUCT =>
         val st = typ.struct
         val moduleName = scopeMap(st.capnpTypeid).mkString(".")
@@ -626,20 +666,28 @@ class Generator(message: MessageReader) {
       case LIST =>
         val ot1 = typ.list
         val elType = ot1.elementtype
+        listTypeString(elType, module)
+        /*
         elType.which match {
           case STRUCT =>
-            s"$module.List"
+            typeString(typ.list.elementtype, module match {
+              case Leaf.Reader => Leaf.ListReader
+              case Leaf.Builder => Leaf.ListBuilder
+              case m => m
+            })
           case ENUM =>
-            ???
+            val enumType = typeString(elType, Leaf.Module)
+            s"$enumType$moduleSuffix"
           case LIST =>
             ???
-          case TEXT => s"org.capnproto.runtime.Text.$module"
-          case DATA => s"org.capnproto.runtime.Data.$module"
+          case TEXT => s"org.capnproto.runtime.Text$moduleSuffix"
+          case DATA => s"org.capnproto.runtime.Data.$moduleSuffix"
           case INTERFACE => ???
           case ANY_POINTER => ???
           case _ =>
             s"org.capnproto.runtime.PrimitiveList.$module"
         }
+        */
       case ENUM =>
         val enum = typ.enum
         val scope = scopeMap(enum.capnpTypeid)
@@ -664,8 +712,24 @@ class Generator(message: MessageReader) {
             module match {
               case Leaf.Reader => "org.capnproto.runtime.AnyPointer.Reader"
               case Leaf.Builder => "org.capnproto.runtime.AnyPointer.Builder"
+              case Leaf.Module => "org.capnproto.runtime.AnyPointer"
             }
         }
+    }
+  }
+
+  def listTypeString(elementType: Type.Reader, module: Leaf): String = {
+    import Type.Which._
+    val moduleSuffix = module match {
+      case Leaf.Module => ""
+      case m => s".$m"
+    }
+    elementType.which match {
+      case STRUCT | ENUM => typeString(elementType, Leaf.Module) + s".List$moduleSuffix"
+      case TEXT => s"org.capnproto.runtime.Text.List$moduleSuffix"
+      case ANY_POINTER => s"org.capnproto.runtime.AnyPointer.List$moduleSuffix"
+      case DATA => s"org.capnproto.runtime.Data.List$moduleSuffix"
+      case _ if elementType.isPrimitive => s"org.capnproto.runtime.PrimitiveList.${typeString(elementType, Leaf.Module)}$moduleSuffix"
     }
   }
 }

@@ -23,9 +23,26 @@ abstract class List[ElementBuilder, ElementReader](val elementSize: Byte)
                           elementCount,
                           step,
                           structDataSize,
-                          structPointerCount) {
+                          structPointerCount) with Seq[ElementBuilder] {
+
+    builder =>
+
+    override def length: Int = size
+
+    override def size: Int = super[ListBuilder].size()
 
     def apply(idx: Int): ElementBuilder
+
+    override def iterator: Iterator[ElementBuilder] = new Iterator[ElementBuilder] {
+      var i = 0
+      override def hasNext: Boolean = i < size
+
+      override def next(): ElementBuilder = {
+        val ni = i
+        i += 1
+        apply(ni)
+      }
+    }
   }
 
   abstract class ReaderBase(
@@ -42,9 +59,24 @@ abstract class List[ElementBuilder, ElementReader](val elementSize: Byte)
                          step,
                          structDataSize,
                          structPointerCount,
-                         nestingLimit) {
+                         nestingLimit) with Seq[ElementReader] {
+
+    override def length: Int = size
 
     def apply(idx: Int): ElementReader
+
+    override def size: Int = super[ListReader].size
+
+    override def iterator: Iterator[ElementReader] = new Iterator[ElementReader] {
+      var i = 0
+      override def hasNext: Boolean = i < size
+
+      override def next(): ElementReader = {
+        val ni = i
+        i += 1
+        apply(ni)
+      }
+    }
   }
 
   def fromPointerReaderRefDefault(segment: SegmentReader,

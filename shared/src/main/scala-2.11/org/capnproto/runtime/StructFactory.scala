@@ -36,12 +36,9 @@ trait Struct
 
       builder =>
 
-      override def size: Int = super[BuilderBase].size
-
       def apply(idx: Int): struct.Builder = _getStructElement(struct, idx)
 
-      def iterator(): Iterator[struct.Builder] = new Iterator[struct.Builder] {
-        println(s"SIZE IS: ${size}")
+      override def iterator: Iterator[struct.Builder] = new Iterator[struct.Builder] {
         private var idx: Int = 0
 
         def next(): struct.Builder = {
@@ -70,11 +67,9 @@ trait Struct
 
       reader =>
 
-      override def size: Int = super[ReaderBase].size
-
       def apply(idx: Int): struct.Reader = _getStructElement(struct, idx)
 
-      def iterator(): Iterator[struct.Reader] = new Iterator[struct.Reader] {
+      override def iterator: Iterator[struct.Reader] = new Iterator[struct.Reader] {
         private var idx: Int = 0
 
         def next(): struct.Reader = {

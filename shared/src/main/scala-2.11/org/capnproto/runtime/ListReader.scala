@@ -24,7 +24,7 @@ class ListReader(
       val structPointerCount: Short = 0,
       val nestingLimit: Int = 0x7fffffff) {
 
-  def size(): Int = this.elementCount
+  def size: Int = this.elementCount
 
   protected def _getBooleanElement(index: Int): Boolean = {
     val bindex = index.toLong * this.step

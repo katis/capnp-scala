@@ -11,13 +11,11 @@ object TextList extends List[Text.Builder, Text.Reader](ElementSize.POINTER) {
                structDataSize: Int,
                structPointerCount: Short,
                nestingLimit: Int) extends ReaderBase(segment, ptr, elementCount, step, structDataSize, structPointerCount,
-    nestingLimit) with Iterable[Text.Reader] {
-
-    override def size(): Int = super[ReaderBase].size()
+    nestingLimit) {
 
     def apply(idx: Int): Text.Reader = _getPointerElement(Text, idx)
 
-    def iterator(): Iterator[Text.Reader] = new Iterator[Text.Reader] {
+    override def iterator: Iterator[Text.Reader] = new Iterator[Text.Reader] {
       var idx: Int = 0
 
       def next(): Text.Reader = {
@@ -43,9 +41,7 @@ object TextList extends List[Text.Builder, Text.Reader](ElementSize.POINTER) {
                 structPointerCount: Short) extends BuilderBase(segment, ptr, elementCount, step, structDataSize,
     structPointerCount) with Iterable[Text.Builder] {
 
-    override def size(): Int = super[BuilderBase].size()
-
-    def iterator(): Iterator[Text.Builder] = new Iterator[Text.Builder] {
+    override def iterator: Iterator[Text.Builder] = new Iterator[Text.Builder] {
       var idx: Int = 0
 
       def next(): Text.Builder = {
