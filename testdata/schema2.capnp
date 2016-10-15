@@ -4,9 +4,8 @@ using Scala = import "../scala.capnp";
 
 $Scala.package("org.testschema");
 
-struct Date {
-  year @0 :Int16;
-  month @1 :UInt8;
-  day @2 :UInt8;
-  week @3 :UInt8;
+struct User {
+  firstName @0 :Text;
+  lastName @1 :Text;
+  age @2 :UInt8;
 }

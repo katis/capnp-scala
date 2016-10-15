@@ -1,5 +1,7 @@
 package org.capnproto.compiler
 
+import java.nio.file.Paths
+
 import CapnpSchema._
 import org.capnproto.runtime.{MessageReader, Text}
 
@@ -39,13 +41,14 @@ class Generator(message: MessageReader) {
     val imports = requestedFile.imports
     for (imp <- imports) {
       val importPath = imp.name
-      val rootName = s"""${importPath.toString.replace("-", "_")}""" // TODO: how does this work
+      val path = Paths.get(importPath.toString).toString
+      val rootName = s"""${path.toString.replace("-", "_")}""" // TODO: how does this work
       populateScope(Seq(rootName), imp.id)
     }
 
     val rootName = requestedFile.filename
     val rootModule = rootName.toString.replace("-", "_")
-    populateScope(Seq(rootModule), id)
+    populateScope(Seq(), id)
   }
 
   def structTypePreamble(data: Int, pointers: Int) = Seq(Indent(Branch(
@@ -69,6 +72,8 @@ class Generator(message: MessageReader) {
       val id = nestedNode.id
       nestedOutput += generateNode(id, scopeMap(id).last)
     }
+
+    println(s"Processing node '${nodeReader.displayname.toString}'")
 
     import Node.Which._
     nodeReader.which match {
@@ -109,6 +114,7 @@ class Generator(message: MessageReader) {
           if (isUnionField) {
             unionFields += field
           } else {
+            println("Not union field")
             pipelineImplInterior += generatePipelineGetter(field)
             val (ty, get) = getterText(field, true)
             readerMembers += Branch(
@@ -125,12 +131,14 @@ class Generator(message: MessageReader) {
             )
           }
 
+          println("generating setter")
           builderMembers += generateSetter(discriminantOffset, styledName, field)
           readerMembers += Line(s"// has$styledName()")
           builderMembers += Line(s"// has$styledName()")
 
           field.which match {
             case Field.Which.GROUP =>
+              println("is group field")
               val id = field.group.capnpTypeid
               val text = generateNode(id, scopeMap(id).last, None)
               nestedOutput += text
@@ -152,6 +160,8 @@ class Generator(message: MessageReader) {
           Indent(Branch(builderMembers:_*)),
           Line("}")
         ))
+
+        output += Branch(Indent(Branch(nestedOutput:_*)))
         output += Line("}")
     }
 
@@ -175,6 +185,7 @@ class Generator(message: MessageReader) {
           (s"$module.Builder", Line(""))
         }
       case SLOT =>
+        println("is slot")
         val regField = field.slot
         val offset = regField.offset
         val moduleString = if (isReader) "Reader" else "Builder"
@@ -194,6 +205,7 @@ class Generator(message: MessageReader) {
           case _ => typ
         }
 
+        println(s"Result type = ${resultType}")
         def primitiveCase[T](typ: String, offset: Long, default: T, zero: T): FormattedText = {
           if (default == zero) {
             Line(s"this._get${typ}Field($offset)")
@@ -285,7 +297,7 @@ class Generator(message: MessageReader) {
             }
             (Some(tstr), None)
           case Type.Which.TEXT =>
-            setterInterior += Line(s"""_setPointerField(org.capnproto.runtime.Text)(0, new org.capnproto.runtime.Text.ReaderImpl(value))""")
+            setterInterior += Line(s"""_setPointerField(org.capnproto.runtime.Text)(0, value)""")
             initterInterior += Line(s"_initPointerField(org.capnproto.runtime.Text, $offset, size)")
             initterParams += "size: Int"
             (Some("org.capnproto.runtime.Text.Reader"), Some("org.capnproto.runtime.Text.Builder"))
@@ -494,9 +506,10 @@ class Generator(message: MessageReader) {
     var currentNodeId = nodeId
     val accumulator = mutable.ArrayBuffer[Seq[String]]()
 
-    while (true) {
+    var run = true
+    while (run) {
       nodeMap.get(currentNodeId) match {
-        case None =>
+        case None => run = false
         case Some(currentNode) =>
           val params = currentNode.parameters
           val arguments = mutable.ArrayBuffer[String]()
@@ -532,10 +545,12 @@ class Generator(message: MessageReader) {
       }
     }
 
-    val arguments = if (accumulator.isEmpty) {
+    val args = accumulator.reverse.flatten
+
+    val arguments = if (args.isEmpty) {
       ""
     } else {
-      val argStr = accumulator.reverse.mkString(", ")
+      val argStr = args.mkString(", ")
       s"[$argStr]"
     }
 
@@ -561,7 +576,8 @@ class Generator(message: MessageReader) {
       case DATA => s"org.capnproto.runtime.Data.$module"
       case STRUCT =>
         val st = typ.struct
-        doBranding(st.capnpTypeid, st.brand, module, scopeMap(st.capnpTypeid).mkString("."), None)
+        val moduleName = scopeMap(st.capnpTypeid).mkString(".")
+        doBranding(st.capnpTypeid, st.brand, module, moduleName, None)
       case INTERFACE =>
         val interface = typ.interface
         doBranding(interface.capnpTypeid, interface.brand, module, scopeMap(interface.capnpTypeid).mkString("."), None)
