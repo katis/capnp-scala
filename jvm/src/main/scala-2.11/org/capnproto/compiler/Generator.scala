@@ -16,6 +16,7 @@ sealed trait Leaf {
     case Owned => "Owned"
     case Client => "Client"
     case Pipeline => "Pipeline"
+    case Module => "Module"
   }
 }
 
@@ -25,6 +26,7 @@ object Leaf {
   object Owned extends Leaf
   object Client extends Leaf
   object Pipeline extends Leaf
+  object Module extends Leaf
 }
 
 class Generator(message: MessageReader) {
@@ -52,7 +54,7 @@ class Generator(message: MessageReader) {
   }
 
   def structTypePreamble(data: Int, pointers: Int) = Seq(Indent(Branch(
-    Line(s"val STRUCT_SIZE: StructSize = new StructSize($data, $pointers)"),
+    Line(s"override val structSize: StructSize = new StructSize($data, $pointers)"),
     BlankLine,
     Line("override type Reader = ReaderImpl"),
     Line("override type Builder = BuilderImpl"),
@@ -118,14 +120,14 @@ class Generator(message: MessageReader) {
             pipelineImplInterior += generatePipelineGetter(field)
             val (ty, get) = getterText(field, true)
             readerMembers += Branch(
-              Line(s"def $styledName: $ty = {"),
+              Line(s"def ${methodName(styledName)}: $ty = {"),
               Indent(get),
               Line("}")
             )
 
             val (tyB, getB) = getterText(field, false)
             builderMembers += Branch(
-              Line(s"def $styledName: $tyB = {"),
+              Line(s"def ${methodName(styledName)}: $tyB = {"),
               Indent(getB),
               Line("}")
             )
@@ -151,18 +153,46 @@ class Generator(message: MessageReader) {
         }
 
         output += Indent(Branch(
-          Line("class Reader(segment: SegmentReader, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit) {"),
+          Line("class ReaderImpl(segment: SegmentReader, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int) extends super.ReaderBase(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit) {"),
           Indent(Branch(readerMembers:_*)),
           Line("}")
         ))
         output += Indent(Branch(
-          Line("class Builder(segment: SegmentBuilder, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, dataOffset, pointers, dataSize, pointerCount) {"),
+          Line("class BuilderImpl(segment: SegmentBuilder, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short) extends super.BuilderBase(segment, dataOffset, pointers, dataSize, pointerCount) {"),
           Indent(Branch(builderMembers:_*)),
           Line("}")
         ))
 
         output += Branch(Indent(Branch(nestedOutput:_*)))
         output += Line("}")
+      case ENUM =>
+        val enumReader = nodeReader.enum
+        val names = scopeMap(nodeId)
+        val enumClassName = names.last.capitalize
+        output += BlankLine
+        val members, matchBranches = mutable.ArrayBuffer[FormattedText]()
+        val enumerants = enumReader.enumerants
+        for (i <- 0 until enumerants.size) {
+          val enumerant = enumerants(i)
+
+          val enumerantName = enumerant.name.toString.capitalize
+          members += Line(s"object $enumerantName extends $enumClassName($i)")
+          matchBranches += Line(s"case $i => $enumClassName.$enumerantName")
+        }
+        matchBranches += Line(s"case n => throw org.capnproto.runtime.NotInSchema.enumMember(n)")
+
+        output += Branch(
+          Line(s"sealed class $enumClassName(index: Short) extends org.capnproto.runtime.Enum(index)"),
+          Line(s"object $enumClassName {"),
+          Indent(Branch(
+            Branch(
+              Line(s"def apply(value: Short): $enumClassName = value match {"),
+              Indent(Branch(matchBranches:_*)),
+              Line("}")),
+            Branch(members:_*)
+          )),
+          Line("}")
+        )
     }
 
     Branch(output:_*)
@@ -198,7 +228,7 @@ class Generator(message: MessageReader) {
         val defaultVal = regField.defaultvalue
 
         val resultType = rawType.which match {
-          case Type.Which.ENUM => s""
+          case Type.Which.ENUM =>typ
           case Type.Which.ANY_POINTER if rawType.isParameter => typ
           case Type.Which.INTERFACE => ???
           case _ if rawType.isPrimitive => typ
@@ -234,8 +264,12 @@ class Generator(message: MessageReader) {
           case (WTyp.TEXT, WVal.TEXT) => Line(s"_getPointerField(org.capnproto.runtime.Text, $offset)")
           case (WTyp.DATA, WVal.DATA) => Line(s"_getPointerField(org.capnproto.runtime.Data, $offset)")
           case (WTyp.LIST, WVal.LIST) => ???
-          case (WTyp.ENUM, WVal.ENUM) => ???
-          case (WTyp.STRUCT, WVal.STRUCT) => Line(s"_getStructElement($typ, $offset)")
+          case (WTyp.ENUM, WVal.ENUM) =>
+            val module = typeString(rawType, Leaf.Module)
+            Line(s"$module(_getShortField($offset))")
+          case (WTyp.STRUCT, WVal.STRUCT) =>
+            val module = typeString(rawType, Leaf.Module)
+            Line(s"_getPointerField($module, $offset)")
           case (WTyp.INTERFACE, WVal.INTERFACE) => ???
           case (WTyp.ANY_POINTER, WVal.ANY_POINTER) => Line(s"_getPointerField($typ, $offset)")
           case _ => throw new Error(s"Default value was of wrong type (expected ${rawType.which}, got $default)")
@@ -308,15 +342,18 @@ class Generator(message: MessageReader) {
             (Some("org.capnproto.runtime.Data.Reader"), Some("org.capnproto.runtime.Data.Builder"))
           case Type.Which.LIST =>
             ???
-          case Type.Which.ENUM => ???
+          case Type.Which.ENUM =>
+            val ty = typeString(typ, Leaf.Builder)
+            setterInterior += Line(s"_setShortField(value.index, $offset)")
+            (Some(ty), None)
           case Type.Which.STRUCT =>
             returnResult = true
-            initterInterior += Line(s"_initPointerField(${typeString(typ, Leaf.Builder)}, $offset, 0)")
+            initterInterior += Line(s"_initPointerField(${typeString(typ, Leaf.Module)}, $offset, 0)")
             if (typ.isBranded) {
-              setterInterior += Line(s"_setPointerField(${typeString(typ, Leaf.Builder)})($offset, value)")
+              setterInterior += Line(s"_setPointerField(${typeString(typ, Leaf.Module)})($offset, value)")
               (Some(typeString(typ, Leaf.Reader)), Some(typeString(typ, Leaf.Builder)))
             } else {
-              setterInterior += Line(s"_setPointerBuilder(${typeString(typ, Leaf.Reader)})($offset, value)")
+              setterInterior += Line(s"_setPointerField(${typeString(typ, Leaf.Module)})($offset, value)")
               (Some(typeString(regField.capnpType, Leaf.Reader)), Some(typeString(regField.capnpType, Leaf.Builder)))
             }
           case Type.Which.INTERFACE => ???
@@ -498,6 +535,8 @@ class Generator(message: MessageReader) {
     if (keywords.contains(nameStr)) nameStr+"_" else nameStr
   }
 
+  def methodName(name: String): String = if (keywords.contains(name)) s"`$name`" else name
+
   def doBranding(nodeId: Long, brand: Brand.Reader, leaf: Leaf, module: String, _parentScopeId: Option[Long]): String = {
     var parentScopeId = _parentScopeId
 
@@ -554,7 +593,10 @@ class Generator(message: MessageReader) {
       s"[$argStr]"
     }
 
-    s"$module.${leaf.toString}$arguments"
+    leaf match {
+      case Leaf.Module => s"$module$arguments"
+      case l => s"$module.$l$arguments"
+    }
   }
 
   def typeString(typ: CapnpSchema.Type.Reader, module: Leaf): String = {

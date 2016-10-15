@@ -31,6 +31,7 @@ package object compiler {
     "trait",
     "true",
     "try",
+    "type",
     "until",
     "val",
     "var",
