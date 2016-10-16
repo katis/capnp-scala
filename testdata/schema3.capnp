@@ -11,6 +11,21 @@ struct Person {
   phone @2 :List(PhoneNumber);
   bar @4 :List(Int16);
 
+  employment :union {
+    unemployed @5 :Void;
+    employer @6 :Text;
+  }
+
+  shape :union {
+    circle :group {
+      radius @7 :Float64;
+    }
+    rectangle :group {
+      width @8 :Float64;
+      height @9 :Float64;
+    }
+  }
+
   struct PhoneNumber {
     number @0 :Text;
     type @1 :List(Type);

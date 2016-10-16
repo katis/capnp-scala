@@ -59,7 +59,8 @@ class Generator(message: MessageReader) {
     populateScope(Seq(), id)
   }
 
-  def structTypePreamble(data: Int, pointers: Int) = Seq(Indent(Branch(
+  def structTypePreamble(nodeId: Long, data: Int, pointers: Int) = Seq(Indent(Branch(
+    Line(s"val typeId: Long = ${nodeId}L"), // TODO: Add as a Struct abstract method
     Line(s"override val structSize: StructSize = new StructSize($data, $pointers)"),
     BlankLine,
     Line("override type Reader = ReaderImpl"),
@@ -86,11 +87,12 @@ class Generator(message: MessageReader) {
       case FILE => output += Branch(nestedOutput:_*)
       case STRUCT =>
         val struct = nodeReader.struct
-        val params = nodeReader.parametersTexts()
+        val params = parametersTexts(nodeReader)
         output += BlankLine
 
         val isGeneric = nodeReader.isgeneric
         if (isGeneric) {
+          // TODO: Implement generic structs
           output += Line(s"object $nodeName extends org.capnproto.runtime.Struct { ")
         } else {
           output += Line(s"object $nodeName extends org.capnproto.runtime.Struct { ")
@@ -107,7 +109,7 @@ class Generator(message: MessageReader) {
         val discriminantCount = struct.discriminantcount
         val discriminantOffset = struct.discriminantoffset
 
-        output ++= structTypePreamble(dataSize, pointerSize)
+        output ++= structTypePreamble(nodeId, dataSize, pointerSize)
 
         val fields = struct.fields
         for (field <- fields) {
@@ -117,19 +119,21 @@ class Generator(message: MessageReader) {
           val discriminantValue = field.discriminantvalue
           val isUnionField = discriminantValue != Field.NO_DISCRIMINANT
 
+          val getterAccessLevel = if (isUnionField) s"private[$nodeName] " else ""
           if (isUnionField) {
             unionFields += field
-          } else {
-            val (ty, get) = getterText(field, true)
+          }
+          val (ty, get) = getterText(field, true)
+          if (!(isUnionField && ty == "org.capnproto.runtime.Void")) {
             readerMembers += Branch(
-              Line(s"def ${methodName(styledName)}: $ty = {"),
+              Line(s"${getterAccessLevel}def ${methodName(styledName)}: $ty = {"),
               Indent(get),
               Line("}")
             )
 
             val (tyB, getB) = getterText(field, false)
             builderMembers += Branch(
-              Line(s"def ${methodName(styledName)}: $tyB = {"),
+              Line(s"${getterAccessLevel}def ${methodName(styledName)}: $tyB = {"),
               Indent(getB),
               Line("}")
             )
@@ -144,10 +148,14 @@ class Generator(message: MessageReader) {
               nestedOutput += text
             case _ =>
           }
+        }
 
-          if (discriminantCount > 0) {
-            // val (whichEnums1, unionGetter, typeDef) = generateUnion(discriminantOffset, unionFields, true, params)
-          }
+        if (discriminantCount > 0) {
+          val readerResult = generateUnion(discriminantOffset, unionFields, true, params)
+          val whichIndexDef = Line(s"private[$nodeName] def whichIndex: Short = _getShortField($discriminantOffset)")
+          readerMembers += whichIndexDef
+          builderMembers += whichIndexDef
+          output += Indent(Branch(readerResult.matchers:_*))
         }
 
         output += Indent(Branch(
@@ -209,18 +217,23 @@ class Generator(message: MessageReader) {
     Line("PIPELINED_GETTER")
   }
 
+  def groupType(group: Field.Group.Reader, isReader: Boolean): String = {
+    val module = scopeMap(group.capnpTypeid).mkString(".")
+    val suffix = if (isReader) "Reader" else "Builder"
+    s"$module.$suffix"
+  }
+
   def getterText(field: Field.Reader, isReader: Boolean): (String, FormattedText) = {
     import Field.Which._
 
     field.which match {
       case GROUP =>
         val group = field.group
-        val module = scopeMap(group.capnpTypeid).mkString(".")
-        if (isReader) {
-          (s"$module.Reader", Line(""))
-        } else {
-          (s"$module.Builder", Line(""))
-        }
+        val t = groupType(group, isReader)
+        if (isReader)
+          (t, Line(s"$t(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit)"))
+        else
+          (t, Line(s"$t(segment, dataOffset, pointers, dataSize, pointerCount)"))
       case SLOT =>
         val regField = field.slot
         val offset = regField.offset
@@ -315,8 +328,7 @@ class Generator(message: MessageReader) {
         val module = scope.mkString(".")
         initterInterior ++= Seq(
           zeroFieldsOfGroup(group.capnpTypeid),
-          Line("What's this supposed to be"))
-
+          Line(s"$module.Builder(segment, dataOffset, pointers, dataSize, pointerCount)"))
         (None, Some(s"$module.Builder"))
       case Field.Which.SLOT =>
         val regField = field.slot
@@ -325,7 +337,7 @@ class Generator(message: MessageReader) {
         typ.which match {
           case Type.Which.VOID =>
             setterParam = "_value"
-            (Some("()"), None)
+            (Some("Unit"), None)
           case Type.Which.BOOL =>
             primitiveDefault(regField.defaultvalue) match {
               case None => setterInterior += Line(s"_setBooleanField($offset, value)")
@@ -411,6 +423,70 @@ class Generator(message: MessageReader) {
     Branch(result:_*)
   }
 
+  case class UnionResult(matchers: Seq[FormattedText])
+
+  def generateUnion(discriminantOffset: Int, fields: Seq[Field.Reader], isReader: Boolean, params: TypeParameterTexts): UnionResult = {
+    def newTypeParam(typeParams: mutable.ArrayBuffer[String]): String = {
+      val result = s"T${typeParams.size}"
+      typeParams += result
+      result
+    }
+
+    val interior, enumInterior, matchers = mutable.ArrayBuffer[FormattedText]()
+    val getters, typeParams, typeArgs = mutable.ArrayBuffer[String]()
+
+    val doffset = java.lang.Integer.toUnsignedLong(discriminantOffset)
+
+    for (field <- fields) {
+      val dvalue = java.lang.Short.toUnsignedLong(field.discriminantvalue)
+      val fieldName = field.name
+      val enumerantName = fieldName.toString.capitalize
+
+      val (ty, _) = getterText(field, isReader = true)
+      val (tyB, _) = getterText(field, isReader = false)
+
+      val isSlot = field.isSlot
+      val matcher = if (isSlot && field.slot.capnpType.which == Type.Which.VOID) {
+            Branch(
+              Line(s"object $enumerantName {"),
+              Indent(Branch(
+                Line(s"def unapply(value: Reader): Boolean = value.whichIndex == $dvalue"),
+                Line(s"def unapply(value: Builder): Boolean = value.whichIndex == $dvalue")
+              )),
+              Line("}")
+            )
+          } else {
+            val wrappedInOption = (isSlot && field.slot.capnpType.isPrimitive) || field.isGroup
+            val fieldGetter = if (wrappedInOption) s"Some(value.$fieldName)" else s"value.$fieldName"
+            val unapplyType = if (wrappedInOption) s"Option[$ty]" else ty
+            val unapplyTypeB = if (wrappedInOption) s"Option[$tyB]" else tyB
+            Branch(
+              Line(s"object $enumerantName {"),
+              Indent(Branch(
+                Branch(
+                  Line(s"def unapply(value: Reader): $unapplyType = {"),
+                  Indent(Branch(
+                    Line(s"if (value.whichIndex == $dvalue) $fieldGetter else None")
+                  )),
+                  Line("}")
+                ),
+                Branch(
+                  Line(s"def unapply(value: Builder): $unapplyTypeB = {"),
+                  Indent(Branch(
+                    Line(s"if (value.whichIndex == $dvalue) $fieldGetter else None")
+                  )),
+                  Line("}")
+                )
+              )),
+              Line("}")
+            )
+          }
+          matchers += matcher
+      }
+
+    UnionResult(matchers)
+  }
+
   def primitiveDefault(value: Value.Reader): Option[String] = {
     import Value.Which._
 
@@ -476,14 +552,14 @@ class Generator(message: MessageReader) {
                 case Type.Which.INT8 | Type.Which.INT16 | Type.Which.INT32 | Type.Which.INT64
                     | Type.Which.UINT8 | Type.Which.UINT16 | Type.Which.UINT32 | Type.Which.UINT64
                     | Type.Which.FLOAT32 | Type.Which.FLOAT64 =>
-                  val line = Line(s"_set${typ}Field(${typeString(slot.capnpType, Leaf.Builder)}, 0)")
+                  val line = Line(s"_set${typeString(slot.capnpType, Leaf.Module)}Field(${slot.offset}, 0)")
                   if (!result.contains(line)) result += line
                 case Type.Which.ENUM =>
                   val line = Line(s"_setShortField(${slot.offset}, 0)")
                   if (!result.contains(line)) result += line
                 case Type.Which.STRUCT | Type.Which.LIST | Type.Which.TEXT | Type.Which.DATA
                      | Type.Which.ANY_POINTER | Type.Which.INTERFACE =>
-                  val line = Line(s"_getPointerField(${slot.offset})")
+                  val line = Line(s"_clearPointerField(${slot.offset})")
                   if (!result.contains(line)) result += line
               }
           }
@@ -510,7 +586,6 @@ class Generator(message: MessageReader) {
       nodeMap.get(nestedNodeId) match {
         case None =>
         case Some(nNodeReader) =>
-
           nNodeReader.which match {
             case ENUM =>
               nScopeNames += nestedNode.name.toString
@@ -531,11 +606,21 @@ class Generator(message: MessageReader) {
           field.which match {
             case GROUP =>
               val name = moduleName(field.name)
-              populateScope(scopeNames :+ name, field.group.capnpTypeid)
+              populateScope(scopeNames :+ name.capitalize, field.group.capnpTypeid)
             case _ =>
           }
         }
       case _ =>
+    }
+  }
+
+  def parametersTexts(node: Node.Reader, parentNodeId: Option[Long] = None): TypeParameterTexts = {
+    if (node.isgeneric) {
+      val params = getTypeParameters(node.id, parentNodeId)
+      val typeParameters = params.map(_.toString).mkString(",")
+      TypeParameterTexts(expandedList = params, params = typeParameters)
+    } else {
+      TypeParameterTexts(expandedList = Seq(), params = "")
     }
   }
 

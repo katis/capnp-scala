@@ -40,11 +40,8 @@ package object compiler {
     "yield"
   )
 
-  implicit class NodeInfo(val nodeReader: CapnpSchema.Node.Reader) extends AnyVal {
-    def parametersTexts(): Unit = {
-
-    }
-  }
+  case class TypeParameterTexts(expandedList: Seq[String],
+                                params: String)
 
   implicit class TypeInfo(val typ: CapnpSchema.Type.Reader) extends AnyVal {
     def isParameter: Boolean = {
