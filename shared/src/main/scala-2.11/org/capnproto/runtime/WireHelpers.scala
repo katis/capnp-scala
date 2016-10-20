@@ -619,20 +619,20 @@ object WireHelpers {
   }
 
   def setStructPointer(segment: SegmentBuilder, refOffset: Int, value: StructReader): SegmentBuilder = {
-    val dataSize = roundBitsUpToWords(value.dataSize).toShort
+    val dataSize = roundBitsUpToWords(value._dataSize).toShort
     val totalSize = dataSize +
-      value.pointerCount * Constants.POINTER_SIZE_IN_WORDS
+      value._pointerCount * Constants.POINTER_SIZE_IN_WORDS
     val allocation = allocate(refOffset, segment, totalSize, WirePointer.STRUCT)
-    StructPointer.set(allocation.segment.buffer, allocation.refOffset, dataSize, value.pointerCount)
-    if (value.dataSize == 1) {
+    StructPointer.set(allocation.segment.buffer, allocation.refOffset, dataSize, value._pointerCount)
+    if (value._dataSize == 1) {
       throw new Error("single bit case not handled")
     } else {
-      memcpy(allocation.segment.buffer, allocation.ptr * Constants.BYTES_PER_WORD, value.segment.buffer,
-        value.dataOffset, value.dataSize / Constants.BITS_PER_BYTE)
+      memcpy(allocation.segment.buffer, allocation.ptr * Constants.BYTES_PER_WORD, value._segment.buffer,
+        value._dataOffset, value._dataSize / Constants.BITS_PER_BYTE)
     }
     val pointerSection = allocation.ptr + dataSize
-    for (i <- 0 until value.pointerCount) {
-      copyPointer(allocation.segment, pointerSection + i, value.segment, value.pointers + i, value.nestingLimit)
+    for (i <- 0 until value._pointerCount) {
+      copyPointer(allocation.segment, pointerSection + i, value._segment, value._pointers + i, value._nestingLimit)
     }
     allocation.segment
   }

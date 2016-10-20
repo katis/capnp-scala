@@ -18,7 +18,7 @@ object AnyPointer extends PointerFactoryTF {
 
   class ReaderImpl(val segment: SegmentReader, val pointer: Int, val nestingLimit: Int) {
 
-    def isNull(): Boolean = {
+    def isNull: Boolean = {
       WirePointer.isNull(this.segment.buffer.getLong(this.pointer * Constants.BYTES_PER_WORD))
     }
 
@@ -29,7 +29,7 @@ object AnyPointer extends PointerFactoryTF {
 
   class BuilderImpl(val segment: SegmentBuilder, val pointer: Int) {
 
-    def isNull(): Boolean = {
+    def isNull: Boolean = {
       WirePointer.isNull(this.segment.buffer.getLong(this.pointer * Constants.BYTES_PER_WORD))
     }
 

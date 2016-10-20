@@ -23,7 +23,16 @@ struct Person {
     rectangle :group {
       width @8 :Float64;
       height @9 :Float64;
+      foo :union {
+        bar :group {
+          bar1 @12 :Text;
+          bar2 @13 :Text;
+        }
+        baz @14 :Float64;
+      }
     }
+    path @10 :Text;
+    point @11: Void;
   }
 
   struct PhoneNumber {

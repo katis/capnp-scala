@@ -1,6 +1,16 @@
 package org.capnproto
 
 package object compiler {
+  val reservedClasses = Seq(
+    "List",
+    "Reader",
+    "Builder",
+    "ReaderImpl",
+    "BuilderImpl",
+    "ReaderBase",
+    "BuilderBase"
+  )
+
   val keywords = Seq(
     "case",
     "catch",
@@ -38,7 +48,7 @@ package object compiler {
     "while",
     "with",
     "yield"
-  )
+  ) ++ reservedClasses
 
   case class TypeParameterTexts(expandedList: Seq[String],
                                 params: String)

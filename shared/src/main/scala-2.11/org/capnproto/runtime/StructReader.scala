@@ -24,16 +24,16 @@ object StructReader {
   }
 }
 
-class StructReader(private[runtime] val segment: SegmentReader = SegmentReader.EMPTY,
-                   private[runtime] val dataOffset: Int = 0,
-                   private[runtime] val pointers: Int = 0,
-                   private[runtime] val dataSize: Int = 0,
-                   private[runtime] val pointerCount: Short = 1,
-                   private[runtime] val nestingLimit: Int = 0x80000000) {
+class StructReader(private[runtime] val _segment: SegmentReader = SegmentReader.EMPTY,
+                   private[runtime] val _dataOffset: Int = 0,
+                   private[runtime] val _pointers: Int = 0,
+                   private[runtime] val _dataSize: Int = 0,
+                   private[runtime] val _pointerCount: Short = 1,
+                   private[runtime] val _nestingLimit: Int = 0x80000000) {
 
   protected def _getBooleanField(offset: Int): Boolean = {
-    if (offset < this.dataSize) {
-      val b = this.segment.buffer.get(this.dataOffset + offset / 8)
+    if (offset < this._dataSize) {
+      val b = this._segment.buffer.get(this._dataOffset + offset / 8)
       (b & (1 << (offset % 8))) != 0
     } else {
       false
@@ -43,8 +43,8 @@ class StructReader(private[runtime] val segment: SegmentReader = SegmentReader.E
   protected def _getBooleanField(offset: Int, mask: Boolean): Boolean = this._getBooleanField(offset) ^ mask
 
   protected def _getByteField(offset: Int): Byte = {
-    if ((offset + 1) * 8 <= this.dataSize) {
-      this.segment.buffer.get(this.dataOffset + offset)
+    if ((offset + 1) * 8 <= this._dataSize) {
+      this._segment.buffer.get(this._dataOffset + offset)
     } else {
       0
     }
@@ -55,8 +55,8 @@ class StructReader(private[runtime] val segment: SegmentReader = SegmentReader.E
   }
 
   protected def _getShortField(offset: Int): Short = {
-    if ((offset + 1) * 16 <= this.dataSize) {
-      this.segment.buffer.getShort(this.dataOffset + offset * 2)
+    if ((offset + 1) * 16 <= this._dataSize) {
+      this._segment.buffer.getShort(this._dataOffset + offset * 2)
     } else {
       0
     }
@@ -67,8 +67,8 @@ class StructReader(private[runtime] val segment: SegmentReader = SegmentReader.E
   }
 
   protected def _getIntField(offset: Int): Int = {
-    if ((offset + 1) * 32 <= this.dataSize) {
-      this.segment.buffer.getInt(this.dataOffset + offset * 4)
+    if ((offset + 1) * 32 <= this._dataSize) {
+      this._segment.buffer.getInt(this._dataOffset + offset * 4)
     } else {
       0
     }
@@ -77,8 +77,8 @@ class StructReader(private[runtime] val segment: SegmentReader = SegmentReader.E
   protected def _getIntField(offset: Int, mask: Int): Int = this._getIntField(offset) ^ mask
 
   protected def _getLongField(offset: Int): Long = {
-    if ((offset + 1) * 64 <= this.dataSize) {
-      this.segment.buffer.getLong(this.dataOffset + offset * 8)
+    if ((offset + 1) * 64 <= this._dataSize) {
+      this._segment.buffer.getLong(this._dataOffset + offset * 8)
     } else {
       0
     }
@@ -87,32 +87,32 @@ class StructReader(private[runtime] val segment: SegmentReader = SegmentReader.E
   protected def _getLongField(offset: Int, mask: Long): Long = this._getLongField(offset) ^ mask
 
   protected def _getFloatField(offset: Int): Float = {
-    if ((offset + 1) * 32 <= this.dataSize) {
-      this.segment.buffer.getFloat(this.dataOffset + offset * 4)
+    if ((offset + 1) * 32 <= this._dataSize) {
+      this._segment.buffer.getFloat(this._dataOffset + offset * 4)
     } else {
       0
     }
   }
 
   protected def _getFloatField(offset: Int, mask: Int): Float = {
-    if ((offset + 1) * 32 <= this.dataSize) {
-      java.lang.Float.intBitsToFloat(this.segment.buffer.getInt(this.dataOffset + offset * 4) ^ mask)
+    if ((offset + 1) * 32 <= this._dataSize) {
+      java.lang.Float.intBitsToFloat(this._segment.buffer.getInt(this._dataOffset + offset * 4) ^ mask)
     } else {
       java.lang.Float.intBitsToFloat(mask)
     }
   }
 
   protected def _getDoubleField(offset: Int): Double = {
-    if ((offset + 1) * 64 <= this.dataSize) {
-      this.segment.buffer.getDouble(this.dataOffset + offset * 8)
+    if ((offset + 1) * 64 <= this._dataSize) {
+      this._segment.buffer.getDouble(this._dataOffset + offset * 8)
     } else {
       0
     }
   }
 
   protected def _getDoubleField(offset: Int, mask: Long): Double = {
-    if ((offset + 1) * 64 <= this.dataSize) {
-      java.lang.Double.longBitsToDouble(this.segment.buffer.getLong(this.dataOffset + offset * 8) ^
+    if ((offset + 1) * 64 <= this._dataSize) {
+      java.lang.Double.longBitsToDouble(this._segment.buffer.getLong(this._dataOffset + offset * 8) ^
         mask)
     } else {
       java.lang.Double.longBitsToDouble(mask)
@@ -120,25 +120,25 @@ class StructReader(private[runtime] val segment: SegmentReader = SegmentReader.E
   }
 
   protected def _pointerFieldIsNull(ptrIndex: Int): Boolean = {
-    this.segment.buffer.getLong((this.pointers + ptrIndex) * Constants.BYTES_PER_WORD) ==
+    this._segment.buffer.getLong((this._pointers + ptrIndex) * Constants.BYTES_PER_WORD) ==
       0
   }
 
   protected def _getPointerFieldOption(factory: FromPointerReaderTF, ptrIndex: Int): Option[factory.Reader] = {
     if (_pointerFieldIsNull(ptrIndex)) {
       None
-    } else if (ptrIndex < this.pointerCount) {
-      Some(factory.fromPointerReader(this.segment, this.pointers + ptrIndex, this.nestingLimit))
+    } else if (ptrIndex < this._pointerCount) {
+      Some(factory.fromPointerReader(this._segment, this._pointers + ptrIndex, this._nestingLimit))
     } else {
-      Some(factory.fromPointerReader(SegmentReader.EMPTY, 0, this.nestingLimit))
+      Some(factory.fromPointerReader(SegmentReader.EMPTY, 0, this._nestingLimit))
     }
   }
 
   protected def _getPointerField(factory: FromPointerReaderTF, ptrIndex: Int): factory.Reader = {
-    if (ptrIndex < this.pointerCount) {
-      factory.fromPointerReader(this.segment, this.pointers + ptrIndex, this.nestingLimit)
+    if (ptrIndex < this._pointerCount) {
+      factory.fromPointerReader(this._segment, this._pointers + ptrIndex, this._nestingLimit)
     } else {
-      factory.fromPointerReader(SegmentReader.EMPTY, 0, this.nestingLimit)
+      factory.fromPointerReader(SegmentReader.EMPTY, 0, this._nestingLimit)
     }
   }
 
@@ -146,11 +146,11 @@ class StructReader(private[runtime] val segment: SegmentReader = SegmentReader.E
                                     ptrIndex: Int,
                                     defaultSegment: SegmentReader,
                                     defaultOffset: Int): factory.Reader = {
-    if (ptrIndex < this.pointerCount) {
-      factory.fromPointerReaderRefDefault(this.segment, this.pointers + ptrIndex, defaultSegment, defaultOffset,
-        this.nestingLimit)
+    if (ptrIndex < this._pointerCount) {
+      factory.fromPointerReaderRefDefault(this._segment, this._pointers + ptrIndex, defaultSegment, defaultOffset,
+        this._nestingLimit)
     } else {
-      factory.fromPointerReaderRefDefault(SegmentReader.EMPTY, 0, defaultSegment, defaultOffset, this.nestingLimit)
+      factory.fromPointerReaderRefDefault(SegmentReader.EMPTY, 0, defaultSegment, defaultOffset, this._nestingLimit)
     }
   }
 
@@ -159,8 +159,8 @@ class StructReader(private[runtime] val segment: SegmentReader = SegmentReader.E
                                     defaultBuffer: java.nio.ByteBuffer,
                                     defaultOffset: Int,
                                     defaultSize: Int): factory.Reader = {
-    if (ptrIndex < this.pointerCount) {
-      factory.fromPointerReaderBlobDefault(this.segment, this.pointers + ptrIndex, defaultBuffer, defaultOffset,
+    if (ptrIndex < this._pointerCount) {
+      factory.fromPointerReaderBlobDefault(this._segment, this._pointers + ptrIndex, defaultBuffer, defaultOffset,
         defaultSize)
     } else {
       factory.fromPointerReaderBlobDefault(SegmentReader.EMPTY, 0, defaultBuffer, defaultOffset, defaultSize)
