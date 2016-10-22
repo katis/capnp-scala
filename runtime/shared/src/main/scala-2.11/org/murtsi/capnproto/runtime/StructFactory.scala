@@ -10,6 +10,8 @@ trait Struct
 
   struct =>
 
+  def structSize: StructSize
+
   type Builder <: BuilderBase
   type Reader <: ReaderBase
 
@@ -24,6 +26,12 @@ trait Struct
 
     override def Reader(segment: SegmentReader, ptr: Int, elementCount: Int, step: Int, structDataSize: Int, structPointerCount: Short, nestingLimit: Int): Reader =
       new ReaderImpl(segment, ptr, elementCount, step, structDataSize, structPointerCount, nestingLimit)
+
+    override def initFromPointerBuilder(segment: SegmentBuilder,
+                                        pointer: Int,
+                                        elementCount: Int): Builder = {
+      WireHelpers.initStructListPointer(this, pointer, segment, elementCount, structSize)
+    }
 
     class BuilderImpl(_segment: SegmentBuilder,
                       _ptr: Int,

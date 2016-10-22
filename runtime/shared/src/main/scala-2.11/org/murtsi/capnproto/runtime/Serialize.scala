@@ -105,34 +105,56 @@ object Serialize {
   }
 
   def computeSerializedSizeInWords(message: MessageBuilder): Long = {
-    val segments = message.getSegmentsForOutput
+    val segments = message.getSegmentsForOutput()
     var bytes: Long = 0
     bytes += 4
     bytes += segments.length * 4
     if (bytes % 8 != 0) {
       bytes += 4
     }
-    for (i <- 0 until segments.length) {
+    for (i <- segments.indices) {
       val s = segments(i)
       bytes += s.limit()
     }
     bytes / Constants.BYTES_PER_WORD
   }
 
+  def writeToByteBuffer(message: MessageBuilder): ByteBuffer = {
+    val segments = message.getSegmentsForOutput()
+    val segmentsSize = segments.map(_.remaining()).sum
+    val tableSize = (segments.length + 2) & (~1)
+    val table = ByteBuffer.allocateDirect(4 * tableSize + segmentsSize)
+    table.order(ByteOrder.LITTLE_ENDIAN)
+    table.putInt(0, segments.length - 1)
+    for (i <- segments.indices) {
+      table.putInt(4 * (i + 1), segments(i).limit() / 8)
+    }
+    table.position(tableSize * 4)
+
+    for (buffer <- segments) {
+      while (buffer.hasRemaining) {
+        table.put(buffer)
+      }
+    }
+
+    table.flip()
+    table
+  }
+
   def write(outputChannel: WritableByteChannel, message: MessageBuilder) {
-    val segments = message.getSegmentsForOutput
+    val segments = message.getSegmentsForOutput()
     val tableSize = (segments.length + 2) & (~1)
     val table = ByteBuffer.allocate(4 * tableSize)
     table.order(ByteOrder.LITTLE_ENDIAN)
     table.putInt(0, segments.length - 1)
-    for (i <- 0 until segments.length) {
+    for (i <- segments.indices) {
       table.putInt(4 * (i + 1), segments(i).limit() / 8)
     }
-    while (table.hasRemaining()) {
+    while (table.hasRemaining) {
       outputChannel.write(table)
     }
     for (buffer <- segments) {
-      while (buffer.hasRemaining()) {
+      while (buffer.hasRemaining) {
         outputChannel.write(buffer)
       }
     }

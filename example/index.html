@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Cap'n Proto To-Do example</title>
+</head>
+<body>
+    <div>
+        <div>
+            <button id="send">Add</button>
+            <input id="todoText" type="text" />
+        </div>
+        <ul id="todos"></ul>
+    </div>
+    <script src="js/target/scala-2.11/cap-n-proto-example-fastopt.js"></script>
+    <script src="js/target/scala-2.11/cap-n-proto-example-jsdeps.js"></script>
+    <script>
+        org.murtsi.capnproto.example.client.Client().main();
+    </script>
+</body>
+</html>
