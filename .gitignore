@@ -3,3 +3,5 @@ jvm/target
 shared/target
 target
 .idea
+schema.capnp
+schema.scala

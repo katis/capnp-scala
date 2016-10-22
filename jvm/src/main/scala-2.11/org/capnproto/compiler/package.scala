@@ -50,15 +50,17 @@ package object compiler {
     "yield"
   ) ++ reservedClasses
 
+  def booleanMatch[A, B](value: A)(fn: PartialFunction[A, B]): Boolean = fn.isDefinedAt(value)
+
   case class TypeParameterTexts(expandedList: Seq[String],
                                 params: String)
 
-  implicit class TypeInfo(val typ: CapnpSchema.Type.Reader) extends AnyVal {
+  implicit class TypeInfo(val typ: Type.Reader) extends AnyVal {
     def isParameter: Boolean = {
-      typ.which match {
-        case CapnpSchema.Type.Which.ANY_POINTER =>
-          typ.anypointer.which match {
-            case CapnpSchema.Type.AnyPointer.Which.PARAMETER => true
+      typ match {
+        case Type.AnyPointer(ptr) =>
+          ptr match {
+            case Type.AnyPointer.Parameter(_) => true
             case _ => false
           }
         case _ => false
@@ -66,19 +68,19 @@ package object compiler {
     }
 
     def isBranded: Boolean = {
-      typ.which match {
-        case CapnpSchema.Type.Which.STRUCT =>
-          val struct = typ.struct
-          val brand = struct.brand
-          brand.scopes.size > 0
+      typ match {
+        case Type.Struct(struct) =>
+          (for (brand <- struct.brand;
+               scopes <- brand.scopes)
+            yield scopes.size > 0).getOrElse(false)
         case _ => false
       }
     }
 
     def isPrimitive: Boolean = {
-      import CapnpSchema.Type.Which._
-      typ.which match {
-        case INT8 | INT16 | INT32 | INT64 | UINT8 | UINT16 | UINT32 | UINT64 | FLOAT32 | FLOAT64 | VOID | BOOL => true
+      import Type._
+      typ match {
+        case Int8() | Int16() | Int32() | Int64() | Uint8() | Uint16() | Uint32() | Uint64() | Float32() | Float64() | Void() | Bool() => true
         case _ => false
       }
     }
