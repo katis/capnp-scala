@@ -31,7 +31,7 @@ object WireHelpers {
     if (ptr == SegmentBuilder.FAILED_ALLOCATION) {
       val amountPlusRef = amount + Constants.POINTER_SIZE_IN_WORDS
       val allocation = segment.arena.allocate(amountPlusRef)
-      FarPointer.set(segment.buffer, refOffset, false, allocation.offset)
+      FarPointer.set(segment.buffer, refOffset, isDoubleFar = false, allocation.offset)
       FarPointer.setSegmentId(segment.buffer, refOffset, allocation.segment.id)
       val resultRefOffset = allocation.offset
       val ptr1 = allocation.offset + Constants.POINTER_SIZE_IN_WORDS
@@ -44,7 +44,6 @@ object WireHelpers {
   }
 
   class FollowBuilderFarsResult(val ptr: Int, val ref: Long, val segment: SegmentBuilder)
-
 
   def followBuilderFars(_ref: Long, refTarget: Int, segment: SegmentBuilder): FollowBuilderFarsResult = {
     var ref = _ref
@@ -72,7 +71,6 @@ object WireHelpers {
       var resultSegment = segment.arena.tryGetSegment(FarPointer.getSegmentId(ref))
       val padOffset = FarPointer.positionInSegment(ref)
       val pad = resultSegment.get(padOffset)
-      val padWords = if (FarPointer.isDoubleFar(ref)) 2 else 1
       if (!FarPointer.isDoubleFar(ref)) {
         new FollowFarsResult(WirePointer.target(padOffset, pad), pad, resultSegment)
       } else {
@@ -209,17 +207,17 @@ object WireHelpers {
         val allocation = srcSegment.arena.allocate(2)
         val farSegment = allocation.segment
         landingPadOffset = allocation.offset
-        FarPointer.set(farSegment.buffer, landingPadOffset, false, srcTargetOffset)
+        FarPointer.set(farSegment.buffer, landingPadOffset, isDoubleFar = false, srcTargetOffset)
         FarPointer.setSegmentId(farSegment.buffer, landingPadOffset, srcSegment.id)
         WirePointer.setKindWithZeroOffset(farSegment.buffer, landingPadOffset + 1, WirePointer.kind(srcTarget))
         farSegment.buffer.putInt((landingPadOffset + 1) * Constants.BYTES_PER_WORD + 4, srcSegment.buffer.getInt(srcOffset * Constants.BYTES_PER_WORD + 4))
-        FarPointer.set(dstSegment.buffer, dstOffset, true, landingPadOffset)
+        FarPointer.set(dstSegment.buffer, dstOffset, isDoubleFar = true, landingPadOffset)
         FarPointer.setSegmentId(dstSegment.buffer, dstOffset, farSegment.id)
       } else {
         WirePointer.setKindAndTarget(srcSegment.buffer, landingPadOffset, WirePointer.kind(srcTarget),
           srcTargetOffset)
         srcSegment.buffer.putInt(landingPadOffset * Constants.BYTES_PER_WORD + 4, srcSegment.buffer.getInt(srcOffset * Constants.BYTES_PER_WORD + 4))
-        FarPointer.set(dstSegment.buffer, dstOffset, false, landingPadOffset)
+        FarPointer.set(dstSegment.buffer, dstOffset, isDoubleFar = false, landingPadOffset)
         FarPointer.setSegmentId(dstSegment.buffer, dstOffset, srcSegment.id)
       }
     }
@@ -367,7 +365,7 @@ object WireHelpers {
       }
       val oldDataSize = StructPointer.dataSize(oldTag)
       val oldPointerCount = StructPointer.ptrCount(oldTag)
-      val oldStep = (oldDataSize + oldPointerCount * Constants.POINTER_SIZE_IN_WORDS)
+      val oldStep = oldDataSize + oldPointerCount * Constants.POINTER_SIZE_IN_WORDS
       val elementCount = WirePointer.inlineCompositeListElementCount(oldTag)
       if (oldDataSize >= elementSize.data && oldPointerCount >= elementSize.pointers) {
         return factory.Builder(resolved.segment, oldPtr * Constants.BYTES_PER_WORD, elementCount,
@@ -381,7 +379,6 @@ object WireHelpers {
       val allocation = allocate(origRefOffset, origSegment, totalSize + Constants.POINTER_SIZE_IN_WORDS,
         WirePointer.LIST)
       ListPointer.setInlineComposite(allocation.segment.buffer, allocation.refOffset, totalSize)
-      val tag = allocation.segment.get(allocation.ptr)
       WirePointer.setKindAndInlineCompositeListElementCount(allocation.segment.buffer, allocation.ptr,
         WirePointer.STRUCT, elementCount)
       StructPointer.set(allocation.segment.buffer, allocation.ptr, newDataSize, newPointerCount)
@@ -421,13 +418,12 @@ object WireHelpers {
         } else {
           newDataSize = Math.max(newDataSize, 1).toShort
         }
-        val newStep = (newDataSize + newPointerCount * Constants.WORDS_PER_POINTER)
+        val newStep = newDataSize + newPointerCount * Constants.WORDS_PER_POINTER
         val totalWords = elementCount * newStep
         zeroPointerAndFars(origSegment, origRefOffset)
         val allocation = allocate(origRefOffset, origSegment, totalWords + Constants.POINTER_SIZE_IN_WORDS,
           WirePointer.LIST)
         ListPointer.setInlineComposite(allocation.segment.buffer, allocation.refOffset, totalWords)
-        val tag = allocation.segment.get(allocation.ptr)
         WirePointer.setKindAndInlineCompositeListElementCount(allocation.segment.buffer, allocation.ptr,
           WirePointer.STRUCT, elementCount)
         StructPointer.set(allocation.segment.buffer, allocation.ptr, newDataSize, newPointerCount)
@@ -551,12 +547,12 @@ object WireHelpers {
     new Data.Builder(resolved.segment.buffer, resolved.ptr * Constants.BYTES_PER_WORD, ListPointer.elementCount(resolved.ref))
   }
 
-  def readStructPointerTF(factory: StructReader.FactoryTF,
-                           _segment: SegmentReader,
-                           _refOffset: Int,
-                           defaultSegment: SegmentReader,
-                           defaultOffset: Int,
-                           nestingLimit: Int): factory.Reader = {
+  def readStructPointer(factory: StructReader.Factory,
+                        _segment: SegmentReader,
+                        _refOffset: Int,
+                        defaultSegment: SegmentReader,
+                        defaultOffset: Int,
+                        nestingLimit: Int): factory.Reader = {
     var segment = _segment
     var refOffset = _refOffset
 
@@ -581,40 +577,6 @@ object WireHelpers {
     }
     resolved.segment.arena.checkReadLimit(StructPointer.wordSize(resolved.ref))
     factory.Reader(resolved.segment, resolved.ptr * Constants.BYTES_PER_WORD, resolved.ptr + dataSizeWords,
-      dataSizeWords * Constants.BITS_PER_WORD, StructPointer.ptrCount(resolved.ref), nestingLimit - 1)
-  }
-
-
-  def readStructPointer[T](factory: StructReader.Factory[T],
-                           _segment: SegmentReader,
-                           _refOffset: Int,
-                           defaultSegment: SegmentReader,
-                           defaultOffset: Int,
-                           nestingLimit: Int): T = {
-    var segment = _segment
-    var refOffset = _refOffset
-
-    var ref = segment.get(refOffset)
-    if (WirePointer.isNull(ref)) {
-      if (defaultSegment == null) {
-        return factory.constructReader(SegmentReader.EMPTY, 0, 0, 0, 0.toShort, 0x7fffffff)
-      } else {
-        segment = defaultSegment
-        refOffset = defaultOffset
-        ref = segment.get(refOffset)
-      }
-    }
-    if (nestingLimit <= 0) {
-      throw new DecodeException("Message is too deeply nested or contains cycles.")
-    }
-    val refTarget = WirePointer.target(refOffset, ref)
-    val resolved = followFars(ref, refTarget, segment)
-    val dataSizeWords = StructPointer.dataSize(resolved.ref)
-    if (WirePointer.kind(resolved.ref) != WirePointer.STRUCT) {
-      throw new DecodeException("Message contains non-struct pointer where struct pointer was expected.")
-    }
-    resolved.segment.arena.checkReadLimit(StructPointer.wordSize(resolved.ref))
-    factory.constructReader(resolved.segment, resolved.ptr * Constants.BYTES_PER_WORD, (resolved.ptr + dataSizeWords),
       dataSizeWords * Constants.BITS_PER_WORD, StructPointer.ptrCount(resolved.ref), nestingLimit - 1)
   }
 
@@ -734,7 +696,7 @@ object WireHelpers {
           StructPointer.ptrCount(resolved.ref), nestingLimit - 1))
 
       case WirePointer.LIST =>
-        var elementSize = ListPointer.elementSize(resolved.ref)
+        val elementSize = ListPointer.elementSize(resolved.ref)
         if (nestingLimit <= 0) {
           throw new DecodeException("Message is too deeply nested or contains cycles. See org.murtsi.capnproto.ReaderOptions.")
         }
@@ -803,7 +765,7 @@ object WireHelpers {
     val resolved = followFars(ref, refTarget, segment)
     val elementSize = ListPointer.elementSize(resolved.ref)
     elementSize match {
-      case ElementSize.INLINE_COMPOSITE => {
+      case ElementSize.INLINE_COMPOSITE =>
         val wordCount = ListPointer.inlineCompositeWordCount(resolved.ref)
         val tag = resolved.segment.get(resolved.ptr)
         val ptr = resolved.ptr + 1
@@ -818,8 +780,7 @@ object WireHelpers {
         }
         factory.Reader(resolved.segment, ptr * Constants.BYTES_PER_WORD, size, wordsPerElement * Constants.BITS_PER_WORD,
           StructPointer.dataSize(tag) * Constants.BITS_PER_WORD, StructPointer.ptrCount(tag), nestingLimit - 1)
-      }
-      case _ => {
+      case _ =>
         val dataSize = ElementSize.dataBitsPerElement(ListPointer.elementSize(resolved.ref))
         val pointerCount = ElementSize.pointersPerElement(ListPointer.elementSize(resolved.ref))
         val elementCount = ListPointer.elementCount(resolved.ref)
@@ -838,7 +799,6 @@ object WireHelpers {
         }
         factory.Reader(resolved.segment, resolved.ptr * Constants.BYTES_PER_WORD, ListPointer.elementCount(resolved.ref),
           step, dataSize, pointerCount.toShort, nestingLimit - 1)
-      }
     }
   }
 

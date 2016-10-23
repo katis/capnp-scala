@@ -70,7 +70,7 @@ class ListReader(
       this.nestingLimit - 1)
   }
 
-  protected def _getPointerElement(factory: FromPointerReaderTF, index: Int): factory.Reader = {
+  protected def _getPointerElement(factory: FromPointerReader, index: Int): factory.Reader = {
     factory.fromPointerReader(this.segment, (this.ptr + 
       (index.toLong * this.step / Constants.BITS_PER_BYTE).toInt) / 
       Constants.BYTES_PER_WORD, this.nestingLimit)

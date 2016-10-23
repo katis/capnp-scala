@@ -11,7 +11,7 @@ class MessageReader(segmentSlices: Array[ByteBuffer], options: ReaderOptions) {
 
   val nestingLimit = options.nestingLimit
 
-  def getRoot(factory: FromPointerReaderTF): factory.Reader = {
+  def getRoot(factory: FromPointerReader): factory.Reader = {
     val segment = this.arena.tryGetSegment(0)
     val any = new AnyPointer.Reader(segment, 0, this.nestingLimit)
     any.getAs(factory).asInstanceOf[factory.Reader] // TODO: find out a way to remove these casts

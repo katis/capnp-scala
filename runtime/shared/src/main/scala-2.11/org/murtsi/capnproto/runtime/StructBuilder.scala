@@ -1,19 +1,7 @@
 package org.murtsi.capnproto.runtime
 
 object StructBuilder {
-
-  trait Factory[T] {
-
-    def constructBuilder(segment: SegmentBuilder,
-        data: Int,
-        pointers: Int,
-        dataSize: Int,
-        pointerCount: Short): T
-
-    def structSize: StructSize
-  }
-
-  trait FactoryTF {
+  trait Factory {
     type Builder
 
     def Builder: (SegmentBuilder, Int, Int, Int, Short) => Builder
@@ -22,12 +10,11 @@ object StructBuilder {
   }
 }
 
-class StructBuilder(
-                     private[runtime] val _segment: SegmentBuilder,
-                     private[runtime] val _dataOffset: Int,
-                     private[runtime] val _pointers: Int,
-                     private[runtime] val _dataSize: Int,
-                     private[runtime] val _pointerCount: Short) {
+class StructBuilder(private val _segment: SegmentBuilder,
+                    private val _dataOffset: Int,
+                    private val _pointers: Int,
+                    private val _dataSize: Int,
+                    private val _pointerCount: Short) {
 
   protected def _getBooleanField(offset: Int): Boolean = {
     val bitOffset = offset
@@ -154,14 +141,14 @@ class StructBuilder(
     this._segment.buffer.putLong(pointer * 8, 0L)
   }
 
-  protected def _getPointerField(factory: FromPointerBuilderTF, index: Int): factory.Builder = {
+  protected def _getPointerField(factory: FromPointerBuilder, index: Int): factory.Builder = {
     factory.fromPointerBuilder(this._segment, this._pointers + index)
   }
 
-  protected def _getPointerField(factory: FromPointerBuilderRefDefaultTF,
-      index: Int,
-      defaultSegment: SegmentReader,
-      defaultOffset: Int): factory.Builder = {
+  protected def _getPointerField(factory: FromPointerBuilderRefDefault,
+                                 index: Int,
+                                 defaultSegment: SegmentReader,
+                                 defaultOffset: Int): factory.Builder = {
     factory.fromPointerBuilderRefDefault(this._segment, this._pointers + index, defaultSegment, defaultOffset)
   }
 
@@ -174,16 +161,16 @@ class StructBuilder(
       defaultSize)
   }
 
-  protected def _getPointerFieldOption(factory: FromPointerBuilderTF, index: Int): Option[factory.Builder] = {
+  protected def _getPointerFieldOption(factory: FromPointerBuilder, index: Int): Option[factory.Builder] = {
     val ptr = this._pointers + index
     if (_pointerFieldIsNull(ptr)) None
     else Some(factory.fromPointerBuilder(this._segment, this._pointers + index))
   }
 
-  protected def _getPointerFieldOption(factory: FromPointerBuilderRefDefaultTF,
-      index: Int,
-      defaultSegment: SegmentReader,
-      defaultOffset: Int): Option[factory.Builder] = {
+  protected def _getPointerFieldOption(factory: FromPointerBuilderRefDefault,
+                                       index: Int,
+                                       defaultSegment: SegmentReader,
+                                       defaultOffset: Int): Option[factory.Builder] = {
 
     val ptr = this._pointers + index
     if (_pointerFieldIsNull(ptr)) None
@@ -201,11 +188,11 @@ class StructBuilder(
       defaultSize))
   }
 
-  protected def _initPointerField(factory: FromPointerBuilderTF, index: Int, elementCount: Int): factory.Builder = {
+  protected def _initPointerField(factory: FromPointerBuilder, index: Int, elementCount: Int): factory.Builder = {
     factory.initFromPointerBuilder(this._segment, this._pointers + index, elementCount)
   }
 
-  protected def _setPointerField(factory: SetPointerBuilderTF)(index: Int, value: factory.Reader) {
+  protected def _setPointerField(factory: SetPointerBuilder)(index: Int, value: factory.Reader) {
     factory.setPointerBuilder(this._segment, this._pointers + index, value)
   }
 }

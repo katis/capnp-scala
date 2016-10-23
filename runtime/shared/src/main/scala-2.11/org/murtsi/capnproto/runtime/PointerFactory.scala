@@ -1,8 +1,6 @@
 package org.murtsi.capnproto.runtime
 
-trait PointerFactory[Builder, Reader] extends FromPointerBuilder[Builder] with FromPointerReader[Reader]
-
-trait PointerFactoryTF extends FromPointerBuilderTF with FromPointerReaderTF {
+trait PointerFactory extends FromPointerBuilder with FromPointerReader {
   type Builder
   type Reader
 }

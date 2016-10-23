@@ -1,14 +1,6 @@
 package org.murtsi.capnproto.runtime
 
-trait FromPointerBuilderRefDefault[T] {
-
-  def fromPointerBuilderRefDefault(segment: SegmentBuilder, 
-      pointer: Int, 
-      defaultSegment: SegmentReader, 
-      defaultOffset: Int): T
-}
-
-trait FromPointerBuilderRefDefaultTF {
+trait FromPointerBuilderRefDefault {
   type Builder
 
   def fromPointerBuilderRefDefault(segment: SegmentBuilder,

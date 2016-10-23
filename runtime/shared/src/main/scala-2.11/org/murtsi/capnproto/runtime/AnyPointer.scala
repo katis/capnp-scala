@@ -1,6 +1,6 @@
 package org.murtsi.capnproto.runtime
 
-object AnyPointer extends PointerFactoryTF {
+object AnyPointer extends PointerFactory {
   type Builder = BuilderImpl
   type Reader = ReaderImpl
 
@@ -22,7 +22,7 @@ object AnyPointer extends PointerFactoryTF {
       WirePointer.isNull(this.segment.buffer.getLong(this.pointer * Constants.BYTES_PER_WORD))
     }
 
-    def getAs(factory: FromPointerReaderTF): factory.Reader = {
+    def getAs(factory: FromPointerReader): factory.Reader = {
       factory.fromPointerReader(this.segment, this.pointer, this.nestingLimit)
     }
   }
@@ -33,19 +33,19 @@ object AnyPointer extends PointerFactoryTF {
       WirePointer.isNull(this.segment.buffer.getLong(this.pointer * Constants.BYTES_PER_WORD))
     }
 
-    def getAs(factory: FromPointerBuilderTF): factory.Builder = {
+    def getAs(factory: FromPointerBuilder): factory.Builder = {
       factory.fromPointerBuilder(this.segment, this.pointer)
     }
 
-    def initAs(factory: FromPointerBuilderTF): factory.Builder = {
+    def initAs(factory: FromPointerBuilder): factory.Builder = {
       factory.initFromPointerBuilder(this.segment, this.pointer, 0)
     }
 
-    def initAs(factory: FromPointerBuilderTF, elementCount: Int): factory.Builder = {
+    def initAs(factory: FromPointerBuilder, elementCount: Int): factory.Builder = {
       factory.initFromPointerBuilder(this.segment, this.pointer, elementCount)
     }
 
-    def setAs(factory: SetPointerBuilderTF)(reader: factory.Reader) {
+    def setAs(factory: SetPointerBuilder)(reader: factory.Reader) {
       factory.setPointerBuilder(this.segment, this.pointer, reader)
     }
 

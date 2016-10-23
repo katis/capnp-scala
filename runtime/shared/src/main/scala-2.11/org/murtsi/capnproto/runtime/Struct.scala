@@ -1,12 +1,12 @@
 package org.murtsi.capnproto.runtime
 
 trait Struct
-  extends PointerFactoryTF
-    with FromPointerBuilderRefDefaultTF
-    with StructBuilder.FactoryTF
-    with SetPointerBuilderTF
-    with FromPointerReaderRefDefaultTF
-    with StructReader.FactoryTF {
+  extends PointerFactory
+    with FromPointerBuilderRefDefault
+    with StructBuilder.Factory
+    with SetPointerBuilder
+    with FromPointerReaderRefDefault
+    with StructReader.Factory {
 
   struct =>
 
@@ -22,7 +22,9 @@ trait Struct
     override def Builder(segment: SegmentBuilder, ptr: Int, elementCount: Int, step: Int, structDataSize: Int, structPointerCount: Short): Builder =
       new BuilderImpl(segment, ptr, elementCount, step, structDataSize, structPointerCount)
 
-    override def setPointerBuilder(segment: SegmentBuilder, pointer: Int, value: Reader): Unit = ???
+    override def setPointerBuilder(segment: SegmentBuilder, pointer: Int, value: Reader): Unit = {
+      WireHelpers.setListPointer(segment, pointer, value)
+    }
 
     override def Reader(segment: SegmentReader, ptr: Int, elementCount: Int, step: Int, structDataSize: Int, structPointerCount: Short, nestingLimit: Int): Reader =
       new ReaderImpl(segment, ptr, elementCount, step, structDataSize, structPointerCount, nestingLimit)
@@ -31,6 +33,14 @@ trait Struct
                                         pointer: Int,
                                         elementCount: Int): Builder = {
       WireHelpers.initStructListPointer(this, pointer, segment, elementCount, structSize)
+    }
+
+    override def fromPointerBuilderRefDefault(segment: SegmentBuilder, pointer: Int, defaultSegment: SegmentReader, defaultOffset: Int): Builder = {
+      WireHelpers.getWritableStructListPointer(this, pointer, segment, structSize, defaultSegment, defaultOffset)
+    }
+
+    override def fromPointerBuilder(segment: SegmentBuilder, pointer: Int): Builder = {
+      WireHelpers.getWritableStructListPointer(this, pointer, segment, structSize, null, 0)
     }
 
     class BuilderImpl(_segment: SegmentBuilder,
@@ -117,7 +127,7 @@ trait Struct
                                   defaultSegment: SegmentReader,
                                   defaultOffset: Int,
                                   nestingLimit: Int): Reader = {
-    WireHelpers.readStructPointerTF(this, segment, pointer, defaultSegment, defaultOffset, nestingLimit)
+    WireHelpers.readStructPointer(this, segment, pointer, defaultSegment, defaultOffset, nestingLimit)
   }
 
 
@@ -141,7 +151,7 @@ trait Struct
   }
 
   def setPointerBuilder(segment: SegmentBuilder, pointer: Int, value: Reader) {
-    WireHelpers.setStructPointer(segment, pointer, value.asInstanceOf[StructReader])
+    WireHelpers.setStructPointer(segment, pointer, value)
   }
 
   def asReader(builder: BuilderBase): Reader = builder.asReader

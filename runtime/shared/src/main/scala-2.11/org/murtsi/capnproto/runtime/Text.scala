@@ -5,8 +5,8 @@ import java.nio.ByteBuffer
 object Text
     extends FromPointerReaderBlobDefault
     with FromPointerBuilderBlobDefault
-    with PointerFactoryTF
-    with SetPointerBuilderTF {
+    with PointerFactory
+    with SetPointerBuilder {
 
   type Reader = ReaderImpl
   type Builder = BuilderImpl

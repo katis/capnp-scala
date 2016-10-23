@@ -104,19 +104,19 @@ class ListBuilder(val segment: SegmentBuilder,
     factory.Builder(this.segment, structData, structPointers, this.structDataSize, this.structPointerCount)
   }
 
-  protected def _getPointerElement(factory: FromPointerBuilderTF, index: Int): factory.Builder = {
+  protected def _getPointerElement(factory: FromPointerBuilder, index: Int): factory.Builder = {
     factory.fromPointerBuilder(this.segment, (this.ptr + 
       (index.toLong * this.step / Constants.BITS_PER_BYTE).toInt) / 
       Constants.BYTES_PER_WORD)
   }
 
-  protected def _initPointerElement(factory: FromPointerBuilderTF, index: Int, elementCount: Int): factory.Builder = {
+  protected def _initPointerElement(factory: FromPointerBuilder, index: Int, elementCount: Int): factory.Builder = {
     factory.initFromPointerBuilder(this.segment, (this.ptr + 
       (index.toLong * this.step / Constants.BITS_PER_BYTE).toInt) / 
       Constants.BYTES_PER_WORD, elementCount)
   }
 
-  protected def _setPointerElement(factory: SetPointerBuilderTF)(index: Int, value: factory.Reader) {
+  protected def _setPointerElement(factory: SetPointerBuilder)(index: Int, value: factory.Reader) {
     factory.setPointerBuilder(this.segment, (this.ptr + 
       (index.toLong * this.step / Constants.BITS_PER_BYTE).toInt) / 
       Constants.BYTES_PER_WORD, value)

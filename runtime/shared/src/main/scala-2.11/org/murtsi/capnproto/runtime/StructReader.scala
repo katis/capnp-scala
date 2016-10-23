@@ -1,18 +1,7 @@
 package org.murtsi.capnproto.runtime
 
 object StructReader {
-
-  trait Factory[T] {
-
-    def constructReader(segment: SegmentReader,
-                        data: Int,
-                        pointers: Int,
-                        dataSize: Int,
-                        pointerCount: Short,
-                        nestingLimit: Int): T
-  }
-
-  trait FactoryTF {
+  trait Factory {
     type Reader
 
     def Reader: (SegmentReader,
@@ -124,7 +113,7 @@ class StructReader(private[runtime] val _segment: SegmentReader = SegmentReader.
       0
   }
 
-  protected def _getPointerFieldOption(factory: FromPointerReaderTF, ptrIndex: Int): Option[factory.Reader] = {
+  protected def _getPointerFieldOption(factory: FromPointerReader, ptrIndex: Int): Option[factory.Reader] = {
     if (ptrIndex < this._pointerCount) {
       Some(factory.fromPointerReader(this._segment, this._pointers + ptrIndex, this._nestingLimit))
     } else {
@@ -132,7 +121,7 @@ class StructReader(private[runtime] val _segment: SegmentReader = SegmentReader.
     }
   }
 
-  protected def _getPointerField(factory: FromPointerReaderTF, ptrIndex: Int): factory.Reader = {
+  protected def _getPointerField(factory: FromPointerReader, ptrIndex: Int): factory.Reader = {
     if (ptrIndex < this._pointerCount) {
       factory.fromPointerReader(this._segment, this._pointers + ptrIndex, this._nestingLimit)
     } else {
@@ -140,10 +129,10 @@ class StructReader(private[runtime] val _segment: SegmentReader = SegmentReader.
     }
   }
 
-  protected def _getPointerField(factory: FromPointerReaderRefDefaultTF,
-                                    ptrIndex: Int,
-                                    defaultSegment: SegmentReader,
-                                    defaultOffset: Int): factory.Reader = {
+  protected def _getPointerField(factory: FromPointerReaderRefDefault,
+                                 ptrIndex: Int,
+                                 defaultSegment: SegmentReader,
+                                 defaultOffset: Int): factory.Reader = {
     if (ptrIndex < this._pointerCount) {
       factory.fromPointerReaderRefDefault(this._segment, this._pointers + ptrIndex, defaultSegment, defaultOffset,
         this._nestingLimit)

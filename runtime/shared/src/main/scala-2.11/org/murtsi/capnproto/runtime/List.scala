@@ -2,11 +2,11 @@ package org.murtsi.capnproto.runtime
 
 abstract class List[ElementBuilder, ElementReader](val elementSize: Byte)
     extends ListBuilder.Factory
-    with FromPointerBuilderRefDefaultTF
-    with SetPointerBuilderTF
+    with FromPointerBuilderRefDefault
+    with SetPointerBuilder
     with ListReader.Factory
-    with PointerFactoryTF
-    with FromPointerReaderRefDefaultTF {
+    with PointerFactory
+    with FromPointerReaderRefDefault {
 
   type Builder <: BuilderBase
   type Reader <: ReaderBase
