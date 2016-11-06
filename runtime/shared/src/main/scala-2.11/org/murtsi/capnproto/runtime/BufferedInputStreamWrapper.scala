@@ -2,6 +2,7 @@ package org.murtsi.capnproto.runtime
 
 import java.nio.ByteBuffer
 import java.nio.channels.ReadableByteChannel
+
 import BufferedInputStreamWrapper._
 
 object BufferedInputStreamWrapper {

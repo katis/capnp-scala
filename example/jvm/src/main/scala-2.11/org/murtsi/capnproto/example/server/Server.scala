@@ -10,9 +10,11 @@ import akka.http.scaladsl.server.Directives._
 import akka.stream.scaladsl.{Flow, Sink, Source}
 import akka.stream.{ActorMaterializer, OverflowStrategy}
 import akka.util.ByteString
-import org.murtsi.capnproto.example.ServerMessage.{Add, Modify, Remove}
+import org.murtsi.capnproto.example.todo._
+import org.murtsi.capnproto.example.todo.ServerMessage.{Add, Modify, Remove}
 import org.murtsi.capnproto.example.server.CapnProtoExts._
-import org.murtsi.capnproto.example.{ClientMessage, ServerMessage}
+import org.murtsi.capnproto.example.todo.{ClientMessage, ServerMessage}
+import org.murtsi.capnproto.runtime.implicits._
 import org.murtsi.capnproto.runtime.{MessageBuilder, Serialize}
 
 import scala.collection.mutable
@@ -23,10 +25,10 @@ case class NewSession(actor: ActorRef) extends WsMessage
 case class Disconnected(actor: ActorRef) extends WsMessage
 
 object CapnProtoExts {
-  implicit class IterableExt[A](val iterable: Iterable[A]) extends AnyVal {
-    def zipSameSize[B](makeSizedIterable: (Int) => Iterable[B]): Iterable[(A, B)] = {
+  implicit class IterableExt[A](val iterable: Traversable[A]) extends AnyVal {
+    def zipSameSize[B](makeSizedIterable: (Int) => Traversable[B]): Traversable[(A, B)] = {
       val bs = makeSizedIterable(iterable.size)
-      iterable.zip(bs)
+      iterable.toVector.zip(bs.toVector)
     }
   }
 }
@@ -35,12 +37,12 @@ class TodoService(system: ActorSystem) {
   private val todoActor = system.actorOf(Props(new TodoActor), "TodoService")
 
   def todoFlow(): Flow[ByteString, ByteString, Any] = {
-    val sink = Sink.actorRef[ServerMessage.Reader](todoActor, NewSession(todoActor))
+    val sink = Sink.actorRef[ServerMessage#Reader](todoActor, NewSession(todoActor))
 
     val in = Flow[ByteString]
         .map(_.asByteBuffer)
         .map(Serialize.read)
-        .map(_.getRoot(ServerMessage))
+        .map(_.getRoot[ServerMessage])
         .to(sink)
 
     val out = Source.actorRef[ByteString](1, OverflowStrategy.fail)
@@ -125,9 +127,9 @@ class TodoService(system: ActorSystem) {
         }
     }
 
-    def sendClientMessage(init: (ClientMessage.Builder) => Unit, targets: Iterable[ActorRef] = Seq(sender)): Unit = {
+    def sendClientMessage(init: (ClientMessage#Builder) => Unit, targets: Iterable[ActorRef] = Seq(sender)): Unit = {
       val messageBuilder = new MessageBuilder()
-      val msg: ClientMessage.Builder = messageBuilder.getRoot(ClientMessage)
+      val msg: ClientMessage#Builder = messageBuilder.getRoot[ClientMessage]
       init(msg)
 
       val response = ByteString(Serialize.writeToByteBuffer(messageBuilder))

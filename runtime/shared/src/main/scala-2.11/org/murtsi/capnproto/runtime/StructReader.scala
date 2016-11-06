@@ -113,15 +113,16 @@ class StructReader(private[runtime] val _segment: SegmentReader = SegmentReader.
       0
   }
 
-  protected def _getPointerFieldOption(factory: FromPointerReader, ptrIndex: Int): Option[factory.Reader] = {
+  protected def _getPointerFieldOption[T <: PointerFamily : FromPointer](ptrIndex: Int): Option[T#Reader] = {
     if (ptrIndex < this._pointerCount) {
-      Some(factory.fromPointerReader(this._segment, this._pointers + ptrIndex, this._nestingLimit))
+      Some(implicitly[FromPointer[T]].fromPointerReader(this._segment, this._pointers + ptrIndex, this._nestingLimit))
     } else {
       None
     }
   }
 
-  protected def _getPointerField(factory: FromPointerReader, ptrIndex: Int): factory.Reader = {
+  protected def _getPointerField[T <: PointerFamily : FromPointer](ptrIndex: Int): T#Reader = {
+    val factory = implicitly[FromPointer[T]]
     if (ptrIndex < this._pointerCount) {
       factory.fromPointerReader(this._segment, this._pointers + ptrIndex, this._nestingLimit)
     } else {
@@ -129,10 +130,10 @@ class StructReader(private[runtime] val _segment: SegmentReader = SegmentReader.
     }
   }
 
-  protected def _getPointerField(factory: FromPointerReaderRefDefault,
-                                 ptrIndex: Int,
+  protected def _getPointerField[T <: PointerFamily : FromPointerRefDefault](ptrIndex: Int,
                                  defaultSegment: SegmentReader,
-                                 defaultOffset: Int): factory.Reader = {
+                                 defaultOffset: Int): T#Reader = {
+    val factory = implicitly[FromPointerRefDefault[T]]
     if (ptrIndex < this._pointerCount) {
       factory.fromPointerReaderRefDefault(this._segment, this._pointers + ptrIndex, defaultSegment, defaultOffset,
         this._nestingLimit)
@@ -141,11 +142,12 @@ class StructReader(private[runtime] val _segment: SegmentReader = SegmentReader.
     }
   }
 
-  protected def _getPointerField(factory: FromPointerReaderBlobDefault,
-                                    ptrIndex: Int,
+  protected def _getPointerField[T <: PointerFamily : FromPointerBlobDefault](
+                                                               ptrIndex: Int,
                                     defaultBuffer: java.nio.ByteBuffer,
                                     defaultOffset: Int,
-                                    defaultSize: Int): factory.Reader = {
+                                    defaultSize: Int): T#Reader = {
+    val factory = implicitly[FromPointerBlobDefault[T]]
     if (ptrIndex < this._pointerCount) {
       factory.fromPointerReaderBlobDefault(this._segment, this._pointers + ptrIndex, defaultBuffer, defaultOffset,
         defaultSize)

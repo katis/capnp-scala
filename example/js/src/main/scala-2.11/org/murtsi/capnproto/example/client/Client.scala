@@ -4,8 +4,10 @@ import monix.execution.Cancelable
 import monix.execution.Scheduler.Implicits.global
 import monix.reactive.Observable
 import monix.reactive.observers.Subscriber
-import org.murtsi.capnproto.example.ClientMessage._
-import org.murtsi.capnproto.example.{ClientMessage, ServerMessage, Todo}
+import org.murtsi.capnproto.example.todo._
+import org.murtsi.capnproto.example.todo.ClientMessage._
+import org.murtsi.capnproto.example.todo.{ClientMessage, ServerMessage, Todo}
+import org.murtsi.capnproto.runtime.implicits._
 import org.murtsi.capnproto.runtime.{MessageBuilder, Serialize}
 import org.scalajs.dom._
 import org.scalajs.dom.raw.{HTMLButtonElement, HTMLInputElement, WebSocket}
@@ -43,7 +45,7 @@ object Client extends JSApp {
     }
 
     var clientId = 0L
-    var todos = mutable.ArrayBuffer[Todo.Reader]()
+    var todos = mutable.ArrayBuffer[Todo#Reader]()
 
     def redrawTodos(): Unit = {
       val todoContainer = document.getElementById("todos")
@@ -95,9 +97,9 @@ object Client extends JSApp {
 }
 
 class TodoService(address: String) {
-  private val subscribers = mutable.ArrayBuffer[Subscriber[ClientMessage.Reader]]()
+  private val subscribers = mutable.ArrayBuffer[Subscriber[ClientMessage#Reader]]()
 
-  val messages = Observable.unsafeCreate[ClientMessage.Reader](subscriber => {
+  val messages = Observable.unsafeCreate[ClientMessage#Reader](subscriber => {
     subscribers += subscriber
 
     new Cancelable {
@@ -132,13 +134,13 @@ class TodoService(address: String) {
     println(s"  size: ${data.byteLength}")
     val bb = TypedArrayBuffer.wrap(data)
     val reader = Serialize.read(bb)
-    val msg = reader.getRoot(ClientMessage)
+    val msg = reader.getRoot[ClientMessage]
     subscribers.foreach(_.onNext(msg))
   }
 
-  def send(messageInit: (ServerMessage.Builder) => Unit): Unit = {
+  def send(messageInit: (ServerMessage#Builder) => Unit): Unit = {
     val builder = new MessageBuilder()
-    val msg = builder.getRoot(ServerMessage)
+    val msg = builder.getRoot[ServerMessage]
     messageInit(msg)
     val response = Serialize.writeToByteBuffer(builder)
     ws.send(response.arrayBuffer())

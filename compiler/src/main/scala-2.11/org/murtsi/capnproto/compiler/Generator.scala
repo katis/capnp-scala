@@ -1,9 +1,11 @@
 package org.murtsi.capnproto.compiler
 
-import java.nio.file.Paths
-
+import org.murtsi.capnproto.compiler.schema._
 import org.murtsi.capnproto.runtime.{MessageReader, Text}
+import org.murtsi.capnproto.runtime.implicits._
 
+import scala.annotation.tailrec
+import scala.collection.immutable.HashMap
 import scala.collection.mutable
 
 sealed trait Leaf {
@@ -16,9 +18,6 @@ sealed trait Leaf {
     case Client => "Client"
     case Pipeline => "Pipeline"
     case Module => ""
-    case List => "List"
-    case ListBuilder => "List.Builder"
-    case ListReader => "List.Reader"
   }
 }
 
@@ -29,48 +28,103 @@ object Leaf {
   object Client extends Leaf
   object Pipeline extends Leaf
   object Module extends Leaf
-  object List extends Leaf
-  object ListBuilder extends Leaf
-  object ListReader extends Leaf
 }
 
-object Generator {
-  private val PackageNameAnnotationId = 0xee44ce11f43e05d7L
+class NodeTypeTree {
+  private case class Entry(name: String, parent: Option[Long], genericArgs: Vector[String])
+  private val entries = new mutable.HashMap[Long, Entry]
+
+  def add(nodeId: Long, name: String, parent: Option[Long] = None, genericArgs: Vector[String] = Vector.empty): Unit = {
+    entries(nodeId) = Entry(name, parent, genericArgs)
+  }
+
+  def allGenericParams(nodeId: Long): Seq[String] = {
+    def buildGenericParams(id: Long, acc: Seq[String]): Seq[String] = {
+      entries.get(id) match {
+        case Some(Entry(_, Some(parent), genericArgs)) =>
+          buildGenericParams(parent, genericArgs ++ acc)
+        case Some(Entry(_, _, genericArgs)) =>
+          genericArgs ++ acc
+        case None =>
+          acc
+      }
+    }
+
+    buildGenericParams(nodeId, Seq())
+  }
+
+  def fullType(nodeId: Long, withGenericParams: Boolean = true, typeSeparator: String = "."): String = {
+    def nextPart(name: String, genericArgs: Vector[String], prev: String): String = {
+      val ga = if (!withGenericParams || genericArgs.isEmpty) "" else s"[${genericArgs.mkString(", ")}]"
+      if (prev.isEmpty) s"$name$ga" else s"$name$ga$typeSeparator$prev"
+    }
+
+    def buildFullType(id: Long, prev: String): String = {
+      entries.get(id) match {
+        case Some(Entry(name, Some(parent), genericArgs)) =>
+          val s = nextPart(name, genericArgs, prev)
+          buildFullType(parent, s)
+        case Some(Entry(name, None, genericArgs)) =>
+          nextPart(name, genericArgs, prev)
+        case None =>
+          prev
+      }
+    }
+
+    buildFullType(nodeId, "")
+  }
 }
 
 class Generator(message: MessageReader) {
-  val request = message.getRoot(CodeGeneratorRequest)
-  private val nodeMap = mutable.HashMap[Long, Node.Reader]()
+  val request = message.getRoot[CodeGeneratorRequest]
+  private val nodeMap = mutable.HashMap[Long, Node#Reader]()
   private val scopeMap = mutable.HashMap[Long, Seq[String]]()
-  var _packageName: String = _
-  def packageName: String = _packageName
+  private val nodeTypes = new NodeTypeTree()
+  private val implicits = mutable.ArrayBuffer[FormattedText]()
 
   for (node <- request.nodes.get) {
     nodeMap(node.id) = node
   }
 
-  for (requestedFile <- request.requestedFiles.get) {
-    val id = requestedFile.id
-    _packageName = {
-      val value = nodeMap(id).annotations.flatMap(_.find(_.id == Generator.PackageNameAnnotationId)).get.value.get
+  private def annotationText(node: Node#Reader, annotationId: Long): Option[String] = {
+    for (annotations <- node.annotations;
+         annotation <- annotations.find(ann => ann.id == annotationId);
+         value <- annotation.value
+    ) yield {
       value match {
-        case Value.Text(txt) => txt.toString
+        case Value.Text(text) => text.toString
       }
     }
+  }
+
+  private def nodePackageName(nodeId: Long): Option[String] = {
+    val node = nodeMap(nodeId)
+    annotationText(node, PackageNameAnnotationId)
+  }
+
+  private def nodeModuleName(nodeId: Long): Option[String] = {
+    val node = nodeMap(nodeId)
+    annotationText(node, ModuleAnnotationId)
+  }
+
+  for (requestedFile <- request.requestedFiles.get) {
+    val id = requestedFile.id
+    val packageName = nodePackageName(id).get
+    val module = nodeModuleName(id).get
     val imports = requestedFile.imports.get
 
-    for (imp <- imports;
-         importPath <- imp.name) {
-      val path = Paths.get(importPath.toString).toString
-      val rootName = moduleName(s"""${path.toString.replace("-", "_")}""") // TODO: how does this work
+    for (imp <- imports) {
+      // TODO: Implement properly
+      val importPath = imp.name.get.toString
+      val rootName = moduleName(importPath.replace("-", "_"))
       populateScope(Seq(rootName), imp.id)
     }
 
-    populateScope(Seq(packageName), id)
+    populateScope(Seq(s"$packageName.$module"), id)
   }
 
   def structTypePreamble(nodeId: Long, data: Int, pointers: Int) = Seq(Indent(Branch(
-    Line(s"val typeId: Long = ${nodeId}L"), // TODO: Add as a Struct abstract method
+    Line(s"val typeId: Long = ${nodeId}L"),
     Line(s"override val structSize: org.murtsi.capnproto.runtime.StructSize = new org.murtsi.capnproto.runtime.StructSize($data, $pointers)"),
     BlankLine,
     Line("override type Reader = ReaderImpl"),
@@ -80,6 +134,30 @@ class Generator(message: MessageReader) {
     Line("override val Reader: (org.murtsi.capnproto.runtime.SegmentReader, Int, Int, Int, Short, Int) => Reader = new ReaderImpl(_, _, _, _, _, _)"),
     BlankLine)
   ))
+
+  def generateOutput(nodeId: Long): Seq[String] = {
+    val packageName = nodePackageName(nodeId).get
+    val moduleName = nodeModuleName(nodeId).get
+
+    val nodesText = generateNode(nodeId, moduleName)
+
+    val schema = Branch(
+      Line(s"object $moduleName {"),
+      Indent(Branch(implicits :+ nodesText:_*
+      )),
+      Line("}")
+    )
+    Seq("// GENERATED CAP'N PROTO FILE, DO NOT EDIT",
+        s"package $packageName",
+        "",
+        "import org.murtsi.capnproto.runtime.implicits._",
+        "") ++
+        schema.lines()
+  }
+
+  def genericArgName(paramIndex: Int): String = {
+    "_param" + paramIndex
+  }
 
   def generateNode(nodeId: Long, nodeName: String, parentNodeId: Option[Long] = None, groupDiscriminant: Option[Short] = None): FormattedText = {
     val output = mutable.ArrayBuffer[FormattedText]()
@@ -113,17 +191,29 @@ class Generator(message: MessageReader) {
         output += Line(s"val $styledName: $typ = $contents")
       case Struct(struct) =>
         val params = parametersTexts(nodeReader)
+        var genericParameterNames = Vector.empty[String]
         output += BlankLine
 
         val isGeneric = nodeReader.isGeneric
-        if (isGeneric) {
-          // TODO: Implement generic structs
-          output += Line(s"object $nodeName extends org.murtsi.capnproto.runtime.Struct { ")
+        val parameters = nodeReader.parameters
+        if (isGeneric && parameters.exists(_.nonEmpty)) {
+          genericParameterNames = parameters.get.map(_.name.get.toString).toVector
+          val genericParamsDecls = genericParameterNames.map(n => s"$n <: org.murtsi.capnproto.runtime.PointerFamily : org.murtsi.capnproto.runtime.FromPointer").mkString(", ")
+          val genericParams = genericParameterNames.mkString(", ")
+          output ++= Seq(
+            Line(s"object $nodeName {"),
+            Indent(Branch(
+              Line(s"def apply[$genericParamsDecls]: $nodeName[$genericParams] = new $nodeName[$genericParams]")
+            )),
+            Line("}")
+          )
+          output += Line(s"sealed class $nodeName[$genericParamsDecls] private() extends org.murtsi.capnproto.runtime.Struct { ")
         } else {
-          output += Line(s"object $nodeName extends org.murtsi.capnproto.runtime.Struct { ")
+          output += Line(s"object $nodeName extends $nodeName")
+          output += Line(s"sealed class $nodeName private() extends org.murtsi.capnproto.runtime.Struct { ")
         }
 
-        val unionFields = mutable.ArrayBuffer[Field.Reader]()
+        val unionFields = mutable.ArrayBuffer[Field#Reader]()
         val builderMembers, readerMembers = mutable.ArrayBuffer[FormattedText]()
         var extractors: Option[FormattedText] = None
 
@@ -134,22 +224,56 @@ class Generator(message: MessageReader) {
 
         output ++= structTypePreamble(nodeId, dataSize, pointerSize)
 
+        implicits ++= {
+          val name = nodeTypes.fullType(nodeId, withGenericParams = false, typeSeparator = "#")
+          val implicitNamePrefix = nodeTypes.fullType(nodeId, withGenericParams = false, typeSeparator = "$")
+          val fullPath = nodeTypes.fullType(nodeId)
+          val fullType = nodeTypes.fullType(nodeId, typeSeparator = "#")
+
+          val allGenericParams = nodeTypes.allGenericParams(nodeId)
+          val define = if (allGenericParams.isEmpty) "val" else "def"
+          val defParams = if (allGenericParams.isEmpty) ""
+                          else s"[${allGenericParams.map(_ + " <: org.murtsi.capnproto.runtime.PointerFamily : org.murtsi.capnproto.runtime.FromPointer").mkString(", ")}]"
+
+          Seq(
+            Line(s"// START $name implicits"),
+            Branch(
+              Line(s"implicit $define $implicitNamePrefix$$$$HasTypeId$defParams = new org.murtsi.capnproto.runtime.HasTypeId[$fullType] {"),
+              Indent(Line(s"def typeId: Long = ${nodeId}L")),
+              Line("}")
+            ),
+            Branch(
+              Line(s"implicit $define $implicitNamePrefix$$$$HasStructSize$defParams = new org.murtsi.capnproto.runtime.HasStructSize[$fullType] {"),
+              Indent(Line(s"val structSize = new org.murtsi.capnproto.runtime.StructSize($dataSize, $pointerSize)")),
+              Line("}")
+            ),
+            Line(s"implicit $define $implicitNamePrefix$$$$StructFromSegment$defParams = new org.murtsi.capnproto.runtime.StructFromSegment[$fullType] {"),
+            Indent(Branch(
+              Line(s"def readerFromSegment(segment: org.murtsi.capnproto.runtime.SegmentReader, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int): $fullType#Reader = {"),
+              Indent(Line(s"$fullPath.Reader(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit)")),
+              Line("}"),
+              Line(s"def builderFromSegment(segment: org.murtsi.capnproto.runtime.SegmentBuilder, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short): $fullType#Builder = {"),
+              Indent(Line(s"$fullPath.Builder(segment, dataOffset, pointers, dataSize, pointerCount)")),
+              Line("}")
+            )),
+            Line("}"),
+            Line(s"// END $name implicits")
+          )
+        }
+
         (struct.isGroup, groupDiscriminant) match {
           case (true, Some(discriminant)) =>
-            val parent = scopeMap(nodeId).dropRight(1).mkString(".")
-            val fieldName = {
-              val n = nodeName.toLowerCase.head + nodeName.tail
-              // TODO: remove this silly hack for getting a proper field name for the group
-              if (n.endsWith("_") && keywords.contains(nodeName.substring(0, nodeName.length-1))) {
-                n.substring(0, n.length - 1)
-              } else {
-                n
-              }
+            val self = nodeTypes.fullType(nodeId, typeSeparator = "#")
+            val parent = nodeTypes.fullType(nodeMap(nodeId).scopeId, typeSeparator = "#")
+            val fieldName = if (nodeName.startsWith("_") && keywords.contains(nodeName.substring(1))) {
+              nodeName.substring(1).head.toLower + nodeName.substring(1).tail
+            } else {
+              nodeName.toLowerCase.head + nodeName.tail
             }
             output ++= Seq("Reader", "Builder")
                 .map(leaf =>
                   Indent(Branch(
-                    Line(s"def unapply(value: $parent.$leaf): Option[$leaf] = {"),
+                    Line(s"def unapply(value: $parent#$leaf): Option[$self#$leaf] = {"),
                     Indent(Line(s"if (value._whichIndex == $discriminant) Some(value.$fieldName) else None")),
                   Line("}")))
                 )
@@ -169,7 +293,7 @@ class Generator(message: MessageReader) {
             unionFields += field
           }
 
-          def isVoid(t: Type.Reader): Boolean = t match {
+          def isVoid(t: Type#Reader): Boolean = t match {
             case Type.Void() => true
             case _ => false
           }
@@ -177,8 +301,8 @@ class Generator(message: MessageReader) {
           (isUnionField, field) match {
             case (true, Field.Slot(slot)) if isVoid(slot.`type`.get) =>
             case _ =>
-              val (ty, get) = getterText(field, isReader = true)
-              val (tyB, getB) = getterText(field, isReader = false)
+              val (ty, get) = getterText(field, isReader = true, returnsOption = !isUnionField)
+              val (tyB, getB) = getterText(field, isReader = false, returnsOption = !isUnionField)
 
               readerMembers += Branch(
                 Line(s"${getterAccessLevel}def ${methodName(styledName)}: $ty = {"),
@@ -205,7 +329,8 @@ class Generator(message: MessageReader) {
         }
 
         if (discriminantCount > 0) {
-          val readerResult = generateUnionExtractors(discriminantOffset, unionFields, isReader = true, params)
+          val parent = nodeTypes.fullType(nodeId, typeSeparator = "#")
+          val readerResult = generateUnionExtractors(parent, discriminantOffset, unionFields, isReader = true, params)
           val whichIndexDef = Line(s"private[$nodeName] def _whichIndex: Short = _getShortField($discriminantOffset)")
           readerMembers += whichIndexDef
           builderMembers += whichIndexDef
@@ -248,6 +373,28 @@ class Generator(message: MessageReader) {
           }
         }
 
+        val genericParamNames = nodeTypes.allGenericParams(nodeId)
+        val enumModulePath = nodeTypes.fullType(nodeId, withGenericParams = true)
+        val enumTypeName = nodeTypes.fullType(nodeId, withGenericParams = true, typeSeparator = "#")
+        val enumTypePath = nodeTypes.fullType(nodeId, withGenericParams = true, typeSeparator = "#")
+        val implicitPrefix = nodeTypes.fullType(nodeId, withGenericParams = false, typeSeparator = "$")
+        val genericParams = if (genericParamNames.isEmpty) "" else s"[${genericParamNames.map(_ + " <: org.murtsi.capnproto.runtime.PointerFamily : org.murtsi.capnproto.runtime.FromPointer").mkString(", ")}]"
+        val definition = if (genericParamNames.isEmpty) "val" else "def"
+        implicits ++= Seq(
+          Line(s"// START $enumTypeName implicits"),
+          Branch(
+            Line(s"implicit $definition $implicitPrefix$$$$EnumValues$genericParams = new org.murtsi.capnproto.runtime.HasEnumValues[$enumTypePath] {"),
+            Indent(Line(s"val enumValues = $enumModulePath.enumValues")),
+            Line("}")
+          ),
+          Branch(
+            Line(s"implicit $definition $implicitPrefix$$$$FromShort$genericParams = new org.murtsi.capnproto.runtime.FromShort[$enumTypePath] {"),
+            Indent(Line(s"def fromShort(short: Short) = $enumModulePath(short)")),
+            Line("}")
+          ),
+          Line(s"// END $enumTypeName implicits")
+        )
+
         output += Branch(
           Line(s"sealed class $enumClassName(index: Short) extends org.murtsi.capnproto.runtime.Enum(index)"),
           Line(s"object $enumClassName extends org.murtsi.capnproto.runtime.EnumModule[$enumClassName] {"),
@@ -268,48 +415,57 @@ class Generator(message: MessageReader) {
     Branch(output:_*)
   }
 
-  def generatePipelineGetter(field: Field.Reader): FormattedText = {
+  def generatePipelineGetter(field: Field#Reader): FormattedText = {
     Line("PIPELINED_GETTER")
   }
 
-  def groupType(group: Field.Group.Reader, isReader: Boolean): String = {
-    val module = scopeMap(group.typeId).mkString(".")
+  def groupModule(group: Field#Group#Reader, isReader: Boolean): String = {
+    val module = nodeTypes.fullType(group.typeId)
     val suffix = if (isReader) "Reader" else "Builder"
     s"$module.$suffix"
   }
 
-  def getterText(field: Field.Reader, isReader: Boolean): (String, FormattedText) = {
+  def groupType(group: Field#Group#Reader, isReader: Boolean): String = {
+    val typ = nodeTypes.fullType(group.typeId, typeSeparator = "#")
+    val suffix = if (isReader) "Reader" else "Builder"
+    s"$typ#$suffix"
+  }
+
+  def getterText(field: Field#Reader, isReader: Boolean, returnsOption: Boolean = true): (String, FormattedText) = {
     import Field._
+
+    def getPointerField(module: String, offset: Int) = s"_getPointerFieldOption[$module]($offset)"
 
     field match {
       case Group(group) =>
+        val mod = groupModule(group, isReader)
         val t = groupType(group, isReader)
         if (isReader)
-          (t, Line(s"$t(_segment, _dataOffset, _pointers, _dataSize, _pointerCount, _nestingLimit)"))
+          (t, Line(s"$mod(_segment, _dataOffset, _pointers, _dataSize, _pointerCount, _nestingLimit)"))
         else
-          (t, Line(s"$t(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)"))
+          (t, Line(s"$mod(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)"))
       case Slot(regField) =>
         val offset = regField.offset
-        val moduleString = if (isReader) "Reader" else "Builder"
-        val module = if (isReader) "" else ""
-        val member = moduleString
+        val module = if (isReader) "Reader" else "Builder"
+        val moduleSuffix = if (isReader) "#Reader" else "#Builder"
+        val member = module
         val leaf = if (isReader) Leaf.Reader else Leaf.Builder
 
         val rawType = regField.`type`.get
-        val typ = typeString(rawType, leaf)
+        val typ = typeString(rawType, Leaf.Module)
         val default = regField.defaultValue.get
 
         val resultType = rawType match {
-          case Type.Struct(_) | Type.Text() | Type.Data() | Type.Enum(_) =>
+          case Type.Struct(_) | Type.Text() | Type.Data() | Type.AnyPointer(_) =>
+            s"Option[$typ$moduleSuffix]"
+          case Type.Enum(_) =>
             s"Option[$typ]"
-          case Type.List_(_) =>
+          case Type._List(_) =>
             val listType = typeString(rawType, leaf)
             s"Option[$listType]"
-          case Type.AnyPointer(_) if rawType.isParameter => typ
-          case Type.AnyPointer(_) => s"Option[$typ]"
           case Type.Interface(_) => ???
           case _ if rawType.isPrimitive => typ
-          case _ => typ
+          case _ => s"$typ$moduleSuffix"
         }
 
         def primitiveCase[T](typ: String, offset: Long, default: T, zero: T): FormattedText = {
@@ -334,17 +490,22 @@ class Generator(message: MessageReader) {
           case (Type.Uint64(), Value.Uint64(l)) => primitiveCase(typ, offset, l, 0)
           case (Type.Float32(), Value.Float32(f)) => primitiveCase(typ, offset, f, 0)
           case (Type.Float64(), Value.Float64(d)) => primitiveCase(typ, offset, d, 0)
-          case (Type.Text(), Value.Text(_)) => Line(s"_getPointerFieldOption(org.murtsi.capnproto.runtime.Text, $offset)")
-          case (Type.Data(), Value.Data(_)) => Line(s"_getPointerFieldOption(org.murtsi.capnproto.runtime.Data, $offset)")
-          case (Type.List_(_), Value.List_(_)) =>
-            Line(s"_getPointerFieldOption(${typeString(rawType, Leaf.Module)}, $offset)")
+          case (Type.Text(), Value.Text(_)) => Line(getPointerField("org.murtsi.capnproto.runtime.Text", offset))
+          case (Type.Data(), Value.Data(_)) => Line(getPointerField("org.murtsi.capnproto.runtime.Data", offset))
+          case (Type._List(_), Value._List(_)) =>
+            Line(getPointerField(typeString(rawType, Leaf.Module), offset))
           case (Type.Enum(_), Value.Enum(_)) =>
-            val module = typeString(rawType, Leaf.Module)
+            val module = moduleString(rawType, Leaf.Module)
             Line(s"$module(_getShortField($offset))")
           case (Type.Struct(_), Value.Struct(_)) =>
-            val module = typeString(rawType, Leaf.Module)
-            Line(s"_getPointerFieldOption($module, $offset)")
-          case (Type.AnyPointer(_), Value.AnyPointer(_)) => Line(s"_getPointerFieldOption(org.murtsi.capnproto.runtime.AnyPointer, $offset)")
+            val ts = typeString(rawType, Leaf.Module)
+            Line(getPointerField(ts, offset))
+          case (Type.AnyPointer(_), _) =>
+            if (rawType.isParameter) {
+              Line(getPointerField(typ, offset))
+            } else {
+              Line(getPointerField("org.murtsi.capnproto.runtime.AnyPointer", offset))
+            }
           case (Type.Interface(_), Value.Interface()) => ???
           case _ => Line("") // throw new Error(s"Default value was of wrong type (expected ${typeString(rawType, Leaf.Module)}, got ${valueToString(default)})")
         }
@@ -367,7 +528,7 @@ class Generator(message: MessageReader) {
       case Value.Float64(d) => s"Float64($d)"
       case Value.Text(txt) => s"""Text("$txt")"""
       case Value.Data(data) => s"""Data(${data.toArray.mkString(", ")})"""
-      case Value.List_(list) => s"""List(is null = ${list.isNull})"""
+      case Value._List(list) => s"""List(is null = ${list.isNull})"""
       case Value.Enum(enum) => s"""Enum($enum)"""
       case Value.Struct(struct) => s"""Struct(is null = ${struct.isNull})"""
       case Value.AnyPointer(ptr) => s"""AnyPointer(is null = ${ptr.isNull})"""
@@ -376,7 +537,13 @@ class Generator(message: MessageReader) {
     }
   }
 
-  def generateSetter(discriminantOffset: Int, styledName: String, field: Field.Reader): FormattedText = {
+  /*
+  def generateSetter2(discriminantOffset: Int, styledName: String, field: Field.Reader): Model.Setter = {
+    val setterType = new Model.Type()
+  }
+  */
+
+  def generateSetter(discriminantOffset: Int, styledName: String, field: Field#Reader): FormattedText = {
     val initterInterior, setterInterior = mutable.ArrayBuffer[FormattedText]()
     var setterParam = "value"
     val initterParams = mutable.ArrayBuffer[String]()
@@ -390,7 +557,6 @@ class Generator(message: MessageReader) {
       initterInterior += Line(s"_setShortField($doStr, $dvStr)")
     }
 
-    var setterGenericParam = ""
     var returnResult = false
     val result = mutable.ArrayBuffer[FormattedText]()
 
@@ -401,7 +567,7 @@ class Generator(message: MessageReader) {
         initterInterior ++= Seq(
           zeroFieldsOfGroup(group.typeId),
           Line(s"$module.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)"))
-        (None, Some(s"$module.Builder"))
+        (None, Some(s"$module#Builder"))
       case Field.Slot(regField) =>
         val offset = regField.offset
         val typ = regField.`type`.get
@@ -425,38 +591,44 @@ class Generator(message: MessageReader) {
             }
             (Some(tstr), None)
           case Type.Text() =>
-            setterInterior += Line(s"""_setPointerField(org.murtsi.capnproto.runtime.Text)($offset, value)""")
-            initterInterior += Line(s"_initPointerField(org.murtsi.capnproto.runtime.Text, $offset, size)")
-            textSetterInterior = Some(Line(s"_setPointerField(org.murtsi.capnproto.runtime.Text)($offset, org.murtsi.capnproto.runtime.Text.Reader(value))"))
+            setterInterior += Line(s"""_setPointerField[org.murtsi.capnproto.runtime.Text]($offset, value)""")
+            initterInterior += Line(s"_initPointerField[org.murtsi.capnproto.runtime.Text]($offset, size)")
+            textSetterInterior = Some(Line(s"_setPointerField[org.murtsi.capnproto.runtime.Text]($offset, org.murtsi.capnproto.runtime.Text.Reader(value))"))
             initterParams += "size: Int"
-            (Some("org.murtsi.capnproto.runtime.Text.Reader"), Some("org.murtsi.capnproto.runtime.Text.Builder"))
-          case Type.AnyPointer(_) =>
-            initterInterior += Line(s"_initPointerField(org.murtsi.capnproto.runtime.AnyPointer, $offset, size)")
+            (Some("org.murtsi.capnproto.runtime.Text#Reader"), Some("org.murtsi.capnproto.runtime.Text#Builder"))
+          case Type.AnyPointer(Type.AnyPointer.Parameter(parameter)) =>
+            val struct = nodeMap(parameter.scopeId)
+            val paramName = struct.parameters.get(parameter.parameterIndex).name.get.toString
+            initterInterior += Line(s"_initPointerField[$paramName]($offset, size)")
+            initterParams += "size: Int"
+            (Some(s"$paramName#Reader"), Some(s"$paramName#Builder"))
+          case Type.AnyPointer(Type.AnyPointer.Unconstrained()) =>
+            initterInterior += Line(s"_initPointerField[org.murtsi.capnproto.runtime.AnyPointer]($offset, size)")
             initterParams += "size: Int = 0"
-            (Some("org.murtsi.capnproto.runtime.AnyPointer.Reader"), Some("org.murtsi.capnproto.runtime.AnyPointer.Builder"))
+            (Some("org.murtsi.capnproto.runtime.AnyPointer#Reader"), Some("org.murtsi.capnproto.runtime.AnyPointer#Builder"))
           case Type.Data() =>
-            setterInterior += Line(s"""_setPointerField(org.murtsi.capnproto.runtime.Data)($offset, value)""")
-            initterInterior += Line(s"_initPointerField(org.murtsi.capnproto.runtime.Data, $offset, size)")
+            setterInterior += Line(s"""_setPointerField[org.murtsi.capnproto.runtime.Data]($offset, value)""")
+            initterInterior += Line(s"_initPointerField[org.murtsi.capnproto.runtime.Data]($offset, size)")
             initterParams += "size: Int"
-            (Some("org.murtsi.capnproto.runtime.Data.Reader"), Some("org.murtsi.capnproto.runtime.Data.Builder"))
-          case Type.List_(_) =>
+            (Some("org.murtsi.capnproto.runtime.Data#Reader"), Some("org.murtsi.capnproto.runtime.Data#Builder"))
+          case Type._List(_) =>
             val elementFactory = typeString(typ, Leaf.Module)
-            setterInterior += Line(s"""_setPointerField($elementFactory)($offset, value)""")
-            initterInterior += Line(s"_initPointerField($elementFactory, $offset, size)")
+            setterInterior += Line(s"""_setPointerField[$elementFactory]($offset, value)""")
+            initterInterior += Line(s"_initPointerField[$elementFactory]($offset, size)")
             initterParams += "size: Int"
-            (Some(s"$elementFactory.Reader"), Some(s"$elementFactory.Builder"))
+            (Some(s"$elementFactory#Reader"), Some(s"$elementFactory#Builder"))
           case Type.Enum(_) =>
             val ty = typeString(typ, Leaf.Builder)
             setterInterior += Line(s"_setShortField(value.index, $offset)")
             (Some(ty), None)
           case Type.Struct(_) =>
             returnResult = true
-            initterInterior += Line(s"_initPointerField(${typeString(typ, Leaf.Module)}, $offset, 0)")
+            initterInterior += Line(s"_initPointerField[${typeString(typ, Leaf.Module)}]($offset, 0)")
             if (typ.isBranded) {
-              setterInterior += Line(s"_setPointerField(${typeString(typ, Leaf.Module)})($offset, value)")
+              setterInterior += Line(s"_setPointerField[${typeString(typ, Leaf.Module)}]($offset, value)")
               (Some(typeString(typ, Leaf.Reader)), Some(typeString(typ, Leaf.Builder)))
             } else {
-              setterInterior += Line(s"_setPointerField(${typeString(typ, Leaf.Module)})($offset, value)")
+              setterInterior += Line(s"_setPointerField[${typeString(typ, Leaf.Module)}]($offset, value)")
               val t = regField.`type`.get
               (Some(typeString(t, Leaf.Reader)), Some(typeString(t, Leaf.Builder)))
             }
@@ -500,8 +672,8 @@ class Generator(message: MessageReader) {
 
   case class UnionResult(extractors: Seq[FormattedText])
 
-  def generateUnionExtractors(discriminantOffset: Int, fields: Seq[Field.Reader], isReader: Boolean, params: TypeParameterTexts): UnionResult = {
-    def hasExtractorObject(field: Field.Reader): Boolean = {
+  def generateUnionExtractors(parentName: String, discriminantOffset: Int, fields: Seq[Field#Reader], isReader: Boolean, params: TypeParameterTexts): UnionResult = {
+    def hasExtractorObject(field: Field#Reader): Boolean = {
       field match {
         case Field.Slot(slot) => slot.`type` match {
           case Some(Type.Struct(structType)) =>
@@ -533,8 +705,8 @@ class Generator(message: MessageReader) {
             extractors += Branch(
               Line(s"object $enumerantName {"),
               Indent(Branch(
-                Line(s"def unapply(value: Reader): Boolean = value._whichIndex == $dvalue"),
-                Line(s"def unapply(value: Builder): Boolean = value._whichIndex == $dvalue")
+                Line(s"def unapply(value: $parentName#Reader): Boolean = value._whichIndex == $dvalue"),
+                Line(s"def unapply(value: $parentName#Builder): Boolean = value._whichIndex == $dvalue")
               )),
               Line("}")
             )
@@ -547,14 +719,14 @@ class Generator(message: MessageReader) {
               Line(s"object $enumerantName {"),
               Indent(Branch(
                 Branch(
-                  Line(s"def unapply(value: Reader): $unapplyType = {"),
+                  Line(s"def unapply(value: $parentName#Reader): $unapplyType = {"),
                   Indent(Branch(
                     Line(s"if (value._whichIndex == $dvalue) $fieldGetter else None")
                   )),
                   Line("}")
                 ),
                 Branch(
-                  Line(s"def unapply(value: Builder): $unapplyTypeB = {"),
+                  Line(s"def unapply(value: $parentName#Builder): $unapplyTypeB = {"),
                   Indent(Branch(
                     Line(s"if (value._whichIndex == $dvalue) $fieldGetter else None")
                   )),
@@ -571,7 +743,7 @@ class Generator(message: MessageReader) {
     UnionResult(extractors)
   }
 
-  def primitiveDefault(value: Value.Reader): Option[String] = {
+  def primitiveDefault(value: Value#Reader): Option[String] = {
     import Value._
     value match {
       case Bool(b) => if (b) Some("true") else None
@@ -617,7 +789,7 @@ class Generator(message: MessageReader) {
                 case Type.Enum(_) =>
                   val line = Line(s"_setShortField(${slot.offset}, 0)")
                   if (!result.contains(line)) result += line
-                case Type.Struct(_) | Type.List_(_) | Type.Text() | Type.Data()
+                case Type.Struct(_) | Type._List(_) | Type.Text() | Type.Data()
                      | Type.AnyPointer(_) | Type.Interface(_) =>
                   val line = Line(s"_clearPointerField(${slot.offset})")
                   if (!result.contains(line)) result += line
@@ -656,6 +828,8 @@ class Generator(message: MessageReader) {
 
     nodeReader match {
       case Node.Struct(struct) =>
+        val genericArgs = nodeReader.parameters.seq.flatten.map(_.name.get.toString).toVector
+        nodeTypes.add(nodeId, scopeNames.last, Some(nodeReader.scopeId), genericArgs)
         val fields = struct.fields.get
         for (field <- fields) {
 
@@ -666,11 +840,13 @@ class Generator(message: MessageReader) {
             case _ =>
           }
         }
+      case Node.Enum(enum) =>
+        nodeTypes.add(nodeId, scopeNames.last, Some(nodeReader.scopeId), Vector.empty)
       case _ =>
     }
   }
 
-  def parametersTexts(node: Node.Reader, parentNodeId: Option[Long] = None): TypeParameterTexts = {
+  def parametersTexts(node: Node#Reader, parentNodeId: Option[Long] = None): TypeParameterTexts = {
     if (node.isGeneric) {
       val params = getTypeParameters(node.id, parentNodeId)
       val typeParameters = params.map(_.toString).mkString(",")
@@ -691,7 +867,7 @@ class Generator(message: MessageReader) {
         case None => run = false
         case Some(currentNode) =>
           val params = currentNode.parameters.get.map(_.name.toString)
-          accumulator += params
+          accumulator += params.toSeq
 
           currentNodeId = currentNode.scopeId
           (currentNodeId, parentScopeId) match {
@@ -712,81 +888,71 @@ class Generator(message: MessageReader) {
   }
 
   def moduleName(name: String): String = {
-    if (keywords.contains(name)) name+"_" else name
+    if (keywords.contains(name)) "_"+name else name
   }
 
   def methodName(name: String): String = if (keywords.contains(name)) s"`$name`" else name
 
-  def doBranding(nodeId: Long, brand: Option[Brand.Reader], leaf: Leaf, module: String, _parentScopeId: Option[Long]): String = {
-    var parentScopeId = _parentScopeId
+  def doBranding(nodeId: Long, brand: Option[Brand#Reader], leaf: Leaf, module: String, parentScopeId: Option[Long]): String = {
+    val brandScopes = HashMap[Long, Brand#Scope#Reader](brand.flatMap(_.scopes).toSeq.flatten.map(s => (s.scopeId, s)):_*)
 
-    val brandScopes = (for (b <- brand;
-                   scopes <- b.scopes)
-        yield mutable.HashMap[Long, Brand.Scope.Reader](scopes.map(s => (s.scopeId, s)):_*))
-      .getOrElse(mutable.HashMap())
-    var currentNodeId = nodeId
-    val accumulator = mutable.ArrayBuffer[Seq[String]]()
-
-    var run = true
-    while (run) {
-      nodeMap.get(currentNodeId) match {
-        case None => run = false
-        case Some(currentNode) =>
-          val params = currentNode.parameters.map(_.seq).getOrElse(Seq.empty)
-          val arguments = mutable.ArrayBuffer[String]()
-          brandScopes.get(currentNodeId) match {
-            case None =>
-              for (_ <- params) {
-                arguments += "::capnp::any_pointer::Owned"
-              }
+    @tailrec
+    def getPart(nodeId: Long, parentScopeId: Option[Long], acc: Seq[String]): Seq[String] = {
+      nodeMap.get(nodeId) match {
+        case Some(node) =>
+          val mpart = scopeMap.get(node.id) match {
             case Some(scope) =>
-              scope match {
-                case Brand.Scope.Inherit() =>
-                  arguments ++= params.map(_.name.toString)
-                case Brand.Scope.Bind(bindingsList) =>
+              val modulePart = scope.last
+              val params = node.parameters.map(_.seq).getOrElse(Seq.empty)
+              val arguments = brandScopes.get(nodeId) match {
+                case None => params.map(_ => s"org.murtsi.capnproto.runtime.AnyPointer.$leaf")
+                case Some(Brand.Scope.Inherit()) => params.map(_.name.get.toString)
+                case Some(Brand.Scope.Bind(bindingsList)) =>
                   assert(bindingsList.size == params.size)
-                  arguments ++= bindingsList.map {
-                    case v if booleanMatch(v){case Brand.Binding.Unbound() => } =>
-                      "::capnp::any_pointer::Owned"
+                  bindingsList.map {
+                    case v if booleanMatch(v){case Brand.Binding.Unbound() =>} =>
+                      s"org.murtsi.capnproto.runtime.AnyPointer.$leaf"
                     case Brand.Binding.Type(typ) =>
                       typeString(typ, Leaf.Owned)
                   }
               }
+              Some(if (arguments.isEmpty) modulePart else s"$modulePart[${arguments.mkString(", ")}]")
+            case None => None
           }
-
-          accumulator += arguments
-          currentNodeId = currentNode.scopeId
-          (currentNodeId, parentScopeId) match {
-            case (0, Some(id)) => currentNodeId = id
-            case _ =>
+          (node.scopeId, parentScopeId) match {
+            case (v, Some(id)) if v == id => mpart ++: acc
+            case (0, Some(id)) => getPart(id, Some(id), mpart ++: acc)
+            case (0, None) => mpart ++: acc
+            case (id, parent) => getPart(id, parent, mpart ++: acc)
           }
-          parentScopeId = None
+        case None => acc
+        }
       }
-    }
 
-    val args = accumulator.reverse.flatten
-
-    val arguments = if (args.isEmpty) {
-      ""
-    } else {
-      val argStr = args.mkString(", ")
-      s"[$argStr]"
+    val moduleSuffix = leaf match {
+      case Leaf.Module => ""
+      case l => "#" + l
     }
-
-    leaf match {
-      case Leaf.Module => s"$module$arguments"
-      case l => s"$module.$l$arguments"
-    }
+    val parts = getPart(nodeId, parentScopeId, Seq())
+    parts.head + "." + parts.tail.mkString("#") + moduleSuffix
   }
 
-  def typeString(typ: Type.Reader, module: Leaf): String = {
+  def typeString(typ: Type#Reader, module: Leaf): String = {
+    modulePath(typ, module, "#")
+  }
+
+  def moduleString(typ: Type#Reader, module: Leaf): String = {
+    modulePath(typ, module, ".")
+  }
+
+  def modulePath(typ: Type#Reader, module: Leaf, separator: String): String = {
     val moduleSuffix = module match {
       case Leaf.Module => ""
-      case leaf => s".$leaf"
+      case leaf => s"#$leaf"
     }
 
     import Type._
-    typ match {
+    val path = typ match {
       case Void() => "org.murtsi.capnproto.runtime.Void"
       case Bool() => "Boolean"
       case Int8() => "Byte"
@@ -806,47 +972,51 @@ class Generator(message: MessageReader) {
         doBranding(st.typeId, st.brand, module, moduleName, None)
       case Interface(interface) =>
         doBranding(interface.typeId, interface.brand, module, scopeMap(interface.typeId).mkString("."), None)
-      case List_(ot1) =>
+      case _List(ot1) =>
         val elType = ot1.elementType.get
-        listTypeString(elType, module)
+        listModulePath(elType, module, separator)
       case Enum(enum) =>
-        scopeMap(enum.typeId).mkString(".")
-      case AnyPointer(pointer)=>
-        pointer match {
+        nodeTypes.fullType(enum.typeId, typeSeparator = separator)
+      case AnyPointer(anyPointer) =>
+        val isParameter = typ.isParameter
+        anyPointer match {
           case AnyPointer.Parameter(definition) =>
             val theStruct = nodeMap(definition.scopeId)
             val parameters = theStruct.parameters.get
             val parameter = parameters(definition.parameterIndex)
-            val parameterName = parameter.name
+            val parameterName = parameter.name.get
             module match {
-              case Leaf.Owned => parameterName.toString
-              case Leaf.Reader => s"$parameterName.Reader"
-              case Leaf.Builder => s"$parameterName.Builder"
+              case Leaf.Module => parameterName.toString
+              case Leaf.Reader => s"$parameterName#Reader"
+              case Leaf.Builder => s"$parameterName#Builder"
               case _ => ???
             }
           case _ =>
             module match {
-              case Leaf.Reader => "org.murtsi.capnproto.runtime.AnyPointer.Reader"
-              case Leaf.Builder => "org.murtsi.capnproto.runtime.AnyPointer.Builder"
+              case Leaf.Reader => "org.murtsi.capnproto.runtime.AnyPointer#Reader"
+              case Leaf.Builder => "org.murtsi.capnproto.runtime.AnyPointer#Builder"
               case Leaf.Module => "org.murtsi.capnproto.runtime.AnyPointer"
               case _ => ???
             }
         }
     }
+
+    path
   }
 
-  def listTypeString(elementType: Type.Reader, module: Leaf): String = {
+  def listModulePath(elementType: Type#Reader, module: Leaf, separator: String): String = {
     val moduleSuffix = module match {
       case Leaf.Module => ""
-      case m => s".$m"
+      case m => s"$separator$m"
     }
     import Type._
     elementType match {
-      case Struct(_) | Enum(_) => typeString(elementType, Leaf.Module) + s".List$moduleSuffix"
-      case Type.Text() => s"org.murtsi.capnproto.runtime.Text.List$moduleSuffix"
-      case AnyPointer(_) => s"org.murtsi.capnproto.runtime.AnyPointer.List$moduleSuffix"
-      case Data() => s"org.murtsi.capnproto.runtime.Data.List$moduleSuffix"
-      case _ if elementType.isPrimitive => s"org.murtsi.capnproto.runtime.PrimitiveList.${typeString(elementType, Leaf.Module)}$moduleSuffix"
+      case Struct(_) => s"org.murtsi.capnproto.runtime.StructList[${typeString(elementType, Leaf.Module)}]$moduleSuffix"
+      case Enum(_) => s"org.murtsi.capnproto.runtime.EnumList[${typeString(elementType, Leaf.Module)}]$moduleSuffix"
+      case Type.Text() => s"org.murtsi.capnproto.runtime.Text#List$moduleSuffix"
+      case AnyPointer(_) => s"org.murtsi.capnproto.runtime.AnyPointer#List$moduleSuffix"
+      case Data() => s"org.murtsi.capnproto.runtime.Data#List$moduleSuffix"
+      case _ if elementType.isPrimitive => s"org.murtsi.capnproto.runtime.PrimitiveList#${typeString(elementType, Leaf.Module)}$moduleSuffix"
     }
   }
 }

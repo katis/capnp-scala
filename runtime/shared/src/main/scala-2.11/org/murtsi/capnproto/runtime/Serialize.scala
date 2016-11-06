@@ -1,12 +1,9 @@
 package org.murtsi.capnproto.runtime
 
 import java.io.IOException
-import java.nio.channels.ReadableByteChannel
-import java.nio.channels.WritableByteChannel
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
+import java.nio.{ByteBuffer, ByteOrder}
+import java.nio.channels.{ReadableByteChannel, WritableByteChannel}
 import java.util
-import java.util.ArrayList
 
 object Serialize {
 

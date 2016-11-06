@@ -141,58 +141,35 @@ class StructBuilder(private val _segment: SegmentBuilder,
     this._segment.buffer.putLong(pointer * 8, 0L)
   }
 
-  protected def _getPointerField(factory: FromPointerBuilder, index: Int): factory.Builder = {
-    factory.fromPointerBuilder(this._segment, this._pointers + index)
+  protected def _getPointerField[P <: PointerFamily : FromPointer](index: Int): P#Builder = {
+    implicitly[FromPointer[P]].fromPointerBuilder(_segment, _pointers + index)
   }
 
-  protected def _getPointerField(factory: FromPointerBuilderRefDefault,
+  protected def _getPointerField[P <: PointerFamily : FromPointerRefDefault](
                                  index: Int,
                                  defaultSegment: SegmentReader,
-                                 defaultOffset: Int): factory.Builder = {
-    factory.fromPointerBuilderRefDefault(this._segment, this._pointers + index, defaultSegment, defaultOffset)
+                                 defaultOffset: Int): P#Builder = {
+    implicitly[FromPointerRefDefault[P]].fromPointerBuilderRefDefault(_segment, _pointers + index, defaultSegment, defaultOffset)
   }
 
-  protected def _getPointerField(factory: FromPointerBuilderBlobDefault,
-      index: Int,
+  protected def _getPointerField[P <: PointerFamily : FromPointerBlobDefault](index: Int,
       defaultBuffer: java.nio.ByteBuffer,
       defaultOffset: Int,
-      defaultSize: Int): factory.Builder = {
-    factory.fromPointerBuilderBlobDefault(this._segment, this._pointers + index, defaultBuffer, defaultOffset,
-      defaultSize)
+      defaultSize: Int): P#Builder = {
+    implicitly[FromPointerBlobDefault[P]].fromPointerBuilderBlobDefault(_segment, _pointers + index, defaultBuffer, defaultOffset, defaultSize)
   }
 
-  protected def _getPointerFieldOption(factory: FromPointerBuilder, index: Int): Option[factory.Builder] = {
+  protected def _getPointerFieldOption[P <: PointerFamily : FromPointer](index: Int): Option[P#Builder] = {
     val ptr = this._pointers + index
     if (_pointerFieldIsNull(ptr)) None
-    else Some(factory.fromPointerBuilder(this._segment, this._pointers + index))
+    else Some(implicitly[FromPointer[P]].fromPointerBuilder(this._segment, this._pointers + index))
   }
 
-  protected def _getPointerFieldOption(factory: FromPointerBuilderRefDefault,
-                                       index: Int,
-                                       defaultSegment: SegmentReader,
-                                       defaultOffset: Int): Option[factory.Builder] = {
-
-    val ptr = this._pointers + index
-    if (_pointerFieldIsNull(ptr)) None
-    else Some(factory.fromPointerBuilderRefDefault(this._segment, ptr, defaultSegment, defaultOffset))
+  protected def _initPointerField[T <: PointerFamily : FromPointer](index: Int, elementCount: Int): T#Builder = {
+    implicitly[FromPointer[T]].initFromPointerBuilder(this._segment, this._pointers + index, elementCount)
   }
 
-  protected def _getPointerFieldOption(factory: FromPointerBuilderBlobDefault,
-      index: Int,
-      defaultBuffer: java.nio.ByteBuffer,
-      defaultOffset: Int,
-      defaultSize: Int): Option[factory.Builder] = {
-    val ptr = this._pointers + index
-    if (_pointerFieldIsNull(ptr)) None
-    else Some(factory.fromPointerBuilderBlobDefault(this._segment, this._pointers + index, defaultBuffer, defaultOffset,
-      defaultSize))
-  }
-
-  protected def _initPointerField(factory: FromPointerBuilder, index: Int, elementCount: Int): factory.Builder = {
-    factory.initFromPointerBuilder(this._segment, this._pointers + index, elementCount)
-  }
-
-  protected def _setPointerField(factory: SetPointerBuilder)(index: Int, value: factory.Reader) {
-    factory.setPointerBuilder(this._segment, this._pointers + index, value)
+  protected def _setPointerField[T <: PointerFamily : SetPointerBuilder](index: Int, value: T#Reader) {
+    implicitly[SetPointerBuilder[T]].setPointerBuilder(this._segment, this._pointers + index, value)
   }
 }

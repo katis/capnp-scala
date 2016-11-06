@@ -1,7 +1,7 @@
 package org.murtsi.capnproto.runtime
 
-import java.nio.channels.ReadableByteChannel
 import java.nio.ByteBuffer
+import java.nio.channels.ReadableByteChannel
 
 class PackedInputStream(input: BufferedInputStream) extends ReadableByteChannel {
 

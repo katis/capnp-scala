@@ -1,12 +1,12 @@
 package org.murtsi.capnproto.runtime
 
-abstract class List[ElementBuilder, ElementReader](val elementSize: Byte)
-    extends ListBuilder.Factory
-    with FromPointerBuilderRefDefault
-    with SetPointerBuilder
-    with ListReader.Factory
-    with PointerFactory
-    with FromPointerReaderRefDefault {
+trait HasElementSize[T] {
+  def elementSize: Byte
+}
+
+trait ListFromSegment[T <: PointerFamily] extends ListReader.Factory[T#Reader] with ListBuilder.Factory[T#Builder]
+
+abstract class List[ElementBuilder, ElementReader](val elementSize: Byte) extends PointerFamily {
 
   type Builder <: BuilderBase
   type Reader <: ReaderBase
@@ -23,24 +23,17 @@ abstract class List[ElementBuilder, ElementReader](val elementSize: Byte)
                           elementCount,
                           step,
                           structDataSize,
-                          structPointerCount) with Seq[ElementBuilder] {
+                          structPointerCount) with Traversable[ElementBuilder] {
 
     builder =>
-
-    override def length: Int = size
 
     override def size: Int = super[ListBuilder].size()
 
     def apply(idx: Int): ElementBuilder
 
-    override def iterator: Iterator[ElementBuilder] = new Iterator[ElementBuilder] {
-      var i = 0
-      override def hasNext: Boolean = i < size
-
-      override def next(): ElementBuilder = {
-        val ni = i
-        i += 1
-        apply(ni)
+    override def foreach[U](f: (ElementBuilder) => U): Unit = {
+      for (i <- 0 until size) {
+        f(apply(i))
       }
     }
   }
@@ -59,26 +52,20 @@ abstract class List[ElementBuilder, ElementReader](val elementSize: Byte)
                          step,
                          structDataSize,
                          structPointerCount,
-                         nestingLimit) with Seq[ElementReader] {
-
-    override def length: Int = size
+                         nestingLimit) with Traversable[ElementReader] {
 
     def apply(idx: Int): ElementReader
 
     override def size: Int = super[ListReader].size
 
-    override def iterator: Iterator[ElementReader] = new Iterator[ElementReader] {
-      var i = 0
-      override def hasNext: Boolean = i < size
-
-      override def next(): ElementReader = {
-        val ni = i
-        i += 1
-        apply(ni)
+    override def foreach[U](f: (ElementReader) => U): Unit = {
+      for (i <- 0 until size) {
+        f(apply(i))
       }
     }
   }
 
+  /*
   def fromPointerReaderRefDefault(segment: SegmentReader,
                                   pointer: Int,
                                   defaultSegment: SegmentReader,
@@ -130,4 +117,6 @@ abstract class List[ElementBuilder, ElementReader](val elementSize: Byte)
   def setPointerBuilder(segment: SegmentBuilder, pointer: Int, value: Reader) {
     WireHelpers.setListPointer(segment, pointer, value.asInstanceOf[ListReader])
   }
+  */
 }
+

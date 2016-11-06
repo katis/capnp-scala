@@ -14,7 +14,6 @@ object WireHelpers {
 
   class AllocateResult(val ptr: Int, val refOffset: Int, val segment: SegmentBuilder)
 
-
   def allocate(refOffset: Int,
                segment: SegmentBuilder,
                amount: Int,
@@ -64,7 +63,6 @@ object WireHelpers {
   }
 
   class FollowFarsResult(val ptr: Int, val ref: Long, val segment: SegmentReader)
-
 
   def followFars(ref: Long, refTarget: Int, segment: SegmentReader): FollowFarsResult = {
     if (segment != null && WirePointer.kind(ref) == WirePointer.FAR) {
@@ -223,27 +221,28 @@ object WireHelpers {
     }
   }
 
-  def initStructPointer(factory: Struct,
+  def initStructPointer[T <: Struct : StructFromSegment : HasStructSize](
                            refOffset: Int,
-                           segment: SegmentBuilder,
-                           size: StructSize): factory.Builder = {
+                           segment: SegmentBuilder): T#Builder = {
+    val size = implicitly[HasStructSize[T]].structSize
     val allocation = allocate(refOffset, segment, size.total(), WirePointer.STRUCT.toByte)
     StructPointer.setFromStructSize(allocation.segment.buffer, allocation.refOffset, size)
-    factory.Builder(allocation.segment, allocation.ptr * Constants.BYTES_PER_WORD, allocation.ptr + size.data,
+    implicitly[StructFromSegment[T]].builderFromSegment(allocation.segment, allocation.ptr * Constants.BYTES_PER_WORD, allocation.ptr + size.data,
       size.data * 64, size.pointers)
   }
 
-  def getWritableStructPointer(factory: Struct,
-                                  refOffset: Int,
-                                  segment: SegmentBuilder,
-                                  size: StructSize,
-                                  defaultSegment: SegmentReader,
-                                  defaultOffset: Int): factory.Builder = {
+  def getWritableStructPointer[T <: Struct : StructFromSegment : HasStructSize](
+                                 refOffset: Int,
+                                 segment: SegmentBuilder,
+                                 defaultSegment: SegmentReader,
+                                 defaultOffset: Int): T#Builder = {
+    val factory = implicitly[StructFromSegment[T]]
+    val size = implicitly[HasStructSize[T]].structSize
     val ref = segment.get(refOffset)
     val target = WirePointer.target(refOffset, ref)
     if (WirePointer.isNull(ref)) {
       if (defaultSegment == null) {
-        return initStructPointer(factory, refOffset, segment, size).asInstanceOf[factory.Builder]
+        return initStructPointer[T](refOffset, segment)
       } else {
         throw new Error("unimplemented")
       }
@@ -267,19 +266,19 @@ object WireHelpers {
       }
       memset(resolved.segment.buffer, resolved.ptr * Constants.BYTES_PER_WORD, 0.toByte, (oldDataSize + oldPointerCount * Constants.WORDS_PER_POINTER) *
         Constants.BYTES_PER_WORD)
-      factory.Builder(allocation.segment, allocation.ptr * Constants.BYTES_PER_WORD, newPointerSection,
+      factory.builderFromSegment(allocation.segment, allocation.ptr * Constants.BYTES_PER_WORD, newPointerSection,
         newDataSize * Constants.BITS_PER_WORD, newPointerCount)
     } else {
-      factory.Builder(resolved.segment, resolved.ptr * Constants.BYTES_PER_WORD, oldPointerSection,
+      factory.builderFromSegment(resolved.segment, resolved.ptr * Constants.BYTES_PER_WORD, oldPointerSection,
         oldDataSize * Constants.BITS_PER_WORD, oldPointerCount)
     }
   }
 
-  def initListPointer(factory: ListBuilder.Factory,
+  def initListPointer[T <: PointerFamily : ListFromSegment](
                          refOffset: Int,
                          segment: SegmentBuilder,
                          elementCount: Int,
-                         elementSize: Byte): factory.Builder = {
+                         elementSize: Byte): T#Builder = {
     assert(elementSize != ElementSize.INLINE_COMPOSITE, "Should have called initStructListPointer instead")
     val dataSize = ElementSize.dataBitsPerElement(elementSize)
     val pointerCount = ElementSize.pointersPerElement(elementSize)
@@ -287,15 +286,16 @@ object WireHelpers {
     val wordCount = roundBitsUpToWords(elementCount.toLong * step.toLong)
     val allocation = allocate(refOffset, segment, wordCount, WirePointer.LIST)
     ListPointer.set(allocation.segment.buffer, allocation.refOffset, elementSize, elementCount)
+    val factory = implicitly[ListFromSegment[T]]
     factory.Builder(allocation.segment, allocation.ptr * Constants.BYTES_PER_WORD, elementCount,
       step, dataSize, pointerCount.toShort)
   }
 
-  def initStructListPointer(factory: ListBuilder.Factory,
+  def initStructListPointer[T <: PointerFamily : ListFromSegment](
                                refOffset: Int,
                                segment: SegmentBuilder,
                                elementCount: Int,
-                               elementSize: StructSize): factory.Builder = {
+                               elementSize: StructSize): T#Builder = {
     val wordsPerElement = elementSize.total()
     val wordCount = elementCount * wordsPerElement
     val allocation = allocate(refOffset, segment, Constants.POINTER_SIZE_IN_WORDS + wordCount, WirePointer.LIST)
@@ -303,16 +303,16 @@ object WireHelpers {
     WirePointer.setKindAndInlineCompositeListElementCount(allocation.segment.buffer, allocation.ptr,
       WirePointer.STRUCT, elementCount)
     StructPointer.setFromStructSize(allocation.segment.buffer, allocation.ptr, elementSize)
+    val factory = implicitly[ListFromSegment[T]]
     factory.Builder(allocation.segment, (allocation.ptr + 1) * Constants.BYTES_PER_WORD, elementCount,
       wordsPerElement * Constants.BITS_PER_WORD, elementSize.data * Constants.BITS_PER_WORD, elementSize.pointers)
   }
 
-  def getWritableListPointer(factory: ListBuilder.Factory,
-                                origRefOffset: Int,
+  def getWritableListPointer[T <: PointerFamily : ListFromSegment](origRefOffset: Int,
                                 origSegment: SegmentBuilder,
                                 elementSize: Byte,
                                 defaultSegment: SegmentReader,
-                                defaultOffset: Int): factory.Builder = {
+                                defaultOffset: Int): T#Builder = {
     assert(elementSize != ElementSize.INLINE_COMPOSITE, "Use getStructList{Element,Field} for structs")
     val origRef = origSegment.get(origRefOffset)
     val origRefTarget = WirePointer.target(origRefOffset, origRef)
@@ -336,17 +336,18 @@ object WireHelpers {
         throw new DecodeException("Existing list value is incompatible with expected type.")
       }
       val step = dataSize + pointerCount * Constants.BITS_PER_POINTER
+      val factory = implicitly[ListFromSegment[T]]
       factory.Builder(resolved.segment, resolved.ptr * Constants.BYTES_PER_WORD, ListPointer.elementCount(resolved.ref),
         step, dataSize, pointerCount.toShort)
     }
   }
 
-  def getWritableStructListPointer(factory: ListBuilder.Factory,
-                                      origRefOffset: Int,
+  def getWritableStructListPointer[T <: PointerFamily : ListFromSegment](origRefOffset: Int,
                                       origSegment: SegmentBuilder,
                                       elementSize: StructSize,
                                       defaultSegment: SegmentReader,
-                                      defaultOffset: Int): factory.Builder = {
+                                      defaultOffset: Int): T#Builder = {
+    val factory = implicitly[ListFromSegment[T]]
     val origRef = origSegment.get(origRefOffset)
     val origRefTarget = WirePointer.target(origRefOffset, origRef)
     if (WirePointer.isNull(origRef)) {
@@ -405,7 +406,7 @@ object WireHelpers {
       val oldStep = oldDataSize + oldPointerCount * Constants.BITS_PER_POINTER
       val elementCount = ListPointer.elementCount(origRef)
       if (oldSize == ElementSize.VOID) {
-          initStructListPointer(factory, origRefOffset, origSegment, elementCount, elementSize).asInstanceOf[factory.Builder]
+          initStructListPointer[T](origRefOffset, origSegment, elementCount, elementSize)
       } else {
         if (oldSize == ElementSize.BIT) {
           throw new Error("Found bit list where struct list was expected; " +
@@ -454,14 +455,14 @@ object WireHelpers {
     }
   }
 
-  def initTextPointer(refOffset: Int, segment: SegmentBuilder, size: Int): Text.Builder = {
+  def initTextPointer(refOffset: Int, segment: SegmentBuilder, size: Int): Text#Builder = {
     val byteSize = size + 1
     val allocation = allocate(refOffset, segment, roundBytesUpToWords(byteSize), WirePointer.LIST)
     ListPointer.set(allocation.segment.buffer, allocation.refOffset, ElementSize.BYTE, byteSize)
     new Text.Builder(allocation.segment.buffer, allocation.ptr * Constants.BYTES_PER_WORD, size)
   }
 
-  def setTextPointer(refOffset: Int, segment: SegmentBuilder, value: Text.Reader): Text.Builder = {
+  def setTextPointer(refOffset: Int, segment: SegmentBuilder, value: Text.Reader): Text#Builder = {
     val builder = initTextPointer(refOffset, segment, value.size)
     val slice = value.buffer.duplicate()
     slice.position(value.offset)
@@ -475,7 +476,7 @@ object WireHelpers {
                              segment: SegmentBuilder,
                              defaultBuffer: ByteBuffer,
                              defaultOffset: Int,
-                             defaultSize: Int): Text.Builder = {
+                             defaultSize: Int): Text#Builder = {
     val ref = segment.get(refOffset)
     if (WirePointer.isNull(ref)) {
       if (defaultBuffer == null) {
@@ -505,13 +506,13 @@ object WireHelpers {
     new Text.Builder(resolved.segment.buffer, resolved.ptr * Constants.BYTES_PER_WORD, size - 1)
   }
 
-  def initDataPointer(refOffset: Int, segment: SegmentBuilder, size: Int): Data.Builder = {
+  def initDataPointer(refOffset: Int, segment: SegmentBuilder, size: Int): DataBuilder = {
     val allocation = allocate(refOffset, segment, roundBytesUpToWords(size), WirePointer.LIST)
     ListPointer.set(allocation.segment.buffer, allocation.refOffset, ElementSize.BYTE, size)
-    new Data.Builder(allocation.segment.buffer, allocation.ptr * Constants.BYTES_PER_WORD, size)
+    new DataBuilder(allocation.segment.buffer, allocation.ptr * Constants.BYTES_PER_WORD, size)
   }
 
-  def setDataPointer(refOffset: Int, segment: SegmentBuilder, value: Data.Reader): Data.Builder = {
+  def setDataPointer(refOffset: Int, segment: SegmentBuilder, value: DataReader): DataBuilder = {
     val builder = initDataPointer(refOffset, segment, value.size)
     for (i <- 0 until builder.size) {
       builder.buffer.put(builder.offset + i, value.buffer.get(value.offset + i))
@@ -523,11 +524,11 @@ object WireHelpers {
                              segment: SegmentBuilder,
                              defaultBuffer: ByteBuffer,
                              defaultOffset: Int,
-                             defaultSize: Int): Data.Builder = {
+                             defaultSize: Int): DataBuilder = {
     val ref = segment.get(refOffset)
     if (WirePointer.isNull(ref)) {
       if (defaultBuffer == null) {
-        return new Data.Builder()
+        return new DataBuilder()
       } else {
         val builder = initDataPointer(refOffset, segment, defaultSize)
         for (i <- 0 until builder.size) {
@@ -544,22 +545,22 @@ object WireHelpers {
     if (ListPointer.elementSize(resolved.ref) != ElementSize.BYTE) {
       throw new DecodeException("Called getData{Field,Element} but existing list pointer is not byte-sized.")
     }
-    new Data.Builder(resolved.segment.buffer, resolved.ptr * Constants.BYTES_PER_WORD, ListPointer.elementCount(resolved.ref))
+    new DataBuilder(resolved.segment.buffer, resolved.ptr * Constants.BYTES_PER_WORD, ListPointer.elementCount(resolved.ref))
   }
 
-  def readStructPointer(factory: StructReader.Factory,
-                        _segment: SegmentReader,
-                        _refOffset: Int,
-                        defaultSegment: SegmentReader,
-                        defaultOffset: Int,
-                        nestingLimit: Int): factory.Reader = {
+  def readStructPointer[T <: Struct : StructFromSegment : HasStructSize](_segment: SegmentReader,
+                                                                         _refOffset: Int,
+                                                                         defaultSegment: SegmentReader,
+                                                                         defaultOffset: Int,
+                                                                         nestingLimit: Int): T#Reader = {
     var segment = _segment
     var refOffset = _refOffset
+    val factory = implicitly[StructFromSegment[T]]
 
     var ref = segment.get(refOffset)
     if (WirePointer.isNull(ref)) {
       if (defaultSegment == null) {
-        return factory.Reader(SegmentReader.EMPTY, 0, 0, 0, 0.toShort, 0x7fffffff)
+        return factory.readerFromSegment(SegmentReader.EMPTY, 0, 0, 0, 0.toShort, 0x7fffffff)
       } else {
         segment = defaultSegment
         refOffset = defaultOffset
@@ -576,7 +577,7 @@ object WireHelpers {
       throw new DecodeException("Message contains non-struct pointer where struct pointer was expected.")
     }
     resolved.segment.arena.checkReadLimit(StructPointer.wordSize(resolved.ref))
-    factory.Reader(resolved.segment, resolved.ptr * Constants.BYTES_PER_WORD, resolved.ptr + dataSizeWords,
+    factory.readerFromSegment(resolved.segment, resolved.ptr * Constants.BYTES_PER_WORD, resolved.ptr + dataSizeWords,
       dataSizeWords * Constants.BITS_PER_WORD, StructPointer.ptrCount(resolved.ref), nestingLimit - 1)
   }
 
@@ -739,13 +740,14 @@ object WireHelpers {
     throw new Error("unreachable")
   }
 
-  def readListPointer(factory: ListReader.Factory,
+  def readListPointer[T <: PointerFamily : ListFromSegment](
                          _segment: SegmentReader,
                          _refOffset: Int,
                          defaultSegment: SegmentReader,
                          defaultOffset: Int,
                          expectedElementSize: Byte,
-                         nestingLimit: Int): factory.Reader = {
+                         nestingLimit: Int): T#Reader = {
+    val factory = implicitly[ListFromSegment[T]]
     var segment = _segment
     var refOffset = _refOffset
     var ref = segment.get(refOffset)
@@ -806,7 +808,7 @@ object WireHelpers {
                       refOffset: Int,
                       defaultBuffer: ByteBuffer,
                       defaultOffset: Int,
-                      defaultSize: Int): Text.Reader = {
+                      defaultSize: Int): Text#Reader = {
     val ref = segment.get(refOffset)
     if (WirePointer.isNull(ref)) {
       if (defaultBuffer == null) {
@@ -837,13 +839,13 @@ object WireHelpers {
                       refOffset: Int,
                       defaultBuffer: ByteBuffer,
                       defaultOffset: Int,
-                      defaultSize: Int): Data.Reader = {
+                      defaultSize: Int): DataReader = {
     val ref = segment.get(refOffset)
     if (WirePointer.isNull(ref)) {
       if (defaultBuffer == null) {
-        return new Data.Reader()
+        return new DataReader()
       } else {
-        return new Data.Reader(defaultBuffer, defaultOffset, defaultSize)
+        return new DataReader(defaultBuffer, defaultOffset, defaultSize)
       }
     }
     val refTarget = WirePointer.target(refOffset, ref)
@@ -856,7 +858,7 @@ object WireHelpers {
       throw new DecodeException("Message contains list pointer of non-bytes where data was expected.")
     }
     resolved.segment.arena.checkReadLimit(roundBytesUpToWords(size))
-    new Data.Reader(resolved.segment.buffer, resolved.ptr, size)
+    new DataReader(resolved.segment.buffer, resolved.ptr, size)
   }
 }
 

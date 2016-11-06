@@ -1,5 +1,7 @@
 package org.murtsi.capnproto.runtime
 
+import implicits._
+
 object DataList extends List[Data.Builder, Data.Reader](ElementSize.POINTER.toByte) {
   type Builder = BuilderImpl
   type Reader = ReaderImpl
@@ -32,21 +34,7 @@ object DataList extends List[Data.Builder, Data.Reader](ElementSize.POINTER.toBy
       nestingLimit: Int) extends ReaderBase(segment, ptr, elementCount, step, structDataSize, structPointerCount,
     nestingLimit) {
 
-    def apply(idx: Int): Data.Reader = _getPointerElement(Data, idx)
-
-    override def iterator: Iterator[Data.Reader] = new Iterator[Data.Reader] {
-      var idx: Int = 0
-
-      def next(): Data.Reader = {
-        _getPointerElement(Data, {idx += 1; idx - 1})
-      }
-
-      def hasNext: Boolean = idx < size
-
-      def remove() {
-        throw new UnsupportedOperationException()
-      }
-    }
+    def apply(idx: Int): Data.Reader = _getPointerElement[Data](idx)
   }
 
   class BuilderImpl(segment: SegmentBuilder,
@@ -57,26 +45,10 @@ object DataList extends List[Data.Builder, Data.Reader](ElementSize.POINTER.toBy
       structPointerCount: Short) extends BuilderBase(segment, ptr, elementCount, step, structDataSize,
     structPointerCount) {
 
-    def apply(idx: Int): Data.Builder = _getPointerElement(Data, idx)
+    def apply(idx: Int): Data.Builder = _getPointerElement[Data](idx)
 
     def set(index: Int, value: Data.Reader) {
-      _setPointerElement(Data)(index, value)
-    }
-
-    override def iterator: Iterator[Data.Builder] = new Iterator[Data.Builder] {
-      var idx: Int = 0
-
-      def next(): Data.Builder = {
-        _getPointerElement(Data, {
-          idx += 1; idx - 1
-        })
-      }
-
-      def hasNext(): Boolean = this.idx < size
-
-      def remove() {
-        throw new UnsupportedOperationException()
-      }
+      _setPointerElement[Data](index, value)
     }
   }
 }

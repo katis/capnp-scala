@@ -1,5 +1,11 @@
 package org.murtsi.capnproto.runtime
 
+/*
+object ListList {
+  def apply[ElementBuilder, ElementReader <: ListReader]: ListList[ElementBuilder, ElementReader] = {
+    new ListList[ElementBuilder, ElementReader]()
+  }
+}
 class ListList[ElementBuilder, ElementReader <: ListReader](factory: List[ElementBuilder, ElementReader])
   extends List[List[ElementBuilder, ElementReader]#Builder, List[ElementBuilder, ElementReader]#Reader](ElementSize.POINTER.toByte) {
 
@@ -34,7 +40,7 @@ class ListList[ElementBuilder, ElementReader <: ListReader](factory: List[Elemen
                   structPointerCount: Short,
                   nestingLimit: Int) extends ReaderBase(segment, ptr, elementCount, step, structDataSize, structPointerCount, nestingLimit) {
 
-    override def apply(idx: Int): ListT#Reader = _getPointerElement(factory, idx)
+    override def apply(idx: Int): ListT#Reader = _getPointerElement[ListT](idx)
   }
 
   class BuilderImpl(segment: SegmentBuilder,
@@ -53,3 +59,4 @@ class ListList[ElementBuilder, ElementReader <: ListReader](factory: List[Elemen
 }
 
 
+*/

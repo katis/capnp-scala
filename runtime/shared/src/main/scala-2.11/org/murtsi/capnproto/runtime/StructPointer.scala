@@ -2,7 +2,6 @@ package org.murtsi.capnproto.runtime
 
 import java.nio.ByteBuffer
 //remove if not needed
-import scala.collection.JavaConversions._
 
 object StructPointer {
 

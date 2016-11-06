@@ -10,7 +10,7 @@ class MessageBuilder(val arena: BuilderArena = new BuilderArena(BuilderArena.SUG
     this(new BuilderArena(firstSegmentWords, allocationStrategy))
   }
 
-  private def getRootInternal(): AnyPointer.Builder = {
+  private def internalRoot: AnyPointer.Builder = {
     val rootSegment = this.arena.segments.get(0)
     if (rootSegment.currentSize() == 0) {
       val location = rootSegment.allocate(1)
@@ -26,13 +26,13 @@ class MessageBuilder(val arena: BuilderArena = new BuilderArena(BuilderArena.SUG
     }
   }
 
-  def getRoot(factory: FromPointerBuilder): factory.Builder = this.getRootInternal.getAs(factory).asInstanceOf[factory.Builder]
+  def getRoot[T <: PointerFamily : FromPointer]: T#Builder = this.internalRoot.getAs[T]
 
-  def setRoot(factory: SetPointerBuilder)(reader: factory.Reader) {
-    this.getRootInternal.setAs(factory)(reader)
+  def setRoot[T <: PointerFamily : SetPointerBuilder](reader: T#Reader) {
+    internalRoot.setAs[T](reader)
   }
 
-  def initRoot(factory: FromPointerBuilder): factory.Builder = this.getRootInternal.initAs(factory).asInstanceOf[factory.Builder]
+  def initRoot[T <: PointerFamily : FromPointer]: T#Builder = internalRoot.initAs[T]
 
   def getSegmentsForOutput(): Array[java.nio.ByteBuffer] = this.arena.getSegmentsForOutput
 }

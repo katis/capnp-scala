@@ -1,109 +1,36 @@
 package org.murtsi.capnproto.runtime
 
+trait StructReaderFromSegment[T] {
+  def readerFromSegment(segment: SegmentReader, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int): T
+}
+
+trait StructBuilderFromSegment[T] {
+  def builderFromSegment(segment: SegmentBuilder, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short): T
+}
+
+trait HasStructSize[T] {
+  def structSize: StructSize
+}
+
+trait HasTypeId[T] {
+  def typeId: Long
+}
+
+trait StructFromSegment[T <: Struct] extends StructReaderFromSegment[T#Reader] with StructBuilderFromSegment[T#Builder]
+
 trait Struct
-  extends PointerFactory
-    with FromPointerBuilderRefDefault
+  extends PointerFamily
     with StructBuilder.Factory
-    with SetPointerBuilder
-    with FromPointerReaderRefDefault
-    with StructReader.Factory {
+    with StructReader.Factory
+    {
 
   struct =>
 
+  def typeId: Long
   def structSize: StructSize
 
   type Builder <: BuilderBase
   type Reader <: ReaderBase
-
-  object List extends List[struct.Builder, struct.Reader](ElementSize.INLINE_COMPOSITE) {
-    override type Builder = BuilderImpl
-    override type Reader = ReaderImpl
-
-    override def Builder(segment: SegmentBuilder, ptr: Int, elementCount: Int, step: Int, structDataSize: Int, structPointerCount: Short): Builder =
-      new BuilderImpl(segment, ptr, elementCount, step, structDataSize, structPointerCount)
-
-    override def setPointerBuilder(segment: SegmentBuilder, pointer: Int, value: Reader): Unit = {
-      WireHelpers.setListPointer(segment, pointer, value)
-    }
-
-    override def Reader(segment: SegmentReader, ptr: Int, elementCount: Int, step: Int, structDataSize: Int, structPointerCount: Short, nestingLimit: Int): Reader =
-      new ReaderImpl(segment, ptr, elementCount, step, structDataSize, structPointerCount, nestingLimit)
-
-    override def initFromPointerBuilder(segment: SegmentBuilder,
-                                        pointer: Int,
-                                        elementCount: Int): Builder = {
-      WireHelpers.initStructListPointer(this, pointer, segment, elementCount, structSize)
-    }
-
-    override def fromPointerBuilderRefDefault(segment: SegmentBuilder, pointer: Int, defaultSegment: SegmentReader, defaultOffset: Int): Builder = {
-      WireHelpers.getWritableStructListPointer(this, pointer, segment, structSize, defaultSegment, defaultOffset)
-    }
-
-    override def fromPointerBuilder(segment: SegmentBuilder, pointer: Int): Builder = {
-      WireHelpers.getWritableStructListPointer(this, pointer, segment, structSize, null, 0)
-    }
-
-    class BuilderImpl(_segment: SegmentBuilder,
-                      _ptr: Int,
-                      _elementCount: Int,
-                      _step: Int,
-                      _structDataSize: Int,
-                      _structPointerCount: Short)
-        extends BuilderBase(_segment, _ptr, _elementCount, _step, _structDataSize, _structPointerCount)
-          with Iterable[struct.Builder] {
-
-      builder =>
-
-      def apply(idx: Int): struct.Builder = _getStructElement(struct, idx)
-
-      override def iterator: Iterator[struct.Builder] = new Iterator[struct.Builder] {
-        private var idx: Int = 0
-
-        def next(): struct.Builder = {
-          val i = idx
-          idx += 1
-          _getStructElement(struct, i)
-        }
-
-        def hasNext(): Boolean = idx < builder.size
-
-        def remove() {
-          throw new UnsupportedOperationException()
-        }
-      }
-    }
-
-    class ReaderImpl(_segment: SegmentReader,
-                     _ptr: Int,
-                     _elementCount: Int,
-                     _step: Int,
-                     _structDataSize: Int,
-                     _structPointerCount: Short,
-                     _nestingLimit: Int)
-        extends ReaderBase(_segment, _ptr, _elementCount, _step, _structDataSize, _structPointerCount, _nestingLimit)
-        with Iterable[struct.Reader] {
-
-      reader =>
-
-      def apply(idx: Int): struct.Reader = _getStructElement(struct, idx)
-
-      override def iterator: Iterator[struct.Reader] = new Iterator[struct.Reader] {
-        private var idx: Int = 0
-
-        def next(): struct.Reader = {
-          val i = idx
-          idx += 1
-          _getStructElement(struct, i)
-        }
-
-        def hasNext(): Boolean = idx < reader.size
-
-        def remove() {
-          throw new UnsupportedOperationException()
-        }
-      }
-    }
-  }
 
   abstract class BuilderBase(_segment: SegmentBuilder,
                              _data: Int,
@@ -122,14 +49,14 @@ trait Struct
 
   }
 
-  override def fromPointerReaderRefDefault(segment: SegmentReader,
+  /*
+  def fromPointerReaderRefDefault(segment: SegmentReader,
                                   pointer: Int,
                                   defaultSegment: SegmentReader,
                                   defaultOffset: Int,
                                   nestingLimit: Int): Reader = {
     WireHelpers.readStructPointer(this, segment, pointer, defaultSegment, defaultOffset, nestingLimit)
   }
-
 
   def fromPointerReader(segment: SegmentReader, pointer: Int, nestingLimit: Int): Reader = {
     fromPointerReaderRefDefault(segment, pointer, null, 0, nestingLimit)
@@ -153,6 +80,7 @@ trait Struct
   def setPointerBuilder(segment: SegmentBuilder, pointer: Int, value: Reader) {
     WireHelpers.setStructPointer(segment, pointer, value)
   }
+  */
 
   def asReader(builder: BuilderBase): Reader = builder.asReader
 }

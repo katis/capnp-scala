@@ -1,87 +1,58 @@
 package org.murtsi.capnproto.runtime
 
-class EnumList[T <: Enumeration#Value](val values: Array[T])
-    extends List[T, T](ElementSize.TWO_BYTES.toByte) {
-  type Builder = BuilderImpl
-  type Reader = ReaderImpl
+class EnumList[T <: Enum : HasEnumValues] extends List[T, T](ElementSize.TWO_BYTES) {
+  override type Builder = this.BuilderImpl
+  override type Reader = this.ReaderImpl
 
-  def Reader(segment: SegmentReader,
-             ptr: Int,
-             elementCount: Int,
-             step: Int,
-             structDataSize: Int,
-             structPointerCount: Short,
-             nestingLimit: Int): Reader = {
-    new ReaderImpl(values,
-                  segment,
-                  ptr,
-                  elementCount,
-                  step,
-                  structDataSize,
-                  structPointerCount,
-                  nestingLimit)
-  }
+  private val enumValues = implicitly[HasEnumValues[T]].enumValues
 
-  def Builder(segment: SegmentBuilder,
-                       ptr: Int,
-                       elementCount: Int,
-                       step: Int,
-                       structDataSize: Int,
-                       structPointerCount: Short): Builder = {
-    new BuilderImpl(values,
-                   segment,
-                   ptr,
-                   elementCount,
-                   step,
-                   structDataSize,
-                   structPointerCount)
-  }
-
-  def clampOrdinal[A](values: Array[A], ordinal: Short): A = {
+  private def clampOrdinal[A](values: Seq[A], ordinal: Short): A = {
     var index = ordinal
-    if (ordinal < 0 || ordinal >= values.length) {
-      index = (values.length - 1).toShort
+    if (ordinal < 0 || ordinal >= values.size) {
+      index = (values.size - 1).toShort
     }
     values(index)
   }
 
-  class ReaderImpl(val values: Array[T],
-                   segment: SegmentReader,
+  class ReaderImpl(segment: SegmentReader,
                    ptr: Int,
                    elementCount: Int,
                    step: Int,
                    structDataSize: Int,
                    structPointerCount: Short,
                    nestingLimit: Int)
-      extends ReaderBase(segment,
-                         ptr,
-                         elementCount,
-                         step,
-                         structDataSize,
-                         structPointerCount,
-                         nestingLimit) {
+    extends ReaderBase(segment,
+      ptr,
+      elementCount,
+      step,
+      structDataSize,
+      structPointerCount,
+      nestingLimit) {
 
-    def apply(idx: Int): T =  clampOrdinal(this.values, _getShortElement(idx))
+    reader =>
+
+    def apply(idx: Int): T = clampOrdinal(enumValues, _getShortElement(idx))
   }
 
-  class BuilderImpl(val values: Array[T],
-                    segment: SegmentBuilder,
+  class BuilderImpl(segment: SegmentBuilder,
                     ptr: Int,
                     elementCount: Int,
                     step: Int,
                     structDataSize: Int,
                     structPointerCount: Short)
-      extends BuilderBase(segment,
-                          ptr,
-                          elementCount,
-                          step,
-                          structDataSize,
-                          structPointerCount) {
+    extends BuilderBase(segment,
+      ptr,
+      elementCount,
+      step,
+      structDataSize,
+      structPointerCount) {
+
+    builder =>
 
     def update(index: Int, value: T) {
-      _setShortElement(index, value.id.toShort)
+      _setShortElement(index, value.index)
     }
 
-    override def apply(idx: Int): T = clampOrdinal(this.values, _getShortElement(idx))
+    override def apply(idx: Int): T = clampOrdinal(enumValues, _getShortElement(idx))
   }
 }

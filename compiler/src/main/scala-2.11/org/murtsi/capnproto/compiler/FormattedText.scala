@@ -23,7 +23,7 @@ case class Branch(texts: FormattedText*) extends FormattedText {
 }
 case class Line(line: String) extends FormattedText {
   override def lines(indent: Int): Seq[String] =
-    Seq(" " * (indent * 4) + line)
+    Seq(" " * (indent * 2) + line)
 }
 object BlankLine extends FormattedText {
   override def lines(indent: Int): Seq[String] = Seq("")

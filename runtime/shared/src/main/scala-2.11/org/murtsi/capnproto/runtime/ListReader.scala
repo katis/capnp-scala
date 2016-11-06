@@ -1,10 +1,7 @@
 package org.murtsi.capnproto.runtime
 
 object ListReader {
-
-  trait Factory {
-    type Reader
-
+  trait Factory[Reader] {
     def Reader(segment: SegmentReader,
                ptr: Int,
                elementCount: Int,
@@ -62,6 +59,14 @@ class ListReader(
       (index.toLong * this.step / Constants.BITS_PER_BYTE).toInt)
   }
 
+  protected def _getStructElement[T <: Struct : StructFromSegment](index: Int): T#Reader = {
+    val indexBit = index.toLong * this.step
+    val structData = this.ptr + (indexBit / Constants.BITS_PER_BYTE).toInt
+    val structPointers = structData + (this.structDataSize / Constants.BITS_PER_BYTE)
+    implicitly[StructFromSegment[T]].readerFromSegment(this.segment, structData, structPointers / 8, this.structDataSize, this.structPointerCount,
+      this.nestingLimit - 1)
+  }
+
   protected def _getStructElement(factory: Struct, index: Int): factory.Reader = {
     val indexBit = index.toLong * this.step
     val structData = this.ptr + (indexBit / Constants.BITS_PER_BYTE).toInt
@@ -70,19 +75,19 @@ class ListReader(
       this.nestingLimit - 1)
   }
 
-  protected def _getPointerElement(factory: FromPointerReader, index: Int): factory.Reader = {
-    factory.fromPointerReader(this.segment, (this.ptr + 
-      (index.toLong * this.step / Constants.BITS_PER_BYTE).toInt) / 
+  protected def _getPointerElement[T <: PointerFamily : FromPointer](index: Int): T#Reader = {
+    implicitly[FromPointer[T]].fromPointerReader(this.segment, (this.ptr +
+      (index.toLong * this.step / Constants.BITS_PER_BYTE).toInt) /
       Constants.BYTES_PER_WORD, this.nestingLimit)
   }
 
-  protected def _getPointerElement(factory: FromPointerReaderBlobDefault,
-      index: Int, 
-      defaultBuffer: java.nio.ByteBuffer, 
-      defaultOffset: Int, 
-      defaultSize: Int): factory.Reader = {
-    factory.fromPointerReaderBlobDefault(this.segment, (this.ptr + 
-      (index.toLong * this.step / Constants.BITS_PER_BYTE).toInt) / 
+  protected def _getPointerElement[T <: PointerFamily : FromPointerBlobDefault](index: Int,
+      defaultBuffer: java.nio.ByteBuffer,
+      defaultOffset: Int,
+      defaultSize: Int): T#Reader = {
+    val factory = implicitly[FromPointerBlobDefault[T]]
+    factory.fromPointerReaderBlobDefault(this.segment, (this.ptr +
+      (index.toLong * this.step / Constants.BITS_PER_BYTE).toInt) /
       Constants.BYTES_PER_WORD, defaultBuffer, defaultOffset, defaultSize)
   }
 }

@@ -1,28 +1,17 @@
 package org.murtsi.capnproto.runtime
 
-object AnyPointer extends PointerFactory {
+object AnyPointer extends AnyPointer
+sealed class AnyPointer private() extends PointerFamily {
   type Builder = BuilderImpl
   type Reader = ReaderImpl
 
-  def fromPointerReader(segment: SegmentReader, pointer: Int, nestingLimit: Int): Reader = {
-    new Reader(segment, pointer, nestingLimit)
-  }
-
-  def fromPointerBuilder(segment: SegmentBuilder, pointer: Int): Builder = new Builder(segment, pointer)
-
-  def initFromPointerBuilder(segment: SegmentBuilder, pointer: Int, elementCount: Int): Builder = {
-    val result = new Builder(segment, pointer)
-    result.clear()
-    result
-  }
-
   class ReaderImpl(val segment: SegmentReader, val pointer: Int, val nestingLimit: Int) {
-
     def isNull: Boolean = {
       WirePointer.isNull(this.segment.buffer.getLong(this.pointer * Constants.BYTES_PER_WORD))
     }
 
-    def getAs(factory: FromPointerReader): factory.Reader = {
+    def getAs[T <: PointerFamily : FromPointer]: T#Reader = {
+      val factory = implicitly[FromPointer[T]]
       factory.fromPointerReader(this.segment, this.pointer, this.nestingLimit)
     }
   }
@@ -33,20 +22,23 @@ object AnyPointer extends PointerFactory {
       WirePointer.isNull(this.segment.buffer.getLong(this.pointer * Constants.BYTES_PER_WORD))
     }
 
-    def getAs(factory: FromPointerBuilder): factory.Builder = {
+    def getAs[T <: PointerFamily : FromPointer]: T#Builder = {
+      val factory = implicitly[FromPointer[T]]
       factory.fromPointerBuilder(this.segment, this.pointer)
     }
 
-    def initAs(factory: FromPointerBuilder): factory.Builder = {
+    def initAs[T <: PointerFamily : FromPointer]: T#Builder = {
+      val factory = implicitly[FromPointer[T]]
       factory.initFromPointerBuilder(this.segment, this.pointer, 0)
     }
 
-    def initAs(factory: FromPointerBuilder, elementCount: Int): factory.Builder = {
+    def initAs[T <: PointerFamily : FromPointer](elementCount: Int): T#Builder = {
+      val factory = implicitly[FromPointer[T]]
       factory.initFromPointerBuilder(this.segment, this.pointer, elementCount)
     }
 
-    def setAs(factory: SetPointerBuilder)(reader: factory.Reader) {
-      factory.setPointerBuilder(this.segment, this.pointer, reader)
+    def setAs[T <: PointerFamily : SetPointerBuilder](reader: T#Reader) {
+      implicitly[SetPointerBuilder[T]].setPointerBuilder(this.segment, this.pointer, reader)
     }
 
     def asReader(): Reader = {
@@ -58,5 +50,5 @@ object AnyPointer extends PointerFactory {
       this.segment.buffer.putLong(this.pointer * 8, 0L)
     }
   }
-
 }
+

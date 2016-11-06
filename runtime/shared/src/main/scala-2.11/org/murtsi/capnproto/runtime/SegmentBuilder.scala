@@ -1,6 +1,7 @@
 package org.murtsi.capnproto.runtime
 
 import java.nio.ByteBuffer
+
 import SegmentBuilder._
 
 object SegmentBuilder {

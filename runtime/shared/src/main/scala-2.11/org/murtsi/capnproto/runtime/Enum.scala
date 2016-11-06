@@ -1,14 +1,23 @@
 package org.murtsi.capnproto.runtime
 
+trait FromShort[T] {
+  def fromShort(short: Short): Option[T]
+}
+
+trait HasEnumValues[T <: Enum] {
+  def enumValues: Seq[T]
+}
+
 abstract class Enum(val index: Short)
 
 trait EnumModule[T <: Enum] {
   def apply(value: Short): Option[T]
   def enumValues: Seq[T]
 
-  object List extends org.murtsi.capnproto.runtime.List[T, T](ElementSize.TWO_BYTES.toByte) {
-    override type Builder = List.BuilderImpl
-    override type Reader = List.ReaderImpl
+  object List extends List
+  class List private() extends org.murtsi.capnproto.runtime.List[T, T](ElementSize.TWO_BYTES.toByte) {
+    override type Builder = this.BuilderImpl
+    override type Reader = this.ReaderImpl
 
     private def clampOrdinal[A](values: Seq[A], ordinal: Short): A = {
       var index = ordinal
@@ -17,12 +26,6 @@ trait EnumModule[T <: Enum] {
       }
       values(index)
     }
-
-    override def Builder(segment: SegmentBuilder, ptr: Int, elementCount: Int, step: Int, structDataSize: Int, structPointerCount: Short): Builder =
-      new BuilderImpl(segment, ptr, elementCount, step, structDataSize, structPointerCount)
-
-    override def Reader(segment: SegmentReader, ptr: Int, elementCount: Int, step: Int, structDataSize: Int, structPointerCount: Short, nestingLimit: Int): Reader =
-      new ReaderImpl(segment, ptr, elementCount, step, structDataSize, structPointerCount, nestingLimit)
 
     class ReaderImpl(segment: SegmentReader,
                      ptr: Int,

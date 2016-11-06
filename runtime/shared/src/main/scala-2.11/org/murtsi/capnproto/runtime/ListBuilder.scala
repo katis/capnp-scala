@@ -1,15 +1,12 @@
 package org.murtsi.capnproto.runtime
 
 object ListBuilder {
-
-  trait Factory {
-    type Builder
-
-    def Builder(segment: SegmentBuilder,
+  trait Factory[Builder] {
+     def Builder(segment: SegmentBuilder,
         ptr: Int,
-        elementCount: Int, 
-        step: Int, 
-        structDataSize: Int, 
+        elementCount: Int,
+        step: Int,
+        structDataSize: Int,
         structPointerCount: Short): Builder
   }
 }
@@ -97,27 +94,27 @@ class ListBuilder(val segment: SegmentBuilder,
       (index.toLong * this.step / Constants.BITS_PER_BYTE).toInt, value)
   }
 
-  protected def _getStructElement(factory: Struct, index: Int): factory.Builder = {
+  protected def _getStructElement[T <: Struct : StructFromSegment](index: Int): T#Builder = {
     val indexBit = index.toLong * this.step
     val structData = this.ptr + (indexBit / Constants.BITS_PER_BYTE).toInt
     val structPointers = (structData + (this.structDataSize / 8)) / 8
-    factory.Builder(this.segment, structData, structPointers, this.structDataSize, this.structPointerCount)
+    implicitly[StructFromSegment[T]].builderFromSegment(this.segment, structData, structPointers, this.structDataSize, this.structPointerCount)
   }
 
-  protected def _getPointerElement(factory: FromPointerBuilder, index: Int): factory.Builder = {
-    factory.fromPointerBuilder(this.segment, (this.ptr + 
-      (index.toLong * this.step / Constants.BITS_PER_BYTE).toInt) / 
+  protected def _getPointerElement[T <: PointerFamily : FromPointer](index: Int): T#Builder = {
+    implicitly[FromPointer[T]].fromPointerBuilder(this.segment, (this.ptr +
+      (index.toLong * this.step / Constants.BITS_PER_BYTE).toInt) /
       Constants.BYTES_PER_WORD)
   }
 
-  protected def _initPointerElement(factory: FromPointerBuilder, index: Int, elementCount: Int): factory.Builder = {
-    factory.initFromPointerBuilder(this.segment, (this.ptr + 
+  protected def _initPointerElement[T <: PointerFamily : FromPointer](index: Int, elementCount: Int): T#Builder = {
+    implicitly[FromPointer[T]].initFromPointerBuilder(this.segment, (this.ptr +
       (index.toLong * this.step / Constants.BITS_PER_BYTE).toInt) / 
       Constants.BYTES_PER_WORD, elementCount)
   }
 
-  protected def _setPointerElement(factory: SetPointerBuilder)(index: Int, value: factory.Reader) {
-    factory.setPointerBuilder(this.segment, (this.ptr + 
+  protected def _setPointerElement[T <: PointerFamily : SetPointerBuilder](index: Int, value: T#Reader) {
+    implicitly[SetPointerBuilder[T]].setPointerBuilder(this.segment, (this.ptr +
       (index.toLong * this.step / Constants.BITS_PER_BYTE).toInt) / 
       Constants.BYTES_PER_WORD, value)
   }

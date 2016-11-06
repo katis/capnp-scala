@@ -1,7 +1,6 @@
 package org.murtsi.capnproto.runtime
 
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
+import java.nio.{ByteBuffer, ByteOrder}
 import java.util
 
 import BuilderArena._

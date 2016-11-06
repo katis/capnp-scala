@@ -1,7 +1,7 @@
 package org.murtsi.capnproto.runtime
 
-import java.nio.channels.WritableByteChannel
 import java.nio.ByteBuffer
+import java.nio.channels.WritableByteChannel
 
 class PackedOutputStream(output: BufferedOutputStream) extends WritableByteChannel {
 
