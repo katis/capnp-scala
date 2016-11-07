@@ -14,7 +14,6 @@ sealed trait Leaf {
   override def toString: String = this match {
     case Reader => "Reader"
     case Builder => "Builder"
-    case Owned => "Owned"
     case Client => "Client"
     case Pipeline => "Pipeline"
     case Module => ""
@@ -24,7 +23,6 @@ sealed trait Leaf {
 object Leaf {
   object Reader extends Leaf
   object Builder extends Leaf
-  object Owned extends Leaf
   object Client extends Leaf
   object Pipeline extends Leaf
   object Module extends Leaf
@@ -155,8 +153,8 @@ class Generator(message: MessageReader) {
         schema.lines()
   }
 
-  def genericArgName(paramIndex: Int): String = {
-    "_param" + paramIndex
+  def genericParamWithConstraints(paramName: String): String = {
+    s"$paramName <: org.murtsi.capnproto.runtime.PointerFamily : org.murtsi.capnproto.runtime.FromPointer : org.murtsi.capnproto.runtime.SetPointerBuilder"
   }
 
   def generateNode(nodeId: Long, nodeName: String, parentNodeId: Option[Long] = None, groupDiscriminant: Option[Short] = None): FormattedText = {
@@ -198,7 +196,7 @@ class Generator(message: MessageReader) {
         val parameters = nodeReader.parameters
         if (isGeneric && parameters.exists(_.nonEmpty)) {
           genericParameterNames = parameters.get.map(_.name.get.toString).toVector
-          val genericParamsDecls = genericParameterNames.map(n => s"$n <: org.murtsi.capnproto.runtime.PointerFamily : org.murtsi.capnproto.runtime.FromPointer").mkString(", ")
+          val genericParamsDecls = genericParameterNames.map(genericParamWithConstraints).mkString(", ")
           val genericParams = genericParameterNames.mkString(", ")
           output ++= Seq(
             Line(s"object $nodeName {"),
@@ -233,7 +231,7 @@ class Generator(message: MessageReader) {
           val allGenericParams = nodeTypes.allGenericParams(nodeId)
           val define = if (allGenericParams.isEmpty) "val" else "def"
           val defParams = if (allGenericParams.isEmpty) ""
-                          else s"[${allGenericParams.map(_ + " <: org.murtsi.capnproto.runtime.PointerFamily : org.murtsi.capnproto.runtime.FromPointer").mkString(", ")}]"
+                          else s"[${allGenericParams.map(genericParamWithConstraints).mkString(", ")}]"
 
           Seq(
             Line(s"// START $name implicits"),
@@ -378,7 +376,7 @@ class Generator(message: MessageReader) {
         val enumTypeName = nodeTypes.fullType(nodeId, withGenericParams = true, typeSeparator = "#")
         val enumTypePath = nodeTypes.fullType(nodeId, withGenericParams = true, typeSeparator = "#")
         val implicitPrefix = nodeTypes.fullType(nodeId, withGenericParams = false, typeSeparator = "$")
-        val genericParams = if (genericParamNames.isEmpty) "" else s"[${genericParamNames.map(_ + " <: org.murtsi.capnproto.runtime.PointerFamily : org.murtsi.capnproto.runtime.FromPointer").mkString(", ")}]"
+        val genericParams = if (genericParamNames.isEmpty) "" else s"[${genericParamNames.map(genericParamWithConstraints).mkString(", ")}]"
         val definition = if (genericParamNames.isEmpty) "val" else "def"
         implicits ++= Seq(
           Line(s"// START $enumTypeName implicits"),
@@ -537,12 +535,6 @@ class Generator(message: MessageReader) {
     }
   }
 
-  /*
-  def generateSetter2(discriminantOffset: Int, styledName: String, field: Field.Reader): Model.Setter = {
-    val setterType = new Model.Type()
-  }
-  */
-
   def generateSetter(discriminantOffset: Int, styledName: String, field: Field#Reader): FormattedText = {
     val initterInterior, setterInterior = mutable.ArrayBuffer[FormattedText]()
     var setterParam = "value"
@@ -599,6 +591,7 @@ class Generator(message: MessageReader) {
           case Type.AnyPointer(Type.AnyPointer.Parameter(parameter)) =>
             val struct = nodeMap(parameter.scopeId)
             val paramName = struct.parameters.get(parameter.parameterIndex).name.get.toString
+            setterInterior += Line(s"_setPointerField[$paramName]($offset, value)")
             initterInterior += Line(s"_initPointerField[$paramName]($offset, size)")
             initterParams += "size: Int"
             (Some(s"$paramName#Reader"), Some(s"$paramName#Builder"))
@@ -913,7 +906,7 @@ class Generator(message: MessageReader) {
                     case v if booleanMatch(v){case Brand.Binding.Unbound() =>} =>
                       s"org.murtsi.capnproto.runtime.AnyPointer.$leaf"
                     case Brand.Binding.Type(typ) =>
-                      typeString(typ, Leaf.Owned)
+                      typeString(typ, Leaf.Module)
                   }
               }
               Some(if (arguments.isEmpty) modulePart else s"$modulePart[${arguments.mkString(", ")}]")

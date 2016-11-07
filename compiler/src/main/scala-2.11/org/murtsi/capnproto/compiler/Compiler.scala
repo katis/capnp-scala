@@ -1,5 +1,6 @@
 package org.murtsi.capnproto.compiler
 
+import java.lang.ProcessBuilder
 import java.nio.channels.{Channels, ReadableByteChannel}
 import java.nio.file.{Files, Path, Paths}
 
@@ -10,13 +11,16 @@ import scala.language.postfixOps
 import scala.sys.process._
 
 object Compiler {
+
   def main(args: Array[String]): Unit = {
     val outDir = Paths.get(System.getenv().getOrDefault("OUT_DIR", "."))
 
     if (args.length > 0) {
-      val capnpc = Runtime.getRuntime.exec(s"capnp compile -o - ${args.mkString(" ")}")
-      val input = capnpc.getInputStream
-      run(Channels.newChannel(input), outDir)
+      val capnpc = new ProcessBuilder("capnp", "compile", "-o", "-", args.mkString(" "))
+      capnpc.redirectError(ProcessBuilder.Redirect.INHERIT)
+      val proc = capnpc.start()
+      val input = Channels.newChannel(proc.getInputStream)
+      run(input, outDir)
       input.close()
     } else {
       val input = Channels.newChannel(stdin)

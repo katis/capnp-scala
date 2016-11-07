@@ -19,7 +19,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-using Java = import "java.capnp";
 using Scala = import "scala.capnp";
 
 @0xa93fc509624c72d9;
