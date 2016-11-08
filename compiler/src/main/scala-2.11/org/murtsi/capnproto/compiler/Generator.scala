@@ -80,19 +80,17 @@ class Generator(message: MessageReader) {
   private val nodeTypes = new NodeTypeTree()
   private val implicits = mutable.ArrayBuffer[FormattedText]()
 
-  for (node <- request.nodes.get) {
+  for (node <- request.nodes) {
     nodeMap(node.id) = node
   }
 
   private def annotationText(node: Node#Reader, annotationId: Long): Option[String] = {
-    for (annotations <- node.annotations;
-         annotation <- annotations.find(ann => ann.id == annotationId);
-         value <- annotation.value
-    ) yield {
-      value match {
-        case Value.Text(text) => text.toString
-      }
-    }
+    node.annotations
+        .find(ann => ann.id == annotationId)
+        .map(_.value)
+        .map{
+          case Value.Text(text) => text.toString
+        }
   }
 
   private def nodePackageName(nodeId: Long): Option[String] = {
@@ -105,15 +103,15 @@ class Generator(message: MessageReader) {
     annotationText(node, ModuleAnnotationId)
   }
 
-  for (requestedFile <- request.requestedFiles.get) {
+  for (requestedFile <- request.requestedFiles) {
     val id = requestedFile.id
     val packageName = nodePackageName(id).get
     val module = nodeModuleName(id).get
-    val imports = requestedFile.imports.get
+    val imports = requestedFile.imports
 
     for (imp <- imports) {
       // TODO: Implement properly
-      val importPath = imp.name.get.toString
+      val importPath = imp.name.toString
       val rootName = moduleName(importPath.replace("-", "_"))
       populateScope(Seq(rootName), imp.id)
     }
@@ -157,13 +155,41 @@ class Generator(message: MessageReader) {
     s"$paramName <: org.murtsi.capnproto.runtime.PointerFamily : org.murtsi.capnproto.runtime.FromPointer : org.murtsi.capnproto.runtime.SetPointerBuilder"
   }
 
+  def generateHaser(discriminantOffset: Int, styledName: String, field: Field#Reader, isReader: Boolean): Option[FormattedText] = {
+    val result = mutable.ArrayBuffer[FormattedText]()
+    val interior = mutable.ArrayBuffer[FormattedText]()
+
+    val discriminantValue = field.discriminantValue
+    var branches = false
+    if (discriminantValue != Field.NoDiscriminant) {
+      interior += Line(s"if (_getShortField($discriminantOffset) != $discriminantValue) false")
+      branches = true
+    }
+    field match {
+      case Field.Group(_) =>
+      case Field.Slot(regField) =>
+        regField.`type` match {
+          case Type.Text() | Type.Data() | Type._List(_) | Type.Struct(_) | Type.AnyPointer(_) =>
+            val prefix = if (branches) "else " else ""
+            interior += Line(s"${prefix}_pointerFieldIsNull(${regField.offset})")
+            result ++= Vector(
+              Line(s"def $styledName: Boolean = {"),
+              Indent(Branch(interior:_*)),
+              Line("}")
+            )
+          case _ =>
+        }
+    }
+
+    if (result.nonEmpty) Some(Branch(result:_*)) else None
+  }
+
   def generateNode(nodeId: Long, nodeName: String, parentNodeId: Option[Long] = None, groupDiscriminant: Option[Short] = None): FormattedText = {
     val output = mutable.ArrayBuffer[FormattedText]()
     val nestedOutput = mutable.ArrayBuffer[FormattedText]()
 
     val nodeReader = nodeMap(nodeId)
-    for (nestedNodes <- nodeReader.nestedNodes;
-         nestedNode <- nestedNodes) {
+    for (nestedNode <- nodeReader.nestedNodes) {
       val id = nestedNode.id
       nestedOutput += generateNode(id, scopeMap(id).last)
     }
@@ -172,7 +198,7 @@ class Generator(message: MessageReader) {
       case File() => output += Branch(nestedOutput:_*)
       case Node.Const(const) =>
         val styledName = scopeMap(nodeId).last.capitalize
-        val (typ: String, contents: String) = (const.`type`.get, const.value.get) match {
+        val (typ: String, contents: String) = (const.`type`, const.value) match {
           case (Type.Void(), Value.Void()) => ("Unit", "()")
           case (Type.Int8(), Value.Int8(b)) => ("Byte", b.toString)
           case (Type.Int16(), Value.Int16(s)) => ("Short", s.toString)
@@ -194,8 +220,8 @@ class Generator(message: MessageReader) {
 
         val isGeneric = nodeReader.isGeneric
         val parameters = nodeReader.parameters
-        if (isGeneric && parameters.exists(_.nonEmpty)) {
-          genericParameterNames = parameters.get.map(_.name.get.toString).toVector
+        if (isGeneric && parameters.nonEmpty) {
+          genericParameterNames = parameters.map(_.name.toString).toVector
           val genericParamsDecls = genericParameterNames.map(genericParamWithConstraints).mkString(", ")
           val genericParams = genericParameterNames.mkString(", ")
           output ++= Seq(
@@ -212,7 +238,7 @@ class Generator(message: MessageReader) {
         }
 
         val unionFields = mutable.ArrayBuffer[Field#Reader]()
-        val builderMembers, readerMembers = mutable.ArrayBuffer[FormattedText]()
+        val builderMembers, readerMembers, readerHasers, builderHasers, initializers = mutable.ArrayBuffer[FormattedText]()
         var extractors: Option[FormattedText] = None
 
         val dataSize = struct.dataWordCount
@@ -278,10 +304,11 @@ class Generator(message: MessageReader) {
           case _ =>
         }
 
-        val fields = struct.fields.get
+        val fields = struct.fields
         for (field <- fields) {
-          val name = field.name.get
+          val name = field.name
           val styledName = name.toString
+          val escapedName = methodName(styledName)
 
           val discriminantValue = field.discriminantValue
           val isUnionField = discriminantValue != Field.NoDiscriminant
@@ -297,24 +324,27 @@ class Generator(message: MessageReader) {
           }
 
           (isUnionField, field) match {
-            case (true, Field.Slot(slot)) if isVoid(slot.`type`.get) =>
+            case (true, Field.Slot(slot)) if isVoid(slot.`type`) =>
             case _ =>
               val (ty, get) = getterText(field, isReader = true, returnsOption = !isUnionField)
               val (tyB, getB) = getterText(field, isReader = false, returnsOption = !isUnionField)
 
               readerMembers += Branch(
-                Line(s"${getterAccessLevel}def ${methodName(styledName)}: $ty = {"),
+                Line(s"${getterAccessLevel}def $escapedName: $ty = {"),
                 Indent(get),
                 Line("}")
               )
               builderMembers += Branch(
-                Line(s"${getterAccessLevel}def ${methodName(styledName)}: $tyB = {"),
+                Line(s"${getterAccessLevel}def $escapedName: $tyB = {"),
                 Indent(getB),
                 Line("}")
               )
           }
 
-          builderMembers += generateSetter(discriminantOffset, styledName, field)
+          generateSetter(discriminantOffset, styledName, field).foreach(builderMembers += _)
+          generateInitializer(discriminantOffset, escapedName, field).foreach(initializers += _)
+          generateHaser(discriminantOffset, escapedName, field, isReader = true).foreach(readerHasers += _)
+          generateHaser(discriminantOffset, escapedName, field, isReader = false).foreach(builderHasers += _)
 
           field match {
             case Field.Group(group) =>
@@ -333,6 +363,30 @@ class Generator(message: MessageReader) {
           readerMembers += whichIndexDef
           builderMembers += whichIndexDef
           extractors = Some(Indent(Branch(readerResult.extractors:_*)))
+        }
+
+        if (readerHasers.nonEmpty) {
+          readerMembers += Branch(
+            Line("object has {"),
+            Indent(Branch(readerHasers:_*)),
+            Line("}")
+          )
+        }
+
+        if (builderHasers.nonEmpty) {
+          builderMembers += Branch(
+            Line("object has {"),
+            Indent(Branch(builderHasers:_*)),
+            Line("}")
+          )
+        }
+
+        if (initializers.nonEmpty) {
+          builderMembers += Branch(
+            Line("object init {"),
+            Indent(Branch(initializers:_*)),
+            Line("}")
+          )
         }
 
         output += Indent(Branch(
@@ -355,13 +409,13 @@ class Generator(message: MessageReader) {
         val enumClassName = moduleName(names.last.capitalize)
         output += BlankLine
         val members, enumerantValues = mutable.ArrayBuffer[FormattedText]()
-        val enumerants = enumReader.enumerants.get
+        val enumerants = enumReader.enumerants
 
         val enumerantsSize = enumerants.size
         for (i <- 0 until enumerantsSize) {
           val enumerant = enumerants(i)
 
-          val enumerantName = moduleName(enumerant.name.get.toString.capitalize)
+          val enumerantName = moduleName(enumerant.name.toString.capitalize)
           members += Line(s"object $enumerantName extends $enumClassName($i)")
 
           if (i < enumerantsSize - 1) {
@@ -398,11 +452,10 @@ class Generator(message: MessageReader) {
           Line(s"object $enumClassName extends org.murtsi.capnproto.runtime.EnumModule[$enumClassName] {"),
           Indent(Branch(
             Branch(
-              Line(s"override val enumValues: Seq[$enumClassName] = Array("),
+              Line(s"override val enumValues: Seq[$enumClassName] = Vector("),
               Indent(Branch(enumerantValues:_*)),
               Line(")"),
-              Line(s"val _wrappedValues: Seq[Option[$enumClassName]] = enumValues.map(Some(_))"),
-              Line(s"def apply(value: Short): Option[$enumClassName] = if (value >= 0 && value < _wrappedValues.length) _wrappedValues(value) else None")
+              Line(s"def apply(value: Short): Option[$enumClassName] = enumValues.lift(value)")
             ),
             Branch(members:_*)
           )),
@@ -432,7 +485,7 @@ class Generator(message: MessageReader) {
   def getterText(field: Field#Reader, isReader: Boolean, returnsOption: Boolean = true): (String, FormattedText) = {
     import Field._
 
-    def getPointerField(module: String, offset: Int) = s"_getPointerFieldOption[$module]($offset)"
+    def getPointerField(module: String, offset: Int) = s"_getPointerField[$module]($offset)"
 
     field match {
       case Group(group) =>
@@ -449,18 +502,13 @@ class Generator(message: MessageReader) {
         val member = module
         val leaf = if (isReader) Leaf.Reader else Leaf.Builder
 
-        val rawType = regField.`type`.get
+        val rawType = regField.`type`
         val typ = typeString(rawType, Leaf.Module)
-        val default = regField.defaultValue.get
+        val default = regField.defaultValue
 
         val resultType = rawType match {
-          case Type.Struct(_) | Type.Text() | Type.Data() | Type.AnyPointer(_) =>
-            s"Option[$typ$moduleSuffix]"
-          case Type.Enum(_) =>
-            s"Option[$typ]"
-          case Type._List(_) =>
-            val listType = typeString(rawType, leaf)
-            s"Option[$listType]"
+          case Type.Enum(_) => typ
+          case Type._List(_) => typeString(rawType, leaf)
           case Type.Interface(_) => ???
           case _ if rawType.isPrimitive => typ
           case _ => s"$typ$moduleSuffix"
@@ -494,7 +542,7 @@ class Generator(message: MessageReader) {
             Line(getPointerField(typeString(rawType, Leaf.Module), offset))
           case (Type.Enum(_), Value.Enum(_)) =>
             val module = moduleString(rawType, Leaf.Module)
-            Line(s"$module(_getShortField($offset))")
+            Line(s"$module.enumValues(_getShortField($offset))")
           case (Type.Struct(_), Value.Struct(_)) =>
             val ts = typeString(rawType, Leaf.Module)
             Line(getPointerField(ts, offset))
@@ -535,10 +583,81 @@ class Generator(message: MessageReader) {
     }
   }
 
-  def generateSetter(discriminantOffset: Int, styledName: String, field: Field#Reader): FormattedText = {
-    val initterInterior, setterInterior = mutable.ArrayBuffer[FormattedText]()
-    var setterParam = "value"
+  def generateInitializer(discriminantOffset: Int, styledName: String, field: Field#Reader): Option[FormattedText] = {
+    val initterInterior, result = mutable.ArrayBuffer[FormattedText]()
     val initterParams = mutable.ArrayBuffer[String]()
+
+    val discriminantValue = field.discriminantValue
+    if (discriminantValue != Field.NoDiscriminant) {
+      val doStr = java.lang.Long.toUnsignedString(discriminantOffset.toLong)
+      val dvStr = java.lang.Long.toUnsignedString(discriminantValue.toLong)
+      initterInterior += Line(s"_setShortField($doStr, $dvStr)")
+    }
+
+    val maybeBuilderType: Option[String] = field match {
+      case Field.Group(group) =>
+        val scope = scopeMap(group.typeId)
+        val module = scope.mkString(".")
+        initterInterior ++= Seq(
+          zeroFieldsOfGroup(group.typeId),
+          Line(s"$module.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)"))
+        Some(s"$module#Builder")
+      case Field.Slot(regField) =>
+        val offset = regField.offset
+        val typ = regField.`type`
+        typ match {
+          case _ if typ.isPrimitive => None
+          case Type.Enum(_) => None
+          case Type.Text() =>
+            initterInterior += Line(s"_initPointerField[org.murtsi.capnproto.runtime.Text]($offset, size)")
+            initterParams += "size: Int"
+            Some("org.murtsi.capnproto.runtime.Text#Builder")
+          case Type.AnyPointer(Type.AnyPointer.Parameter(parameter)) =>
+            val struct = nodeMap(parameter.scopeId)
+            val paramName = struct.parameters(parameter.parameterIndex).name.toString
+            initterInterior += Line(s"_initPointerField[$paramName](1, size)")
+            initterParams += "size: Int = 0"
+            Some(s"$paramName#Builder")
+          case Type.AnyPointer(Type.AnyPointer.Unconstrained()) =>
+            initterInterior += Line(s"_initPointerField[org.murtsi.capnproto.runtime.AnyPointer]($offset, size)")
+            initterParams += "size: Int = 0"
+            Some("org.murtsi.capnproto.runtime.AnyPointer#Builder")
+          case Type.Data() =>
+            initterInterior += Line(s"_initPointerField[org.murtsi.capnproto.runtime.Data]($offset, size)")
+            initterParams += "size: Int"
+            Some("org.murtsi.capnproto.runtime.Data#Builder")
+          case Type._List(_) =>
+            val elementFactory = typeString(typ, Leaf.Module)
+            initterInterior += Line(s"_initPointerField[$elementFactory]($offset, size)")
+            initterParams += "size: Int"
+            Some(s"$elementFactory#Builder")
+          case Type.Struct(_) =>
+            initterInterior += Line(s"_initPointerField[${typeString(typ, Leaf.Module)}]($offset, 0)")
+            if (typ.isBranded) {
+              Some(typeString(typ, Leaf.Builder))
+            } else {
+              val t = regField.`type`
+              Some(typeString(t, Leaf.Builder))
+            }
+          case Type.Interface(_) => ???
+          case _ => throw new Error("Unrecognized type")
+        }
+    }
+
+    maybeBuilderType.map(builderType => {
+      val args = initterParams.mkString(", ")
+      result ++= Seq(
+        Line(s"def $styledName($args): $builderType = {"),
+        Indent(Branch(initterInterior:_*)),
+        Line(s"}")
+      )
+      Branch(result:_*)
+    })
+  }
+
+  def generateSetter(discriminantOffset: Int, styledName: String, field: Field#Reader): Option[FormattedText] = {
+    val setterInterior, result = mutable.ArrayBuffer[FormattedText]()
+    var setterParam = "value"
     var textSetterInterior: Option[FormattedText] = None
 
     val discriminantValue = field.discriminantValue
@@ -546,121 +665,88 @@ class Generator(message: MessageReader) {
       val doStr = java.lang.Long.toUnsignedString(discriminantOffset.toLong)
       val dvStr = java.lang.Long.toUnsignedString(discriminantValue.toLong)
       setterInterior += Line(s"_setShortField($doStr, $dvStr)")
-      initterInterior += Line(s"_setShortField($doStr, $dvStr)")
     }
 
-    var returnResult = false
-    val result = mutable.ArrayBuffer[FormattedText]()
-
-    val (maybeReaderType, maybeBuilderType) = field match {
+    val maybeReaderType: Option[String] = field match {
       case Field.Group(group) =>
         val scope = scopeMap(group.typeId)
         val module = scope.mkString(".")
-        initterInterior ++= Seq(
-          zeroFieldsOfGroup(group.typeId),
-          Line(s"$module.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)"))
-        (None, Some(s"$module#Builder"))
+        None
       case Field.Slot(regField) =>
         val offset = regField.offset
-        val typ = regField.`type`.get
+        val typ = regField.`type`
         typ match {
           case Type.Void() =>
             setterParam = "_value"
-            (Some("Unit"), None)
+            Some("Unit")
           case Type.Bool() =>
-            primitiveDefault(regField.defaultValue.get) match {
+            primitiveDefault(regField.defaultValue) match {
               case None => setterInterior += Line(s"_setBooleanField($offset, value)")
               case Some(s) => setterInterior += Line(s"_setBooleanField($offset, value, $s)")
             }
-            (Some("Boolean"), None)
+            Some("Boolean")
           case _ if typ.isPrimitive =>
             val tstr = typeString(typ, Leaf.Reader)
-            primitiveDefault(regField.defaultValue.get) match {
+            primitiveDefault(regField.defaultValue) match {
               case None =>
                 setterInterior += Line(s"_set${tstr}Field($offset, value)")
               case Some(s) =>
                 setterInterior += Line(s"_set${tstr}Field($offset, value, $s)")
             }
-            (Some(tstr), None)
+            Some(tstr)
           case Type.Text() =>
             setterInterior += Line(s"""_setPointerField[org.murtsi.capnproto.runtime.Text]($offset, value)""")
-            initterInterior += Line(s"_initPointerField[org.murtsi.capnproto.runtime.Text]($offset, size)")
             textSetterInterior = Some(Line(s"_setPointerField[org.murtsi.capnproto.runtime.Text]($offset, org.murtsi.capnproto.runtime.Text.Reader(value))"))
-            initterParams += "size: Int"
-            (Some("org.murtsi.capnproto.runtime.Text#Reader"), Some("org.murtsi.capnproto.runtime.Text#Builder"))
+            Some("org.murtsi.capnproto.runtime.Text#Reader")
           case Type.AnyPointer(Type.AnyPointer.Parameter(parameter)) =>
             val struct = nodeMap(parameter.scopeId)
-            val paramName = struct.parameters.get(parameter.parameterIndex).name.get.toString
+            val paramName = struct.parameters(parameter.parameterIndex).name.toString
             setterInterior += Line(s"_setPointerField[$paramName]($offset, value)")
-            initterInterior += Line(s"_initPointerField[$paramName](1, size)")
-            initterParams += "size: Int = 0"
-            (Some(s"$paramName#Reader"), Some(s"$paramName#Builder"))
+            Some(s"$paramName#Reader")
           case Type.AnyPointer(Type.AnyPointer.Unconstrained()) =>
-            initterInterior += Line(s"_initPointerField[org.murtsi.capnproto.runtime.AnyPointer]($offset, size)")
-            initterParams += "size: Int = 0"
-            (Some("org.murtsi.capnproto.runtime.AnyPointer#Reader"), Some("org.murtsi.capnproto.runtime.AnyPointer#Builder"))
+            Some("org.murtsi.capnproto.runtime.AnyPointer#Reader")
           case Type.Data() =>
             setterInterior += Line(s"""_setPointerField[org.murtsi.capnproto.runtime.Data]($offset, value)""")
-            initterInterior += Line(s"_initPointerField[org.murtsi.capnproto.runtime.Data]($offset, size)")
-            initterParams += "size: Int"
-            (Some("org.murtsi.capnproto.runtime.Data#Reader"), Some("org.murtsi.capnproto.runtime.Data#Builder"))
+            Some("org.murtsi.capnproto.runtime.Data#Reader")
           case Type._List(_) =>
             val elementFactory = typeString(typ, Leaf.Module)
             setterInterior += Line(s"""_setPointerField[$elementFactory]($offset, value)""")
-            initterInterior += Line(s"_initPointerField[$elementFactory]($offset, size)")
-            initterParams += "size: Int"
-            (Some(s"$elementFactory#Reader"), Some(s"$elementFactory#Builder"))
+            Some(s"$elementFactory#Reader")
           case Type.Enum(_) =>
             val ty = typeString(typ, Leaf.Builder)
             setterInterior += Line(s"_setShortField(value.index, $offset)")
-            (Some(ty), None)
+            Some(ty)
           case Type.Struct(_) =>
-            returnResult = true
-            initterInterior += Line(s"_initPointerField[${typeString(typ, Leaf.Module)}]($offset, 0)")
             if (typ.isBranded) {
               setterInterior += Line(s"_setPointerField[${typeString(typ, Leaf.Module)}]($offset, value)")
-              (Some(typeString(typ, Leaf.Reader)), Some(typeString(typ, Leaf.Builder)))
+              Some(typeString(typ, Leaf.Reader))
             } else {
               setterInterior += Line(s"_setPointerField[${typeString(typ, Leaf.Module)}]($offset, value)")
-              val t = regField.`type`.get
-              (Some(typeString(t, Leaf.Reader)), Some(typeString(t, Leaf.Builder)))
+              val t = regField.`type`
+              Some(typeString(t, Leaf.Reader))
             }
           case Type.Interface(_) => ???
           case _ => throw new Error("Unrecognized type")
         }
     }
 
-    maybeReaderType match {
-      case Some(readerType) =>
-        val retType = "Unit"
+    maybeReaderType.map(readerType => {
+      result ++= Seq(
+        Line(s"def ${styledName}_=($setterParam: $readerType): Unit = {"),
+        Indent(Branch(setterInterior:_*)),
+        Line(s"}")
+      )
+
+      textSetterInterior.foreach(interior => {
         result ++= Seq(
-          Line(s"def ${styledName}_=($setterParam: $readerType): $retType = {"),
-          Indent(Branch(setterInterior:_*)),
+          Line(s"def ${styledName}_=($setterParam: String): Unit = {"),
+          Indent(Branch(interior)),
           Line(s"}")
         )
+      })
 
-        textSetterInterior.foreach(interior => {
-          result ++= Seq(
-            Line(s"def ${styledName}_=($setterParam: String): $retType = {"),
-            Indent(Branch(interior)),
-            Line(s"}")
-          )
-        })
-      case None =>
-    }
-
-    maybeBuilderType match {
-      case Some(builderType) =>
-        val args = initterParams.mkString(", ")
-        result ++= Seq(
-          Line(s"def init${styledName.capitalize}($args): $builderType = {"),
-          Indent(Branch(initterInterior:_*)),
-          Line(s"}")
-        )
-      case None =>
-    }
-
-    Branch(result:_*)
+      Branch(result:_*)
+    })
   }
 
   case class UnionResult(extractors: Seq[FormattedText])
@@ -668,15 +754,20 @@ class Generator(message: MessageReader) {
   def generateUnionExtractors(parentName: String, discriminantOffset: Int, fields: Seq[Field#Reader], isReader: Boolean, params: TypeParameterTexts): UnionResult = {
     def hasExtractorObject(field: Field#Reader): Boolean = {
       field match {
-        case Field.Slot(slot) => slot.`type` match {
-          case Some(Type.Struct(structType)) =>
-            nodeMap(structType.typeId) match {
-              case Node.Struct(struct) => !struct.isGroup
-              case _ => false
+        case Field.Slot(slot) =>
+          if (slot.has.`type`) {
+            slot.`type` match {
+              case Type.Struct(structType) =>
+                nodeMap(structType.typeId) match {
+                  case Node.Struct(struct) => !struct.isGroup
+                  case _ => false
+                }
+              case Type.Enum(_) => false
+              case _ => true
             }
-          case Some(Type.Enum(_)) => false
-          case _ => true
-        }
+          } else {
+            true
+          }
         case _ => true
       }
     }
@@ -685,15 +776,15 @@ class Generator(message: MessageReader) {
 
     for (field <- fields.filter(hasExtractorObject)) {
       val dvalue = java.lang.Short.toUnsignedLong(field.discriminantValue)
-      val rawFieldName = field.name.get.toString
+      val rawFieldName = field.name.toString
       val fieldName = methodName(rawFieldName)
       val enumerantName = moduleName(rawFieldName.capitalize)
 
-      val (ty, _) = getterText(field, isReader = true)
-      val (tyB, _) = getterText(field, isReader = false)
+      val (unapplyType, _) = getterText(field, isReader = true)
+      val (unapplyTypeB, _) = getterText(field, isReader = false)
 
       field match {
-        case Field.Slot(slot) => slot.`type`.get match {
+        case Field.Slot(slot) => slot.`type` match {
           case Type.Void() =>
             extractors += Branch(
               Line(s"object $enumerantName {"),
@@ -704,22 +795,19 @@ class Generator(message: MessageReader) {
               Line("}")
             )
           case _ =>
-            val wrappedInOption = slot.`type`.get.isPrimitive || booleanMatch(field) { case Field.Group(_) => }
-            val fieldGetter = if (wrappedInOption) s"Some(value.$fieldName)" else s"value.$fieldName"
-            val unapplyType = if (wrappedInOption) s"Option[$ty]" else ty
-            val unapplyTypeB = if (wrappedInOption) s"Option[$tyB]" else tyB
+            val fieldGetter = s"Some(value.$fieldName)"
             extractors += Branch(
               Line(s"object $enumerantName {"),
               Indent(Branch(
                 Branch(
-                  Line(s"def unapply(value: $parentName#Reader): $unapplyType = {"),
+                  Line(s"def unapply(value: $parentName#Reader): Option[$unapplyType] = {"),
                   Indent(Branch(
                     Line(s"if (value._whichIndex == $dvalue) $fieldGetter else None")
                   )),
                   Line("}")
                 ),
                 Branch(
-                  Line(s"def unapply(value: $parentName#Builder): $unapplyTypeB = {"),
+                  Line(s"def unapply(value: $parentName#Builder): Option[$unapplyTypeB] = {"),
                   Indent(Branch(
                     Line(s"if (value._whichIndex == $dvalue) $fieldGetter else None")
                   )),
@@ -762,12 +850,12 @@ class Generator(message: MessageReader) {
         if (st.discriminantCount != 0) {
           result += Line(s"_setShortField(${st.discriminantOffset}, 0)")
         }
-        val fields = st.fields.get
+        val fields = st.fields
         for (field <- fields) {
           field match {
             case Field.Group(group) => result += zeroFieldsOfGroup(group.typeId)
             case Field.Slot(slot) =>
-              slot.`type`.get match {
+              slot.`type` match {
                 case Type.Void() =>
                 case Type.Bool() =>
                   val line = Line(s"_setBooleanField(${slot.offset}, false)")
@@ -777,7 +865,7 @@ class Generator(message: MessageReader) {
                 case Type.Int8() | Type.Int16() | Type.Int32() | Type.Int64()
                     | Type.Uint8() | Type.Uint16() | Type.Uint32() | Type.Uint64()
                     | Type.Float32() | Type.Float64()  =>
-                  val line = Line(s"_set${typeString(slot.`type`.get, Leaf.Module)}Field(${slot.offset}, 0)")
+                  val line = Line(s"_set${typeString(slot.`type`, Leaf.Module)}Field(${slot.offset}, 0)")
                   if (!result.contains(line)) result += line
                 case Type.Enum(_) =>
                   val line = Line(s"_setShortField(${slot.offset}, 0)")
@@ -803,7 +891,7 @@ class Generator(message: MessageReader) {
       case _ => return
     }
 
-    for (nestedNode <- nodeReader.nestedNodes.toSeq.flatten) {
+    for (nestedNode <- nodeReader.nestedNodes) {
       val nScopeNames = mutable.ArrayBuffer(scopeNames:_*)
       val nestedNodeId = nestedNode.id
       nodeMap.get(nestedNodeId) match {
@@ -811,24 +899,24 @@ class Generator(message: MessageReader) {
         case Some(nNodeReader) =>
           nNodeReader match {
             case Node.Enum(_) =>
-              nScopeNames += moduleName(nestedNode.name.get.toString)
+              nScopeNames += moduleName(nestedNode.name.toString)
               populateScope(nScopeNames, nestedNodeId)
             case _ =>
-              populateScope(scopeNames :+ moduleName(nestedNode.name.get), nestedNodeId)
+              populateScope(scopeNames :+ moduleName(nestedNode.name), nestedNodeId)
           }
       }
     }
 
     nodeReader match {
       case Node.Struct(struct) =>
-        val genericArgs = nodeReader.parameters.seq.flatten.map(_.name.get.toString).toVector
+        val genericArgs = nodeReader.parameters.map(_.name.toString).toVector
         nodeTypes.add(nodeId, scopeNames.last, Some(nodeReader.scopeId), genericArgs)
-        val fields = struct.fields.get
+        val fields = struct.fields
         for (field <- fields) {
 
           field match {
             case Field.Group(group) =>
-              val name = moduleName(field.name.get.toString.capitalize)
+              val name = moduleName(field.name.toString.capitalize)
               populateScope(scopeNames :+ name, group.typeId)
             case _ =>
           }
@@ -859,7 +947,7 @@ class Generator(message: MessageReader) {
       nodeMap.get(currentNodeId) match {
         case None => run = false
         case Some(currentNode) =>
-          val params = currentNode.parameters.get.map(_.name.toString)
+          val params = currentNode.parameters.map(_.name.toString)
           accumulator += params.toSeq
 
           currentNodeId = currentNode.scopeId
@@ -886,8 +974,8 @@ class Generator(message: MessageReader) {
 
   def methodName(name: String): String = if (keywords.contains(name)) s"`$name`" else name
 
-  def doBranding(nodeId: Long, brand: Option[Brand#Reader], leaf: Leaf, module: String, parentScopeId: Option[Long]): String = {
-    val brandScopes = HashMap[Long, Brand#Scope#Reader](brand.flatMap(_.scopes).toSeq.flatten.map(s => (s.scopeId, s)):_*)
+  def doBranding(nodeId: Long, brand: Brand#Reader, leaf: Leaf, module: String, parentScopeId: Option[Long]): String = {
+    val brandScopes = HashMap[Long, Brand#Scope#Reader](brand.scopes.map(s => (s.scopeId, s)).toSeq:_*)
 
     @tailrec
     def getPart(nodeId: Long, parentScopeId: Option[Long], acc: Seq[String]): Seq[String] = {
@@ -896,10 +984,10 @@ class Generator(message: MessageReader) {
           val mpart = scopeMap.get(node.id) match {
             case Some(scope) =>
               val modulePart = scope.last
-              val params = node.parameters.map(_.seq).getOrElse(Seq.empty)
+              val params = node.parameters.toVector
               val arguments = brandScopes.get(nodeId) match {
                 case None => params.map(_ => s"org.murtsi.capnproto.runtime.AnyPointer.$leaf")
-                case Some(Brand.Scope.Inherit()) => params.map(_.name.get.toString)
+                case Some(Brand.Scope.Inherit()) => params.map(_.name.toString)
                 case Some(Brand.Scope.Bind(bindingsList)) =>
                   assert(bindingsList.size == params.size)
                   bindingsList.map {
@@ -966,7 +1054,7 @@ class Generator(message: MessageReader) {
       case Interface(interface) =>
         doBranding(interface.typeId, interface.brand, module, scopeMap(interface.typeId).mkString("."), None)
       case _List(ot1) =>
-        val elType = ot1.elementType.get
+        val elType = ot1.elementType
         listModulePath(elType, module, separator)
       case Enum(enum) =>
         nodeTypes.fullType(enum.typeId, typeSeparator = separator)
@@ -975,9 +1063,9 @@ class Generator(message: MessageReader) {
         anyPointer match {
           case AnyPointer.Parameter(definition) =>
             val theStruct = nodeMap(definition.scopeId)
-            val parameters = theStruct.parameters.get
+            val parameters = theStruct.parameters
             val parameter = parameters(definition.parameterIndex)
-            val parameterName = parameter.name.get
+            val parameterName = parameter.name
             module match {
               case Leaf.Module => parameterName.toString
               case Leaf.Reader => s"$parameterName#Reader"

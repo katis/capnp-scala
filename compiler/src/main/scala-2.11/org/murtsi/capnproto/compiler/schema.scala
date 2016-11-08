@@ -524,8 +524,8 @@ object schema {
       def id: Long = {
         this._getLongField(0)
       }
-      def displayName: Option[org.murtsi.capnproto.runtime.Text#Reader] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.Text](0)
+      def displayName: org.murtsi.capnproto.runtime.Text#Reader = {
+        _getPointerField[org.murtsi.capnproto.runtime.Text](0)
       }
       def displayNamePrefixLength: Int = {
         this._getIntField(2)
@@ -533,11 +533,11 @@ object schema {
       def scopeId: Long = {
         this._getLongField(2)
       }
-      def nestedNodes: Option[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node#NestedNode]#Reader] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node#NestedNode]](1)
+      def nestedNodes: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node#NestedNode]#Reader = {
+        _getPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node#NestedNode]](1)
       }
-      def annotations: Option[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]#Reader] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]](2)
+      def annotations: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]#Reader = {
+        _getPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]](2)
       }
       private[Node] def struct: Node#Struct#Reader = {
         Node.Struct.Reader(_segment, _dataOffset, _pointers, _dataSize, _pointerCount, _nestingLimit)
@@ -554,13 +554,27 @@ object schema {
       private[Node] def annotation: Node#Annotation#Reader = {
         Node.Annotation.Reader(_segment, _dataOffset, _pointers, _dataSize, _pointerCount, _nestingLimit)
       }
-      def parameters: Option[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node#Parameter]#Reader] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node#Parameter]](5)
+      def parameters: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node#Parameter]#Reader = {
+        _getPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node#Parameter]](5)
       }
       def isGeneric: Boolean = {
         _getBooleanField(288)
       }
       private[Node] def _whichIndex: Short = _getShortField(6)
+      object has {
+        def displayName: Boolean = {
+          _pointerFieldIsNull(0)
+        }
+        def nestedNodes: Boolean = {
+          _pointerFieldIsNull(1)
+        }
+        def annotations: Boolean = {
+          _pointerFieldIsNull(2)
+        }
+        def parameters: Boolean = {
+          _pointerFieldIsNull(5)
+        }
+      }
     }
     class BuilderImpl(_segment: org.murtsi.capnproto.runtime.SegmentBuilder, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short) extends super.BuilderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount) {
       def id: Long = {
@@ -569,17 +583,14 @@ object schema {
       def id_=(value: Long): Unit = {
         _setLongField(0, value)
       }
-      def displayName: Option[org.murtsi.capnproto.runtime.Text#Builder] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.Text](0)
+      def displayName: org.murtsi.capnproto.runtime.Text#Builder = {
+        _getPointerField[org.murtsi.capnproto.runtime.Text](0)
       }
       def displayName_=(value: org.murtsi.capnproto.runtime.Text#Reader): Unit = {
         _setPointerField[org.murtsi.capnproto.runtime.Text](0, value)
       }
       def displayName_=(value: String): Unit = {
         _setPointerField[org.murtsi.capnproto.runtime.Text](0, org.murtsi.capnproto.runtime.Text.Reader(value))
-      }
-      def initDisplayName(size: Int): org.murtsi.capnproto.runtime.Text#Builder = {
-        _initPointerField[org.murtsi.capnproto.runtime.Text](0, size)
       }
       def displayNamePrefixLength: Int = {
         this._getIntField(2)
@@ -593,23 +604,17 @@ object schema {
       def scopeId_=(value: Long): Unit = {
         _setLongField(2, value)
       }
-      def nestedNodes: Option[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node#NestedNode]#Builder] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node#NestedNode]](1)
+      def nestedNodes: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node#NestedNode]#Builder = {
+        _getPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node#NestedNode]](1)
       }
       def nestedNodes_=(value: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node#NestedNode]#Reader): Unit = {
         _setPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node#NestedNode]](1, value)
       }
-      def initNestedNodes(size: Int): org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node#NestedNode]#Builder = {
-        _initPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node#NestedNode]](1, size)
-      }
-      def annotations: Option[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]#Builder] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]](2)
+      def annotations: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]#Builder = {
+        _getPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]](2)
       }
       def annotations_=(value: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]#Reader): Unit = {
         _setPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]](2, value)
-      }
-      def initAnnotations(size: Int): org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]#Builder = {
-        _initPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]](2, size)
       }
       def file_=(_value: Unit): Unit = {
         _setShortField(6, 0)
@@ -617,71 +622,23 @@ object schema {
       private[Node] def struct: Node#Struct#Builder = {
         Node.Struct.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
       }
-      def initStruct(): org.murtsi.capnproto.compiler.schema.Node.Struct#Builder = {
-        _setShortField(6, 1)
-        _setShortField(7, 0)
-        _setShortField(12, 0)
-        _setShortField(13, 0)
-        _setBooleanField(224, false)
-        _setShortField(15, 0)
-        _setIntField(8, 0)
-        _clearPointerField(3)
-        org.murtsi.capnproto.compiler.schema.Node.Struct.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
-      }
       private[Node] def enum: Node#Enum#Builder = {
         Node.Enum.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
-      }
-      def initEnum(): org.murtsi.capnproto.compiler.schema.Node.Enum#Builder = {
-        _setShortField(6, 2)
-        _clearPointerField(3)
-        org.murtsi.capnproto.compiler.schema.Node.Enum.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
       }
       private[Node] def interface: Node#Interface#Builder = {
         Node.Interface.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
       }
-      def initInterface(): org.murtsi.capnproto.compiler.schema.Node.Interface#Builder = {
-        _setShortField(6, 3)
-        _clearPointerField(3)
-        _clearPointerField(4)
-        org.murtsi.capnproto.compiler.schema.Node.Interface.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
-      }
       private[Node] def const: Node#Const#Builder = {
         Node.Const.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
-      }
-      def initConst(): org.murtsi.capnproto.compiler.schema.Node.Const#Builder = {
-        _setShortField(6, 4)
-        _clearPointerField(3)
-        _clearPointerField(4)
-        org.murtsi.capnproto.compiler.schema.Node.Const.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
       }
       private[Node] def annotation: Node#Annotation#Builder = {
         Node.Annotation.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
       }
-      def initAnnotation(): org.murtsi.capnproto.compiler.schema.Node.Annotation#Builder = {
-        _setShortField(6, 5)
-        _clearPointerField(3)
-        _setBooleanField(112, false)
-        _setBooleanField(113, false)
-        _setBooleanField(114, false)
-        _setBooleanField(115, false)
-        _setBooleanField(116, false)
-        _setBooleanField(117, false)
-        _setBooleanField(118, false)
-        _setBooleanField(119, false)
-        _setBooleanField(120, false)
-        _setBooleanField(121, false)
-        _setBooleanField(122, false)
-        _setBooleanField(123, false)
-        org.murtsi.capnproto.compiler.schema.Node.Annotation.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
-      }
-      def parameters: Option[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node#Parameter]#Builder] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node#Parameter]](5)
+      def parameters: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node#Parameter]#Builder = {
+        _getPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node#Parameter]](5)
       }
       def parameters_=(value: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node#Parameter]#Reader): Unit = {
         _setPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node#Parameter]](5, value)
-      }
-      def initParameters(size: Int): org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node#Parameter]#Builder = {
-        _initPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node#Parameter]](5, size)
       }
       def isGeneric: Boolean = {
         _getBooleanField(288)
@@ -690,6 +647,79 @@ object schema {
         _setBooleanField(288, value)
       }
       private[Node] def _whichIndex: Short = _getShortField(6)
+      object has {
+        def displayName: Boolean = {
+          _pointerFieldIsNull(0)
+        }
+        def nestedNodes: Boolean = {
+          _pointerFieldIsNull(1)
+        }
+        def annotations: Boolean = {
+          _pointerFieldIsNull(2)
+        }
+        def parameters: Boolean = {
+          _pointerFieldIsNull(5)
+        }
+      }
+      object init {
+        def displayName(size: Int): org.murtsi.capnproto.runtime.Text#Builder = {
+          _initPointerField[org.murtsi.capnproto.runtime.Text](0, size)
+        }
+        def nestedNodes(size: Int): org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node#NestedNode]#Builder = {
+          _initPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node#NestedNode]](1, size)
+        }
+        def annotations(size: Int): org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]#Builder = {
+          _initPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]](2, size)
+        }
+        def struct(): org.murtsi.capnproto.compiler.schema.Node.Struct#Builder = {
+          _setShortField(6, 1)
+          _setShortField(7, 0)
+          _setShortField(12, 0)
+          _setShortField(13, 0)
+          _setBooleanField(224, false)
+          _setShortField(15, 0)
+          _setIntField(8, 0)
+          _clearPointerField(3)
+          org.murtsi.capnproto.compiler.schema.Node.Struct.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
+        }
+        def enum(): org.murtsi.capnproto.compiler.schema.Node.Enum#Builder = {
+          _setShortField(6, 2)
+          _clearPointerField(3)
+          org.murtsi.capnproto.compiler.schema.Node.Enum.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
+        }
+        def interface(): org.murtsi.capnproto.compiler.schema.Node.Interface#Builder = {
+          _setShortField(6, 3)
+          _clearPointerField(3)
+          _clearPointerField(4)
+          org.murtsi.capnproto.compiler.schema.Node.Interface.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
+        }
+        def const(): org.murtsi.capnproto.compiler.schema.Node.Const#Builder = {
+          _setShortField(6, 4)
+          _clearPointerField(3)
+          _clearPointerField(4)
+          org.murtsi.capnproto.compiler.schema.Node.Const.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
+        }
+        def annotation(): org.murtsi.capnproto.compiler.schema.Node.Annotation#Builder = {
+          _setShortField(6, 5)
+          _clearPointerField(3)
+          _setBooleanField(112, false)
+          _setBooleanField(113, false)
+          _setBooleanField(114, false)
+          _setBooleanField(115, false)
+          _setBooleanField(116, false)
+          _setBooleanField(117, false)
+          _setBooleanField(118, false)
+          _setBooleanField(119, false)
+          _setBooleanField(120, false)
+          _setBooleanField(121, false)
+          _setBooleanField(122, false)
+          _setBooleanField(123, false)
+          org.murtsi.capnproto.compiler.schema.Node.Annotation.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
+        }
+        def parameters(size: Int): org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node#Parameter]#Builder = {
+          _initPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node#Parameter]](5, size)
+        }
+      }
     }
     object File {
       def unapply(value: Node#Reader): Boolean = value._whichIndex == 0
@@ -708,13 +738,18 @@ object schema {
       override val Reader: (org.murtsi.capnproto.runtime.SegmentReader, Int, Int, Int, Short, Int) => Reader = new ReaderImpl(_, _, _, _, _, _)
 
       class ReaderImpl(_segment: org.murtsi.capnproto.runtime.SegmentReader, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short, _nestingLimit: Int) extends super.ReaderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount, _nestingLimit) {
-        def name: Option[org.murtsi.capnproto.runtime.Text#Reader] = {
-          _getPointerFieldOption[org.murtsi.capnproto.runtime.Text](0)
+        def name: org.murtsi.capnproto.runtime.Text#Reader = {
+          _getPointerField[org.murtsi.capnproto.runtime.Text](0)
+        }
+        object has {
+          def name: Boolean = {
+            _pointerFieldIsNull(0)
+          }
         }
       }
       class BuilderImpl(_segment: org.murtsi.capnproto.runtime.SegmentBuilder, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short) extends super.BuilderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount) {
-        def name: Option[org.murtsi.capnproto.runtime.Text#Builder] = {
-          _getPointerFieldOption[org.murtsi.capnproto.runtime.Text](0)
+        def name: org.murtsi.capnproto.runtime.Text#Builder = {
+          _getPointerField[org.murtsi.capnproto.runtime.Text](0)
         }
         def name_=(value: org.murtsi.capnproto.runtime.Text#Reader): Unit = {
           _setPointerField[org.murtsi.capnproto.runtime.Text](0, value)
@@ -722,8 +757,15 @@ object schema {
         def name_=(value: String): Unit = {
           _setPointerField[org.murtsi.capnproto.runtime.Text](0, org.murtsi.capnproto.runtime.Text.Reader(value))
         }
-        def initName(size: Int): org.murtsi.capnproto.runtime.Text#Builder = {
-          _initPointerField[org.murtsi.capnproto.runtime.Text](0, size)
+        object has {
+          def name: Boolean = {
+            _pointerFieldIsNull(0)
+          }
+        }
+        object init {
+          def name(size: Int): org.murtsi.capnproto.runtime.Text#Builder = {
+            _initPointerField[org.murtsi.capnproto.runtime.Text](0, size)
+          }
         }
       }
     }
@@ -740,16 +782,21 @@ object schema {
       override val Reader: (org.murtsi.capnproto.runtime.SegmentReader, Int, Int, Int, Short, Int) => Reader = new ReaderImpl(_, _, _, _, _, _)
 
       class ReaderImpl(_segment: org.murtsi.capnproto.runtime.SegmentReader, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short, _nestingLimit: Int) extends super.ReaderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount, _nestingLimit) {
-        def name: Option[org.murtsi.capnproto.runtime.Text#Reader] = {
-          _getPointerFieldOption[org.murtsi.capnproto.runtime.Text](0)
+        def name: org.murtsi.capnproto.runtime.Text#Reader = {
+          _getPointerField[org.murtsi.capnproto.runtime.Text](0)
         }
         def id: Long = {
           this._getLongField(0)
         }
+        object has {
+          def name: Boolean = {
+            _pointerFieldIsNull(0)
+          }
+        }
       }
       class BuilderImpl(_segment: org.murtsi.capnproto.runtime.SegmentBuilder, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short) extends super.BuilderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount) {
-        def name: Option[org.murtsi.capnproto.runtime.Text#Builder] = {
-          _getPointerFieldOption[org.murtsi.capnproto.runtime.Text](0)
+        def name: org.murtsi.capnproto.runtime.Text#Builder = {
+          _getPointerField[org.murtsi.capnproto.runtime.Text](0)
         }
         def name_=(value: org.murtsi.capnproto.runtime.Text#Reader): Unit = {
           _setPointerField[org.murtsi.capnproto.runtime.Text](0, value)
@@ -757,14 +804,21 @@ object schema {
         def name_=(value: String): Unit = {
           _setPointerField[org.murtsi.capnproto.runtime.Text](0, org.murtsi.capnproto.runtime.Text.Reader(value))
         }
-        def initName(size: Int): org.murtsi.capnproto.runtime.Text#Builder = {
-          _initPointerField[org.murtsi.capnproto.runtime.Text](0, size)
-        }
         def id: Long = {
           this._getLongField(0)
         }
         def id_=(value: Long): Unit = {
           _setLongField(0, value)
+        }
+        object has {
+          def name: Boolean = {
+            _pointerFieldIsNull(0)
+          }
+        }
+        object init {
+          def name(size: Int): org.murtsi.capnproto.runtime.Text#Builder = {
+            _initPointerField[org.murtsi.capnproto.runtime.Text](0, size)
+          }
         }
       }
     }
@@ -793,8 +847,8 @@ object schema {
         def pointerCount: Short = {
           this._getShortField(12)
         }
-        def preferredListEncoding: Option[ElementSize] = {
-          ElementSize(_getShortField(13))
+        def preferredListEncoding: ElementSize = {
+          ElementSize.enumValues(_getShortField(13))
         }
         def isGroup: Boolean = {
           _getBooleanField(224)
@@ -805,8 +859,13 @@ object schema {
         def discriminantOffset: Int = {
           this._getIntField(8)
         }
-        def fields: Option[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Field]#Reader] = {
-          _getPointerFieldOption[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Field]](3)
+        def fields: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Field]#Reader = {
+          _getPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Field]](3)
+        }
+        object has {
+          def fields: Boolean = {
+            _pointerFieldIsNull(3)
+          }
         }
       }
       class BuilderImpl(_segment: org.murtsi.capnproto.runtime.SegmentBuilder, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short) extends super.BuilderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount) {
@@ -822,8 +881,8 @@ object schema {
         def pointerCount_=(value: Short): Unit = {
           _setShortField(12, value)
         }
-        def preferredListEncoding: Option[ElementSize] = {
-          ElementSize(_getShortField(13))
+        def preferredListEncoding: ElementSize = {
+          ElementSize.enumValues(_getShortField(13))
         }
         def preferredListEncoding_=(value: ElementSize): Unit = {
           _setShortField(value.index, 13)
@@ -846,14 +905,21 @@ object schema {
         def discriminantOffset_=(value: Int): Unit = {
           _setIntField(8, value)
         }
-        def fields: Option[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Field]#Builder] = {
-          _getPointerFieldOption[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Field]](3)
+        def fields: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Field]#Builder = {
+          _getPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Field]](3)
         }
         def fields_=(value: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Field]#Reader): Unit = {
           _setPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Field]](3, value)
         }
-        def initFields(size: Int): org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Field]#Builder = {
-          _initPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Field]](3, size)
+        object has {
+          def fields: Boolean = {
+            _pointerFieldIsNull(3)
+          }
+        }
+        object init {
+          def fields(size: Int): org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Field]#Builder = {
+            _initPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Field]](3, size)
+          }
         }
       }
     }
@@ -876,19 +942,31 @@ object schema {
         if (value._whichIndex == 2) Some(value.enum) else None
       }
       class ReaderImpl(_segment: org.murtsi.capnproto.runtime.SegmentReader, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short, _nestingLimit: Int) extends super.ReaderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount, _nestingLimit) {
-        def enumerants: Option[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Enumerant]#Reader] = {
-          _getPointerFieldOption[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Enumerant]](3)
+        def enumerants: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Enumerant]#Reader = {
+          _getPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Enumerant]](3)
+        }
+        object has {
+          def enumerants: Boolean = {
+            _pointerFieldIsNull(3)
+          }
         }
       }
       class BuilderImpl(_segment: org.murtsi.capnproto.runtime.SegmentBuilder, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short) extends super.BuilderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount) {
-        def enumerants: Option[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Enumerant]#Builder] = {
-          _getPointerFieldOption[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Enumerant]](3)
+        def enumerants: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Enumerant]#Builder = {
+          _getPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Enumerant]](3)
         }
         def enumerants_=(value: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Enumerant]#Reader): Unit = {
           _setPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Enumerant]](3, value)
         }
-        def initEnumerants(size: Int): org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Enumerant]#Builder = {
-          _initPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Enumerant]](3, size)
+        object has {
+          def enumerants: Boolean = {
+            _pointerFieldIsNull(3)
+          }
+        }
+        object init {
+          def enumerants(size: Int): org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Enumerant]#Builder = {
+            _initPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Enumerant]](3, size)
+          }
         }
       }
     }
@@ -911,31 +989,49 @@ object schema {
         if (value._whichIndex == 3) Some(value.interface) else None
       }
       class ReaderImpl(_segment: org.murtsi.capnproto.runtime.SegmentReader, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short, _nestingLimit: Int) extends super.ReaderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount, _nestingLimit) {
-        def methods: Option[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Method]#Reader] = {
-          _getPointerFieldOption[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Method]](3)
+        def methods: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Method]#Reader = {
+          _getPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Method]](3)
         }
-        def superclasses: Option[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Superclass]#Reader] = {
-          _getPointerFieldOption[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Superclass]](4)
+        def superclasses: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Superclass]#Reader = {
+          _getPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Superclass]](4)
+        }
+        object has {
+          def methods: Boolean = {
+            _pointerFieldIsNull(3)
+          }
+          def superclasses: Boolean = {
+            _pointerFieldIsNull(4)
+          }
         }
       }
       class BuilderImpl(_segment: org.murtsi.capnproto.runtime.SegmentBuilder, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short) extends super.BuilderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount) {
-        def methods: Option[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Method]#Builder] = {
-          _getPointerFieldOption[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Method]](3)
+        def methods: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Method]#Builder = {
+          _getPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Method]](3)
         }
         def methods_=(value: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Method]#Reader): Unit = {
           _setPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Method]](3, value)
         }
-        def initMethods(size: Int): org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Method]#Builder = {
-          _initPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Method]](3, size)
-        }
-        def superclasses: Option[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Superclass]#Builder] = {
-          _getPointerFieldOption[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Superclass]](4)
+        def superclasses: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Superclass]#Builder = {
+          _getPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Superclass]](4)
         }
         def superclasses_=(value: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Superclass]#Reader): Unit = {
           _setPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Superclass]](4, value)
         }
-        def initSuperclasses(size: Int): org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Superclass]#Builder = {
-          _initPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Superclass]](4, size)
+        object has {
+          def methods: Boolean = {
+            _pointerFieldIsNull(3)
+          }
+          def superclasses: Boolean = {
+            _pointerFieldIsNull(4)
+          }
+        }
+        object init {
+          def methods(size: Int): org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Method]#Builder = {
+            _initPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Method]](3, size)
+          }
+          def superclasses(size: Int): org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Superclass]#Builder = {
+            _initPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Superclass]](4, size)
+          }
         }
       }
     }
@@ -958,31 +1054,49 @@ object schema {
         if (value._whichIndex == 4) Some(value.const) else None
       }
       class ReaderImpl(_segment: org.murtsi.capnproto.runtime.SegmentReader, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short, _nestingLimit: Int) extends super.ReaderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount, _nestingLimit) {
-        def `type`: Option[org.murtsi.capnproto.compiler.schema.Type#Reader] = {
-          _getPointerFieldOption[org.murtsi.capnproto.compiler.schema.Type](3)
+        def `type`: org.murtsi.capnproto.compiler.schema.Type#Reader = {
+          _getPointerField[org.murtsi.capnproto.compiler.schema.Type](3)
         }
-        def value: Option[org.murtsi.capnproto.compiler.schema.Value#Reader] = {
-          _getPointerFieldOption[org.murtsi.capnproto.compiler.schema.Value](4)
+        def value: org.murtsi.capnproto.compiler.schema.Value#Reader = {
+          _getPointerField[org.murtsi.capnproto.compiler.schema.Value](4)
+        }
+        object has {
+          def `type`: Boolean = {
+            _pointerFieldIsNull(3)
+          }
+          def value: Boolean = {
+            _pointerFieldIsNull(4)
+          }
         }
       }
       class BuilderImpl(_segment: org.murtsi.capnproto.runtime.SegmentBuilder, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short) extends super.BuilderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount) {
-        def `type`: Option[org.murtsi.capnproto.compiler.schema.Type#Builder] = {
-          _getPointerFieldOption[org.murtsi.capnproto.compiler.schema.Type](3)
+        def `type`: org.murtsi.capnproto.compiler.schema.Type#Builder = {
+          _getPointerField[org.murtsi.capnproto.compiler.schema.Type](3)
         }
         def type_=(value: org.murtsi.capnproto.compiler.schema.Type#Reader): Unit = {
           _setPointerField[org.murtsi.capnproto.compiler.schema.Type](3, value)
         }
-        def initType(): org.murtsi.capnproto.compiler.schema.Type#Builder = {
-          _initPointerField[org.murtsi.capnproto.compiler.schema.Type](3, 0)
-        }
-        def value: Option[org.murtsi.capnproto.compiler.schema.Value#Builder] = {
-          _getPointerFieldOption[org.murtsi.capnproto.compiler.schema.Value](4)
+        def value: org.murtsi.capnproto.compiler.schema.Value#Builder = {
+          _getPointerField[org.murtsi.capnproto.compiler.schema.Value](4)
         }
         def value_=(value: org.murtsi.capnproto.compiler.schema.Value#Reader): Unit = {
           _setPointerField[org.murtsi.capnproto.compiler.schema.Value](4, value)
         }
-        def initValue(): org.murtsi.capnproto.compiler.schema.Value#Builder = {
-          _initPointerField[org.murtsi.capnproto.compiler.schema.Value](4, 0)
+        object has {
+          def `type`: Boolean = {
+            _pointerFieldIsNull(3)
+          }
+          def value: Boolean = {
+            _pointerFieldIsNull(4)
+          }
+        }
+        object init {
+          def `type`(): org.murtsi.capnproto.compiler.schema.Type#Builder = {
+            _initPointerField[org.murtsi.capnproto.compiler.schema.Type](3, 0)
+          }
+          def value(): org.murtsi.capnproto.compiler.schema.Value#Builder = {
+            _initPointerField[org.murtsi.capnproto.compiler.schema.Value](4, 0)
+          }
         }
       }
     }
@@ -1005,8 +1119,8 @@ object schema {
         if (value._whichIndex == 5) Some(value.annotation) else None
       }
       class ReaderImpl(_segment: org.murtsi.capnproto.runtime.SegmentReader, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short, _nestingLimit: Int) extends super.ReaderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount, _nestingLimit) {
-        def `type`: Option[org.murtsi.capnproto.compiler.schema.Type#Reader] = {
-          _getPointerFieldOption[org.murtsi.capnproto.compiler.schema.Type](3)
+        def `type`: org.murtsi.capnproto.compiler.schema.Type#Reader = {
+          _getPointerField[org.murtsi.capnproto.compiler.schema.Type](3)
         }
         def targetsFile: Boolean = {
           _getBooleanField(112)
@@ -1044,16 +1158,18 @@ object schema {
         def targetsAnnotation: Boolean = {
           _getBooleanField(123)
         }
+        object has {
+          def `type`: Boolean = {
+            _pointerFieldIsNull(3)
+          }
+        }
       }
       class BuilderImpl(_segment: org.murtsi.capnproto.runtime.SegmentBuilder, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short) extends super.BuilderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount) {
-        def `type`: Option[org.murtsi.capnproto.compiler.schema.Type#Builder] = {
-          _getPointerFieldOption[org.murtsi.capnproto.compiler.schema.Type](3)
+        def `type`: org.murtsi.capnproto.compiler.schema.Type#Builder = {
+          _getPointerField[org.murtsi.capnproto.compiler.schema.Type](3)
         }
         def type_=(value: org.murtsi.capnproto.compiler.schema.Type#Reader): Unit = {
           _setPointerField[org.murtsi.capnproto.compiler.schema.Type](3, value)
-        }
-        def initType(): org.murtsi.capnproto.compiler.schema.Type#Builder = {
-          _initPointerField[org.murtsi.capnproto.compiler.schema.Type](3, 0)
         }
         def targetsFile: Boolean = {
           _getBooleanField(112)
@@ -1127,6 +1243,16 @@ object schema {
         def targetsAnnotation_=(value: Boolean): Unit = {
           _setBooleanField(123, value)
         }
+        object has {
+          def `type`: Boolean = {
+            _pointerFieldIsNull(3)
+          }
+        }
+        object init {
+          def `type`(): org.murtsi.capnproto.compiler.schema.Type#Builder = {
+            _initPointerField[org.murtsi.capnproto.compiler.schema.Type](3, 0)
+          }
+        }
       }
     }
   }
@@ -1143,14 +1269,14 @@ object schema {
     override val Reader: (org.murtsi.capnproto.runtime.SegmentReader, Int, Int, Int, Short, Int) => Reader = new ReaderImpl(_, _, _, _, _, _)
 
     class ReaderImpl(_segment: org.murtsi.capnproto.runtime.SegmentReader, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short, _nestingLimit: Int) extends super.ReaderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount, _nestingLimit) {
-      def name: Option[org.murtsi.capnproto.runtime.Text#Reader] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.Text](0)
+      def name: org.murtsi.capnproto.runtime.Text#Reader = {
+        _getPointerField[org.murtsi.capnproto.runtime.Text](0)
       }
       def codeOrder: Short = {
         this._getShortField(0)
       }
-      def annotations: Option[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]#Reader] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]](1)
+      def annotations: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]#Reader = {
+        _getPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]](1)
       }
       def discriminantValue: Short = {
         this._getShortField(1, -1)
@@ -1165,10 +1291,18 @@ object schema {
         Field.Ordinal.Reader(_segment, _dataOffset, _pointers, _dataSize, _pointerCount, _nestingLimit)
       }
       private[Field] def _whichIndex: Short = _getShortField(4)
+      object has {
+        def name: Boolean = {
+          _pointerFieldIsNull(0)
+        }
+        def annotations: Boolean = {
+          _pointerFieldIsNull(1)
+        }
+      }
     }
     class BuilderImpl(_segment: org.murtsi.capnproto.runtime.SegmentBuilder, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short) extends super.BuilderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount) {
-      def name: Option[org.murtsi.capnproto.runtime.Text#Builder] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.Text](0)
+      def name: org.murtsi.capnproto.runtime.Text#Builder = {
+        _getPointerField[org.murtsi.capnproto.runtime.Text](0)
       }
       def name_=(value: org.murtsi.capnproto.runtime.Text#Reader): Unit = {
         _setPointerField[org.murtsi.capnproto.runtime.Text](0, value)
@@ -1176,23 +1310,17 @@ object schema {
       def name_=(value: String): Unit = {
         _setPointerField[org.murtsi.capnproto.runtime.Text](0, org.murtsi.capnproto.runtime.Text.Reader(value))
       }
-      def initName(size: Int): org.murtsi.capnproto.runtime.Text#Builder = {
-        _initPointerField[org.murtsi.capnproto.runtime.Text](0, size)
-      }
       def codeOrder: Short = {
         this._getShortField(0)
       }
       def codeOrder_=(value: Short): Unit = {
         _setShortField(0, value)
       }
-      def annotations: Option[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]#Builder] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]](1)
+      def annotations: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]#Builder = {
+        _getPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]](1)
       }
       def annotations_=(value: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]#Reader): Unit = {
         _setPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]](1, value)
-      }
-      def initAnnotations(size: Int): org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]#Builder = {
-        _initPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]](1, size)
       }
       def discriminantValue: Short = {
         this._getShortField(1, -1)
@@ -1203,31 +1331,47 @@ object schema {
       private[Field] def slot: Field#Slot#Builder = {
         Field.Slot.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
       }
-      def initSlot(): org.murtsi.capnproto.compiler.schema.Field.Slot#Builder = {
-        _setShortField(4, 0)
-        _setIntField(1, 0)
-        _clearPointerField(2)
-        _clearPointerField(3)
-        _setBooleanField(128, false)
-        org.murtsi.capnproto.compiler.schema.Field.Slot.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
-      }
       private[Field] def group: Field#Group#Builder = {
         Field.Group.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
-      }
-      def initGroup(): org.murtsi.capnproto.compiler.schema.Field.Group#Builder = {
-        _setShortField(4, 1)
-        _setLongField(2, 0)
-        org.murtsi.capnproto.compiler.schema.Field.Group.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
       }
       def ordinal: Field#Ordinal#Builder = {
         Field.Ordinal.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
       }
-      def initOrdinal(): org.murtsi.capnproto.compiler.schema.Field.Ordinal#Builder = {
-        _setShortField(5, 0)
-        _setShortField(6, 0)
-        org.murtsi.capnproto.compiler.schema.Field.Ordinal.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
-      }
       private[Field] def _whichIndex: Short = _getShortField(4)
+      object has {
+        def name: Boolean = {
+          _pointerFieldIsNull(0)
+        }
+        def annotations: Boolean = {
+          _pointerFieldIsNull(1)
+        }
+      }
+      object init {
+        def name(size: Int): org.murtsi.capnproto.runtime.Text#Builder = {
+          _initPointerField[org.murtsi.capnproto.runtime.Text](0, size)
+        }
+        def annotations(size: Int): org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]#Builder = {
+          _initPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]](1, size)
+        }
+        def slot(): org.murtsi.capnproto.compiler.schema.Field.Slot#Builder = {
+          _setShortField(4, 0)
+          _setIntField(1, 0)
+          _clearPointerField(2)
+          _clearPointerField(3)
+          _setBooleanField(128, false)
+          org.murtsi.capnproto.compiler.schema.Field.Slot.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
+        }
+        def group(): org.murtsi.capnproto.compiler.schema.Field.Group#Builder = {
+          _setShortField(4, 1)
+          _setLongField(2, 0)
+          org.murtsi.capnproto.compiler.schema.Field.Group.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
+        }
+        def ordinal(): org.murtsi.capnproto.compiler.schema.Field.Ordinal#Builder = {
+          _setShortField(5, 0)
+          _setShortField(6, 0)
+          org.murtsi.capnproto.compiler.schema.Field.Ordinal.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
+        }
+      }
     }
     val NoDiscriminant: Short = -1
 
@@ -1252,14 +1396,22 @@ object schema {
         def offset: Int = {
           this._getIntField(1)
         }
-        def `type`: Option[org.murtsi.capnproto.compiler.schema.Type#Reader] = {
-          _getPointerFieldOption[org.murtsi.capnproto.compiler.schema.Type](2)
+        def `type`: org.murtsi.capnproto.compiler.schema.Type#Reader = {
+          _getPointerField[org.murtsi.capnproto.compiler.schema.Type](2)
         }
-        def defaultValue: Option[org.murtsi.capnproto.compiler.schema.Value#Reader] = {
-          _getPointerFieldOption[org.murtsi.capnproto.compiler.schema.Value](3)
+        def defaultValue: org.murtsi.capnproto.compiler.schema.Value#Reader = {
+          _getPointerField[org.murtsi.capnproto.compiler.schema.Value](3)
         }
         def hadExplicitDefault: Boolean = {
           _getBooleanField(128)
+        }
+        object has {
+          def `type`: Boolean = {
+            _pointerFieldIsNull(2)
+          }
+          def defaultValue: Boolean = {
+            _pointerFieldIsNull(3)
+          }
         }
       }
       class BuilderImpl(_segment: org.murtsi.capnproto.runtime.SegmentBuilder, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short) extends super.BuilderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount) {
@@ -1269,29 +1421,39 @@ object schema {
         def offset_=(value: Int): Unit = {
           _setIntField(1, value)
         }
-        def `type`: Option[org.murtsi.capnproto.compiler.schema.Type#Builder] = {
-          _getPointerFieldOption[org.murtsi.capnproto.compiler.schema.Type](2)
+        def `type`: org.murtsi.capnproto.compiler.schema.Type#Builder = {
+          _getPointerField[org.murtsi.capnproto.compiler.schema.Type](2)
         }
         def type_=(value: org.murtsi.capnproto.compiler.schema.Type#Reader): Unit = {
           _setPointerField[org.murtsi.capnproto.compiler.schema.Type](2, value)
         }
-        def initType(): org.murtsi.capnproto.compiler.schema.Type#Builder = {
-          _initPointerField[org.murtsi.capnproto.compiler.schema.Type](2, 0)
-        }
-        def defaultValue: Option[org.murtsi.capnproto.compiler.schema.Value#Builder] = {
-          _getPointerFieldOption[org.murtsi.capnproto.compiler.schema.Value](3)
+        def defaultValue: org.murtsi.capnproto.compiler.schema.Value#Builder = {
+          _getPointerField[org.murtsi.capnproto.compiler.schema.Value](3)
         }
         def defaultValue_=(value: org.murtsi.capnproto.compiler.schema.Value#Reader): Unit = {
           _setPointerField[org.murtsi.capnproto.compiler.schema.Value](3, value)
-        }
-        def initDefaultValue(): org.murtsi.capnproto.compiler.schema.Value#Builder = {
-          _initPointerField[org.murtsi.capnproto.compiler.schema.Value](3, 0)
         }
         def hadExplicitDefault: Boolean = {
           _getBooleanField(128)
         }
         def hadExplicitDefault_=(value: Boolean): Unit = {
           _setBooleanField(128, value)
+        }
+        object has {
+          def `type`: Boolean = {
+            _pointerFieldIsNull(2)
+          }
+          def defaultValue: Boolean = {
+            _pointerFieldIsNull(3)
+          }
+        }
+        object init {
+          def `type`(): org.murtsi.capnproto.compiler.schema.Type#Builder = {
+            _initPointerField[org.murtsi.capnproto.compiler.schema.Type](2, 0)
+          }
+          def defaultValue(): org.murtsi.capnproto.compiler.schema.Value#Builder = {
+            _initPointerField[org.murtsi.capnproto.compiler.schema.Value](3, 0)
+          }
         }
       }
     }
@@ -1391,19 +1553,27 @@ object schema {
     override val Reader: (org.murtsi.capnproto.runtime.SegmentReader, Int, Int, Int, Short, Int) => Reader = new ReaderImpl(_, _, _, _, _, _)
 
     class ReaderImpl(_segment: org.murtsi.capnproto.runtime.SegmentReader, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short, _nestingLimit: Int) extends super.ReaderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount, _nestingLimit) {
-      def name: Option[org.murtsi.capnproto.runtime.Text#Reader] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.Text](0)
+      def name: org.murtsi.capnproto.runtime.Text#Reader = {
+        _getPointerField[org.murtsi.capnproto.runtime.Text](0)
       }
       def codeOrder: Short = {
         this._getShortField(0)
       }
-      def annotations: Option[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]#Reader] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]](1)
+      def annotations: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]#Reader = {
+        _getPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]](1)
+      }
+      object has {
+        def name: Boolean = {
+          _pointerFieldIsNull(0)
+        }
+        def annotations: Boolean = {
+          _pointerFieldIsNull(1)
+        }
       }
     }
     class BuilderImpl(_segment: org.murtsi.capnproto.runtime.SegmentBuilder, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short) extends super.BuilderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount) {
-      def name: Option[org.murtsi.capnproto.runtime.Text#Builder] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.Text](0)
+      def name: org.murtsi.capnproto.runtime.Text#Builder = {
+        _getPointerField[org.murtsi.capnproto.runtime.Text](0)
       }
       def name_=(value: org.murtsi.capnproto.runtime.Text#Reader): Unit = {
         _setPointerField[org.murtsi.capnproto.runtime.Text](0, value)
@@ -1411,23 +1581,33 @@ object schema {
       def name_=(value: String): Unit = {
         _setPointerField[org.murtsi.capnproto.runtime.Text](0, org.murtsi.capnproto.runtime.Text.Reader(value))
       }
-      def initName(size: Int): org.murtsi.capnproto.runtime.Text#Builder = {
-        _initPointerField[org.murtsi.capnproto.runtime.Text](0, size)
-      }
       def codeOrder: Short = {
         this._getShortField(0)
       }
       def codeOrder_=(value: Short): Unit = {
         _setShortField(0, value)
       }
-      def annotations: Option[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]#Builder] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]](1)
+      def annotations: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]#Builder = {
+        _getPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]](1)
       }
       def annotations_=(value: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]#Reader): Unit = {
         _setPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]](1, value)
       }
-      def initAnnotations(size: Int): org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]#Builder = {
-        _initPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]](1, size)
+      object has {
+        def name: Boolean = {
+          _pointerFieldIsNull(0)
+        }
+        def annotations: Boolean = {
+          _pointerFieldIsNull(1)
+        }
+      }
+      object init {
+        def name(size: Int): org.murtsi.capnproto.runtime.Text#Builder = {
+          _initPointerField[org.murtsi.capnproto.runtime.Text](0, size)
+        }
+        def annotations(size: Int): org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]#Builder = {
+          _initPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]](1, size)
+        }
       }
     }
   }
@@ -1447,8 +1627,13 @@ object schema {
       def id: Long = {
         this._getLongField(0)
       }
-      def brand: Option[org.murtsi.capnproto.compiler.schema.Brand#Reader] = {
-        _getPointerFieldOption[org.murtsi.capnproto.compiler.schema.Brand](0)
+      def brand: org.murtsi.capnproto.compiler.schema.Brand#Reader = {
+        _getPointerField[org.murtsi.capnproto.compiler.schema.Brand](0)
+      }
+      object has {
+        def brand: Boolean = {
+          _pointerFieldIsNull(0)
+        }
       }
     }
     class BuilderImpl(_segment: org.murtsi.capnproto.runtime.SegmentBuilder, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short) extends super.BuilderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount) {
@@ -1458,14 +1643,21 @@ object schema {
       def id_=(value: Long): Unit = {
         _setLongField(0, value)
       }
-      def brand: Option[org.murtsi.capnproto.compiler.schema.Brand#Builder] = {
-        _getPointerFieldOption[org.murtsi.capnproto.compiler.schema.Brand](0)
+      def brand: org.murtsi.capnproto.compiler.schema.Brand#Builder = {
+        _getPointerField[org.murtsi.capnproto.compiler.schema.Brand](0)
       }
       def brand_=(value: org.murtsi.capnproto.compiler.schema.Brand#Reader): Unit = {
         _setPointerField[org.murtsi.capnproto.compiler.schema.Brand](0, value)
       }
-      def initBrand(): org.murtsi.capnproto.compiler.schema.Brand#Builder = {
-        _initPointerField[org.murtsi.capnproto.compiler.schema.Brand](0, 0)
+      object has {
+        def brand: Boolean = {
+          _pointerFieldIsNull(0)
+        }
+      }
+      object init {
+        def brand(): org.murtsi.capnproto.compiler.schema.Brand#Builder = {
+          _initPointerField[org.murtsi.capnproto.compiler.schema.Brand](0, 0)
+        }
       }
     }
   }
@@ -1482,8 +1674,8 @@ object schema {
     override val Reader: (org.murtsi.capnproto.runtime.SegmentReader, Int, Int, Int, Short, Int) => Reader = new ReaderImpl(_, _, _, _, _, _)
 
     class ReaderImpl(_segment: org.murtsi.capnproto.runtime.SegmentReader, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short, _nestingLimit: Int) extends super.ReaderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount, _nestingLimit) {
-      def name: Option[org.murtsi.capnproto.runtime.Text#Reader] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.Text](0)
+      def name: org.murtsi.capnproto.runtime.Text#Reader = {
+        _getPointerField[org.murtsi.capnproto.runtime.Text](0)
       }
       def codeOrder: Short = {
         this._getShortField(0)
@@ -1494,31 +1686,45 @@ object schema {
       def resultStructType: Long = {
         this._getLongField(2)
       }
-      def annotations: Option[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]#Reader] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]](1)
+      def annotations: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]#Reader = {
+        _getPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]](1)
       }
-      def paramBrand: Option[org.murtsi.capnproto.compiler.schema.Brand#Reader] = {
-        _getPointerFieldOption[org.murtsi.capnproto.compiler.schema.Brand](2)
+      def paramBrand: org.murtsi.capnproto.compiler.schema.Brand#Reader = {
+        _getPointerField[org.murtsi.capnproto.compiler.schema.Brand](2)
       }
-      def resultBrand: Option[org.murtsi.capnproto.compiler.schema.Brand#Reader] = {
-        _getPointerFieldOption[org.murtsi.capnproto.compiler.schema.Brand](3)
+      def resultBrand: org.murtsi.capnproto.compiler.schema.Brand#Reader = {
+        _getPointerField[org.murtsi.capnproto.compiler.schema.Brand](3)
       }
-      def implicitParameters: Option[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node#Parameter]#Reader] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node#Parameter]](4)
+      def implicitParameters: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node#Parameter]#Reader = {
+        _getPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node#Parameter]](4)
+      }
+      object has {
+        def name: Boolean = {
+          _pointerFieldIsNull(0)
+        }
+        def annotations: Boolean = {
+          _pointerFieldIsNull(1)
+        }
+        def paramBrand: Boolean = {
+          _pointerFieldIsNull(2)
+        }
+        def resultBrand: Boolean = {
+          _pointerFieldIsNull(3)
+        }
+        def implicitParameters: Boolean = {
+          _pointerFieldIsNull(4)
+        }
       }
     }
     class BuilderImpl(_segment: org.murtsi.capnproto.runtime.SegmentBuilder, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short) extends super.BuilderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount) {
-      def name: Option[org.murtsi.capnproto.runtime.Text#Builder] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.Text](0)
+      def name: org.murtsi.capnproto.runtime.Text#Builder = {
+        _getPointerField[org.murtsi.capnproto.runtime.Text](0)
       }
       def name_=(value: org.murtsi.capnproto.runtime.Text#Reader): Unit = {
         _setPointerField[org.murtsi.capnproto.runtime.Text](0, value)
       }
       def name_=(value: String): Unit = {
         _setPointerField[org.murtsi.capnproto.runtime.Text](0, org.murtsi.capnproto.runtime.Text.Reader(value))
-      }
-      def initName(size: Int): org.murtsi.capnproto.runtime.Text#Builder = {
-        _initPointerField[org.murtsi.capnproto.runtime.Text](0, size)
       }
       def codeOrder: Short = {
         this._getShortField(0)
@@ -1538,41 +1744,63 @@ object schema {
       def resultStructType_=(value: Long): Unit = {
         _setLongField(2, value)
       }
-      def annotations: Option[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]#Builder] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]](1)
+      def annotations: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]#Builder = {
+        _getPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]](1)
       }
       def annotations_=(value: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]#Reader): Unit = {
         _setPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]](1, value)
       }
-      def initAnnotations(size: Int): org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]#Builder = {
-        _initPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]](1, size)
-      }
-      def paramBrand: Option[org.murtsi.capnproto.compiler.schema.Brand#Builder] = {
-        _getPointerFieldOption[org.murtsi.capnproto.compiler.schema.Brand](2)
+      def paramBrand: org.murtsi.capnproto.compiler.schema.Brand#Builder = {
+        _getPointerField[org.murtsi.capnproto.compiler.schema.Brand](2)
       }
       def paramBrand_=(value: org.murtsi.capnproto.compiler.schema.Brand#Reader): Unit = {
         _setPointerField[org.murtsi.capnproto.compiler.schema.Brand](2, value)
       }
-      def initParamBrand(): org.murtsi.capnproto.compiler.schema.Brand#Builder = {
-        _initPointerField[org.murtsi.capnproto.compiler.schema.Brand](2, 0)
-      }
-      def resultBrand: Option[org.murtsi.capnproto.compiler.schema.Brand#Builder] = {
-        _getPointerFieldOption[org.murtsi.capnproto.compiler.schema.Brand](3)
+      def resultBrand: org.murtsi.capnproto.compiler.schema.Brand#Builder = {
+        _getPointerField[org.murtsi.capnproto.compiler.schema.Brand](3)
       }
       def resultBrand_=(value: org.murtsi.capnproto.compiler.schema.Brand#Reader): Unit = {
         _setPointerField[org.murtsi.capnproto.compiler.schema.Brand](3, value)
       }
-      def initResultBrand(): org.murtsi.capnproto.compiler.schema.Brand#Builder = {
-        _initPointerField[org.murtsi.capnproto.compiler.schema.Brand](3, 0)
-      }
-      def implicitParameters: Option[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node#Parameter]#Builder] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node#Parameter]](4)
+      def implicitParameters: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node#Parameter]#Builder = {
+        _getPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node#Parameter]](4)
       }
       def implicitParameters_=(value: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node#Parameter]#Reader): Unit = {
         _setPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node#Parameter]](4, value)
       }
-      def initImplicitParameters(size: Int): org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node#Parameter]#Builder = {
-        _initPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node#Parameter]](4, size)
+      object has {
+        def name: Boolean = {
+          _pointerFieldIsNull(0)
+        }
+        def annotations: Boolean = {
+          _pointerFieldIsNull(1)
+        }
+        def paramBrand: Boolean = {
+          _pointerFieldIsNull(2)
+        }
+        def resultBrand: Boolean = {
+          _pointerFieldIsNull(3)
+        }
+        def implicitParameters: Boolean = {
+          _pointerFieldIsNull(4)
+        }
+      }
+      object init {
+        def name(size: Int): org.murtsi.capnproto.runtime.Text#Builder = {
+          _initPointerField[org.murtsi.capnproto.runtime.Text](0, size)
+        }
+        def annotations(size: Int): org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]#Builder = {
+          _initPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Annotation]](1, size)
+        }
+        def paramBrand(): org.murtsi.capnproto.compiler.schema.Brand#Builder = {
+          _initPointerField[org.murtsi.capnproto.compiler.schema.Brand](2, 0)
+        }
+        def resultBrand(): org.murtsi.capnproto.compiler.schema.Brand#Builder = {
+          _initPointerField[org.murtsi.capnproto.compiler.schema.Brand](3, 0)
+        }
+        def implicitParameters(size: Int): org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node#Parameter]#Builder = {
+          _initPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node#Parameter]](4, size)
+        }
       }
     }
   }
@@ -1652,50 +1880,52 @@ object schema {
       private[Type] def list: Type#_List#Builder = {
         Type._List.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
       }
-      def initList(): org.murtsi.capnproto.compiler.schema.Type._List#Builder = {
-        _setShortField(0, 14)
-        _clearPointerField(0)
-        org.murtsi.capnproto.compiler.schema.Type._List.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
-      }
       private[Type] def enum: Type#Enum#Builder = {
         Type.Enum.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
-      }
-      def initEnum(): org.murtsi.capnproto.compiler.schema.Type.Enum#Builder = {
-        _setShortField(0, 15)
-        _setLongField(1, 0)
-        _clearPointerField(0)
-        org.murtsi.capnproto.compiler.schema.Type.Enum.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
       }
       private[Type] def struct: Type#Struct#Builder = {
         Type.Struct.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
       }
-      def initStruct(): org.murtsi.capnproto.compiler.schema.Type.Struct#Builder = {
-        _setShortField(0, 16)
-        _setLongField(1, 0)
-        _clearPointerField(0)
-        org.murtsi.capnproto.compiler.schema.Type.Struct.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
-      }
       private[Type] def interface: Type#Interface#Builder = {
         Type.Interface.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
-      }
-      def initInterface(): org.murtsi.capnproto.compiler.schema.Type.Interface#Builder = {
-        _setShortField(0, 17)
-        _setLongField(1, 0)
-        _clearPointerField(0)
-        org.murtsi.capnproto.compiler.schema.Type.Interface.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
       }
       private[Type] def anyPointer: Type#AnyPointer#Builder = {
         Type.AnyPointer.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
       }
-      def initAnyPointer(): org.murtsi.capnproto.compiler.schema.Type.AnyPointer#Builder = {
-        _setShortField(0, 18)
-        _setShortField(4, 0)
-        _setLongField(2, 0)
-        _setShortField(5, 0)
-        _setShortField(5, 0)
-        org.murtsi.capnproto.compiler.schema.Type.AnyPointer.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
-      }
       private[Type] def _whichIndex: Short = _getShortField(0)
+      object init {
+        def list(): org.murtsi.capnproto.compiler.schema.Type._List#Builder = {
+          _setShortField(0, 14)
+          _clearPointerField(0)
+          org.murtsi.capnproto.compiler.schema.Type._List.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
+        }
+        def enum(): org.murtsi.capnproto.compiler.schema.Type.Enum#Builder = {
+          _setShortField(0, 15)
+          _setLongField(1, 0)
+          _clearPointerField(0)
+          org.murtsi.capnproto.compiler.schema.Type.Enum.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
+        }
+        def struct(): org.murtsi.capnproto.compiler.schema.Type.Struct#Builder = {
+          _setShortField(0, 16)
+          _setLongField(1, 0)
+          _clearPointerField(0)
+          org.murtsi.capnproto.compiler.schema.Type.Struct.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
+        }
+        def interface(): org.murtsi.capnproto.compiler.schema.Type.Interface#Builder = {
+          _setShortField(0, 17)
+          _setLongField(1, 0)
+          _clearPointerField(0)
+          org.murtsi.capnproto.compiler.schema.Type.Interface.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
+        }
+        def anyPointer(): org.murtsi.capnproto.compiler.schema.Type.AnyPointer#Builder = {
+          _setShortField(0, 18)
+          _setShortField(4, 0)
+          _setLongField(2, 0)
+          _setShortField(5, 0)
+          _setShortField(5, 0)
+          org.murtsi.capnproto.compiler.schema.Type.AnyPointer.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
+        }
+      }
     }
     object Void {
       def unapply(value: Type#Reader): Boolean = value._whichIndex == 0
@@ -1772,19 +2002,31 @@ object schema {
         if (value._whichIndex == 14) Some(value.list) else None
       }
       class ReaderImpl(_segment: org.murtsi.capnproto.runtime.SegmentReader, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short, _nestingLimit: Int) extends super.ReaderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount, _nestingLimit) {
-        def elementType: Option[org.murtsi.capnproto.compiler.schema.Type#Reader] = {
-          _getPointerFieldOption[org.murtsi.capnproto.compiler.schema.Type](0)
+        def elementType: org.murtsi.capnproto.compiler.schema.Type#Reader = {
+          _getPointerField[org.murtsi.capnproto.compiler.schema.Type](0)
+        }
+        object has {
+          def elementType: Boolean = {
+            _pointerFieldIsNull(0)
+          }
         }
       }
       class BuilderImpl(_segment: org.murtsi.capnproto.runtime.SegmentBuilder, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short) extends super.BuilderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount) {
-        def elementType: Option[org.murtsi.capnproto.compiler.schema.Type#Builder] = {
-          _getPointerFieldOption[org.murtsi.capnproto.compiler.schema.Type](0)
+        def elementType: org.murtsi.capnproto.compiler.schema.Type#Builder = {
+          _getPointerField[org.murtsi.capnproto.compiler.schema.Type](0)
         }
         def elementType_=(value: org.murtsi.capnproto.compiler.schema.Type#Reader): Unit = {
           _setPointerField[org.murtsi.capnproto.compiler.schema.Type](0, value)
         }
-        def initElementType(): org.murtsi.capnproto.compiler.schema.Type#Builder = {
-          _initPointerField[org.murtsi.capnproto.compiler.schema.Type](0, 0)
+        object has {
+          def elementType: Boolean = {
+            _pointerFieldIsNull(0)
+          }
+        }
+        object init {
+          def elementType(): org.murtsi.capnproto.compiler.schema.Type#Builder = {
+            _initPointerField[org.murtsi.capnproto.compiler.schema.Type](0, 0)
+          }
         }
       }
     }
@@ -1810,8 +2052,13 @@ object schema {
         def typeId: Long = {
           this._getLongField(1)
         }
-        def brand: Option[org.murtsi.capnproto.compiler.schema.Brand#Reader] = {
-          _getPointerFieldOption[org.murtsi.capnproto.compiler.schema.Brand](0)
+        def brand: org.murtsi.capnproto.compiler.schema.Brand#Reader = {
+          _getPointerField[org.murtsi.capnproto.compiler.schema.Brand](0)
+        }
+        object has {
+          def brand: Boolean = {
+            _pointerFieldIsNull(0)
+          }
         }
       }
       class BuilderImpl(_segment: org.murtsi.capnproto.runtime.SegmentBuilder, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short) extends super.BuilderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount) {
@@ -1821,14 +2068,21 @@ object schema {
         def typeId_=(value: Long): Unit = {
           _setLongField(1, value)
         }
-        def brand: Option[org.murtsi.capnproto.compiler.schema.Brand#Builder] = {
-          _getPointerFieldOption[org.murtsi.capnproto.compiler.schema.Brand](0)
+        def brand: org.murtsi.capnproto.compiler.schema.Brand#Builder = {
+          _getPointerField[org.murtsi.capnproto.compiler.schema.Brand](0)
         }
         def brand_=(value: org.murtsi.capnproto.compiler.schema.Brand#Reader): Unit = {
           _setPointerField[org.murtsi.capnproto.compiler.schema.Brand](0, value)
         }
-        def initBrand(): org.murtsi.capnproto.compiler.schema.Brand#Builder = {
-          _initPointerField[org.murtsi.capnproto.compiler.schema.Brand](0, 0)
+        object has {
+          def brand: Boolean = {
+            _pointerFieldIsNull(0)
+          }
+        }
+        object init {
+          def brand(): org.murtsi.capnproto.compiler.schema.Brand#Builder = {
+            _initPointerField[org.murtsi.capnproto.compiler.schema.Brand](0, 0)
+          }
         }
       }
     }
@@ -1854,8 +2108,13 @@ object schema {
         def typeId: Long = {
           this._getLongField(1)
         }
-        def brand: Option[org.murtsi.capnproto.compiler.schema.Brand#Reader] = {
-          _getPointerFieldOption[org.murtsi.capnproto.compiler.schema.Brand](0)
+        def brand: org.murtsi.capnproto.compiler.schema.Brand#Reader = {
+          _getPointerField[org.murtsi.capnproto.compiler.schema.Brand](0)
+        }
+        object has {
+          def brand: Boolean = {
+            _pointerFieldIsNull(0)
+          }
         }
       }
       class BuilderImpl(_segment: org.murtsi.capnproto.runtime.SegmentBuilder, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short) extends super.BuilderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount) {
@@ -1865,14 +2124,21 @@ object schema {
         def typeId_=(value: Long): Unit = {
           _setLongField(1, value)
         }
-        def brand: Option[org.murtsi.capnproto.compiler.schema.Brand#Builder] = {
-          _getPointerFieldOption[org.murtsi.capnproto.compiler.schema.Brand](0)
+        def brand: org.murtsi.capnproto.compiler.schema.Brand#Builder = {
+          _getPointerField[org.murtsi.capnproto.compiler.schema.Brand](0)
         }
         def brand_=(value: org.murtsi.capnproto.compiler.schema.Brand#Reader): Unit = {
           _setPointerField[org.murtsi.capnproto.compiler.schema.Brand](0, value)
         }
-        def initBrand(): org.murtsi.capnproto.compiler.schema.Brand#Builder = {
-          _initPointerField[org.murtsi.capnproto.compiler.schema.Brand](0, 0)
+        object has {
+          def brand: Boolean = {
+            _pointerFieldIsNull(0)
+          }
+        }
+        object init {
+          def brand(): org.murtsi.capnproto.compiler.schema.Brand#Builder = {
+            _initPointerField[org.murtsi.capnproto.compiler.schema.Brand](0, 0)
+          }
         }
       }
     }
@@ -1898,8 +2164,13 @@ object schema {
         def typeId: Long = {
           this._getLongField(1)
         }
-        def brand: Option[org.murtsi.capnproto.compiler.schema.Brand#Reader] = {
-          _getPointerFieldOption[org.murtsi.capnproto.compiler.schema.Brand](0)
+        def brand: org.murtsi.capnproto.compiler.schema.Brand#Reader = {
+          _getPointerField[org.murtsi.capnproto.compiler.schema.Brand](0)
+        }
+        object has {
+          def brand: Boolean = {
+            _pointerFieldIsNull(0)
+          }
         }
       }
       class BuilderImpl(_segment: org.murtsi.capnproto.runtime.SegmentBuilder, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short) extends super.BuilderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount) {
@@ -1909,14 +2180,21 @@ object schema {
         def typeId_=(value: Long): Unit = {
           _setLongField(1, value)
         }
-        def brand: Option[org.murtsi.capnproto.compiler.schema.Brand#Builder] = {
-          _getPointerFieldOption[org.murtsi.capnproto.compiler.schema.Brand](0)
+        def brand: org.murtsi.capnproto.compiler.schema.Brand#Builder = {
+          _getPointerField[org.murtsi.capnproto.compiler.schema.Brand](0)
         }
         def brand_=(value: org.murtsi.capnproto.compiler.schema.Brand#Reader): Unit = {
           _setPointerField[org.murtsi.capnproto.compiler.schema.Brand](0, value)
         }
-        def initBrand(): org.murtsi.capnproto.compiler.schema.Brand#Builder = {
-          _initPointerField[org.murtsi.capnproto.compiler.schema.Brand](0, 0)
+        object has {
+          def brand: Boolean = {
+            _pointerFieldIsNull(0)
+          }
+        }
+        object init {
+          def brand(): org.murtsi.capnproto.compiler.schema.Brand#Builder = {
+            _initPointerField[org.murtsi.capnproto.compiler.schema.Brand](0, 0)
+          }
         }
       }
     }
@@ -1954,21 +2232,23 @@ object schema {
         private[AnyPointer] def parameter: Type#AnyPointer#Parameter#Builder = {
           Type.AnyPointer.Parameter.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
         }
-        def initParameter(): org.murtsi.capnproto.compiler.schema.Type.AnyPointer.Parameter#Builder = {
-          _setShortField(4, 1)
-          _setLongField(2, 0)
-          _setShortField(5, 0)
-          org.murtsi.capnproto.compiler.schema.Type.AnyPointer.Parameter.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
-        }
         private[AnyPointer] def implicitMethodParameter: Type#AnyPointer#ImplicitMethodParameter#Builder = {
           Type.AnyPointer.ImplicitMethodParameter.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
         }
-        def initImplicitMethodParameter(): org.murtsi.capnproto.compiler.schema.Type.AnyPointer.ImplicitMethodParameter#Builder = {
-          _setShortField(4, 2)
-          _setShortField(5, 0)
-          org.murtsi.capnproto.compiler.schema.Type.AnyPointer.ImplicitMethodParameter.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
-        }
         private[AnyPointer] def _whichIndex: Short = _getShortField(4)
+        object init {
+          def parameter(): org.murtsi.capnproto.compiler.schema.Type.AnyPointer.Parameter#Builder = {
+            _setShortField(4, 1)
+            _setLongField(2, 0)
+            _setShortField(5, 0)
+            org.murtsi.capnproto.compiler.schema.Type.AnyPointer.Parameter.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
+          }
+          def implicitMethodParameter(): org.murtsi.capnproto.compiler.schema.Type.AnyPointer.ImplicitMethodParameter#Builder = {
+            _setShortField(4, 2)
+            _setShortField(5, 0)
+            org.murtsi.capnproto.compiler.schema.Type.AnyPointer.ImplicitMethodParameter.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
+          }
+        }
       }
       object Unconstrained {
         def unapply(value: Type#AnyPointer#Reader): Boolean = value._whichIndex == 0
@@ -2062,19 +2342,31 @@ object schema {
     override val Reader: (org.murtsi.capnproto.runtime.SegmentReader, Int, Int, Int, Short, Int) => Reader = new ReaderImpl(_, _, _, _, _, _)
 
     class ReaderImpl(_segment: org.murtsi.capnproto.runtime.SegmentReader, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short, _nestingLimit: Int) extends super.ReaderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount, _nestingLimit) {
-      def scopes: Option[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Brand#Scope]#Reader] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Brand#Scope]](0)
+      def scopes: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Brand#Scope]#Reader = {
+        _getPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Brand#Scope]](0)
+      }
+      object has {
+        def scopes: Boolean = {
+          _pointerFieldIsNull(0)
+        }
       }
     }
     class BuilderImpl(_segment: org.murtsi.capnproto.runtime.SegmentBuilder, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short) extends super.BuilderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount) {
-      def scopes: Option[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Brand#Scope]#Builder] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Brand#Scope]](0)
+      def scopes: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Brand#Scope]#Builder = {
+        _getPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Brand#Scope]](0)
       }
       def scopes_=(value: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Brand#Scope]#Reader): Unit = {
         _setPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Brand#Scope]](0, value)
       }
-      def initScopes(size: Int): org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Brand#Scope]#Builder = {
-        _initPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Brand#Scope]](0, size)
+      object has {
+        def scopes: Boolean = {
+          _pointerFieldIsNull(0)
+        }
+      }
+      object init {
+        def scopes(size: Int): org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Brand#Scope]#Builder = {
+          _initPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Brand#Scope]](0, size)
+        }
       }
     }
 
@@ -2093,10 +2385,16 @@ object schema {
         def scopeId: Long = {
           this._getLongField(0)
         }
-        private[Scope] def bind: Option[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Brand#Binding]#Reader] = {
-          _getPointerFieldOption[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Brand#Binding]](0)
+        private[Scope] def bind: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Brand#Binding]#Reader = {
+          _getPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Brand#Binding]](0)
         }
         private[Scope] def _whichIndex: Short = _getShortField(4)
+        object has {
+          def bind: Boolean = {
+            if (_getShortField(4) != 0) false
+            else _pointerFieldIsNull(0)
+          }
+        }
       }
       class BuilderImpl(_segment: org.murtsi.capnproto.runtime.SegmentBuilder, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short) extends super.BuilderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount) {
         def scopeId: Long = {
@@ -2105,28 +2403,36 @@ object schema {
         def scopeId_=(value: Long): Unit = {
           _setLongField(0, value)
         }
-        private[Scope] def bind: Option[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Brand#Binding]#Builder] = {
-          _getPointerFieldOption[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Brand#Binding]](0)
+        private[Scope] def bind: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Brand#Binding]#Builder = {
+          _getPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Brand#Binding]](0)
         }
         def bind_=(value: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Brand#Binding]#Reader): Unit = {
           _setShortField(4, 0)
           _setPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Brand#Binding]](0, value)
         }
-        def initBind(size: Int): org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Brand#Binding]#Builder = {
-          _setShortField(4, 0)
-          _initPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Brand#Binding]](0, size)
-        }
         def inherit_=(_value: Unit): Unit = {
           _setShortField(4, 1)
         }
         private[Scope] def _whichIndex: Short = _getShortField(4)
+        object has {
+          def bind: Boolean = {
+            if (_getShortField(4) != 0) false
+            else _pointerFieldIsNull(0)
+          }
+        }
+        object init {
+          def bind(size: Int): org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Brand#Binding]#Builder = {
+            _setShortField(4, 0)
+            _initPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Brand#Binding]](0, size)
+          }
+        }
       }
       object Bind {
         def unapply(value: Brand#Scope#Reader): Option[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Brand#Binding]#Reader] = {
-          if (value._whichIndex == 0) value.bind else None
+          if (value._whichIndex == 0) Some(value.bind) else None
         }
         def unapply(value: Brand#Scope#Builder): Option[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Brand#Binding]#Builder] = {
-          if (value._whichIndex == 0) value.bind else None
+          if (value._whichIndex == 0) Some(value.bind) else None
         }
       }
       object Inherit {
@@ -2147,27 +2453,41 @@ object schema {
       override val Reader: (org.murtsi.capnproto.runtime.SegmentReader, Int, Int, Int, Short, Int) => Reader = new ReaderImpl(_, _, _, _, _, _)
 
       class ReaderImpl(_segment: org.murtsi.capnproto.runtime.SegmentReader, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short, _nestingLimit: Int) extends super.ReaderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount, _nestingLimit) {
-        private[Binding] def `type`: Option[org.murtsi.capnproto.compiler.schema.Type#Reader] = {
-          _getPointerFieldOption[org.murtsi.capnproto.compiler.schema.Type](0)
+        private[Binding] def `type`: org.murtsi.capnproto.compiler.schema.Type#Reader = {
+          _getPointerField[org.murtsi.capnproto.compiler.schema.Type](0)
         }
         private[Binding] def _whichIndex: Short = _getShortField(0)
+        object has {
+          def `type`: Boolean = {
+            if (_getShortField(0) != 1) false
+            else _pointerFieldIsNull(0)
+          }
+        }
       }
       class BuilderImpl(_segment: org.murtsi.capnproto.runtime.SegmentBuilder, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short) extends super.BuilderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount) {
         def unbound_=(_value: Unit): Unit = {
           _setShortField(0, 0)
         }
-        private[Binding] def `type`: Option[org.murtsi.capnproto.compiler.schema.Type#Builder] = {
-          _getPointerFieldOption[org.murtsi.capnproto.compiler.schema.Type](0)
+        private[Binding] def `type`: org.murtsi.capnproto.compiler.schema.Type#Builder = {
+          _getPointerField[org.murtsi.capnproto.compiler.schema.Type](0)
         }
         def type_=(value: org.murtsi.capnproto.compiler.schema.Type#Reader): Unit = {
           _setShortField(0, 1)
           _setPointerField[org.murtsi.capnproto.compiler.schema.Type](0, value)
         }
-        def initType(): org.murtsi.capnproto.compiler.schema.Type#Builder = {
-          _setShortField(0, 1)
-          _initPointerField[org.murtsi.capnproto.compiler.schema.Type](0, 0)
-        }
         private[Binding] def _whichIndex: Short = _getShortField(0)
+        object has {
+          def `type`: Boolean = {
+            if (_getShortField(0) != 1) false
+            else _pointerFieldIsNull(0)
+          }
+        }
+        object init {
+          def `type`(): org.murtsi.capnproto.compiler.schema.Type#Builder = {
+            _setShortField(0, 1)
+            _initPointerField[org.murtsi.capnproto.compiler.schema.Type](0, 0)
+          }
+        }
       }
       object Unbound {
         def unapply(value: Brand#Binding#Reader): Boolean = value._whichIndex == 0
@@ -2175,10 +2495,10 @@ object schema {
       }
       object Type {
         def unapply(value: Brand#Binding#Reader): Option[org.murtsi.capnproto.compiler.schema.Type#Reader] = {
-          if (value._whichIndex == 1) value.`type` else None
+          if (value._whichIndex == 1) Some(value.`type`) else None
         }
         def unapply(value: Brand#Binding#Builder): Option[org.murtsi.capnproto.compiler.schema.Type#Builder] = {
-          if (value._whichIndex == 1) value.`type` else None
+          if (value._whichIndex == 1) Some(value.`type`) else None
         }
       }
     }
@@ -2229,25 +2549,47 @@ object schema {
       private[Value] def float64: Double = {
         this._getDoubleField(1)
       }
-      private[Value] def text: Option[org.murtsi.capnproto.runtime.Text#Reader] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.Text](0)
+      private[Value] def text: org.murtsi.capnproto.runtime.Text#Reader = {
+        _getPointerField[org.murtsi.capnproto.runtime.Text](0)
       }
-      private[Value] def data: Option[org.murtsi.capnproto.runtime.Data#Reader] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.Data](0)
+      private[Value] def data: org.murtsi.capnproto.runtime.Data#Reader = {
+        _getPointerField[org.murtsi.capnproto.runtime.Data](0)
       }
-      private[Value] def list: Option[org.murtsi.capnproto.runtime.AnyPointer#Reader] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.AnyPointer](0)
+      private[Value] def list: org.murtsi.capnproto.runtime.AnyPointer#Reader = {
+        _getPointerField[org.murtsi.capnproto.runtime.AnyPointer](0)
       }
       private[Value] def enum: Short = {
         this._getShortField(1)
       }
-      private[Value] def struct: Option[org.murtsi.capnproto.runtime.AnyPointer#Reader] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.AnyPointer](0)
+      private[Value] def struct: org.murtsi.capnproto.runtime.AnyPointer#Reader = {
+        _getPointerField[org.murtsi.capnproto.runtime.AnyPointer](0)
       }
-      private[Value] def anyPointer: Option[org.murtsi.capnproto.runtime.AnyPointer#Reader] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.AnyPointer](0)
+      private[Value] def anyPointer: org.murtsi.capnproto.runtime.AnyPointer#Reader = {
+        _getPointerField[org.murtsi.capnproto.runtime.AnyPointer](0)
       }
       private[Value] def _whichIndex: Short = _getShortField(0)
+      object has {
+        def text: Boolean = {
+          if (_getShortField(0) != 12) false
+          else _pointerFieldIsNull(0)
+        }
+        def data: Boolean = {
+          if (_getShortField(0) != 13) false
+          else _pointerFieldIsNull(0)
+        }
+        def list: Boolean = {
+          if (_getShortField(0) != 14) false
+          else _pointerFieldIsNull(0)
+        }
+        def struct: Boolean = {
+          if (_getShortField(0) != 16) false
+          else _pointerFieldIsNull(0)
+        }
+        def anyPointer: Boolean = {
+          if (_getShortField(0) != 18) false
+          else _pointerFieldIsNull(0)
+        }
+      }
     }
     class BuilderImpl(_segment: org.murtsi.capnproto.runtime.SegmentBuilder, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short) extends super.BuilderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount) {
       def void_=(_value: Unit): Unit = {
@@ -2330,8 +2672,8 @@ object schema {
         _setShortField(0, 11)
         _setDoubleField(1, value)
       }
-      private[Value] def text: Option[org.murtsi.capnproto.runtime.Text#Builder] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.Text](0)
+      private[Value] def text: org.murtsi.capnproto.runtime.Text#Builder = {
+        _getPointerField[org.murtsi.capnproto.runtime.Text](0)
       }
       def text_=(value: org.murtsi.capnproto.runtime.Text#Reader): Unit = {
         _setShortField(0, 12)
@@ -2340,30 +2682,18 @@ object schema {
       def text_=(value: String): Unit = {
         _setPointerField[org.murtsi.capnproto.runtime.Text](0, org.murtsi.capnproto.runtime.Text.Reader(value))
       }
-      def initText(size: Int): org.murtsi.capnproto.runtime.Text#Builder = {
-        _setShortField(0, 12)
-        _initPointerField[org.murtsi.capnproto.runtime.Text](0, size)
-      }
-      private[Value] def data: Option[org.murtsi.capnproto.runtime.Data#Builder] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.Data](0)
+      private[Value] def data: org.murtsi.capnproto.runtime.Data#Builder = {
+        _getPointerField[org.murtsi.capnproto.runtime.Data](0)
       }
       def data_=(value: org.murtsi.capnproto.runtime.Data#Reader): Unit = {
         _setShortField(0, 13)
         _setPointerField[org.murtsi.capnproto.runtime.Data](0, value)
       }
-      def initData(size: Int): org.murtsi.capnproto.runtime.Data#Builder = {
-        _setShortField(0, 13)
-        _initPointerField[org.murtsi.capnproto.runtime.Data](0, size)
-      }
-      private[Value] def list: Option[org.murtsi.capnproto.runtime.AnyPointer#Builder] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.AnyPointer](0)
+      private[Value] def list: org.murtsi.capnproto.runtime.AnyPointer#Builder = {
+        _getPointerField[org.murtsi.capnproto.runtime.AnyPointer](0)
       }
       def list_=(value: org.murtsi.capnproto.runtime.AnyPointer#Reader): Unit = {
         _setShortField(0, 14)
-      }
-      def initList(size: Int = 0): org.murtsi.capnproto.runtime.AnyPointer#Builder = {
-        _setShortField(0, 14)
-        _initPointerField[org.murtsi.capnproto.runtime.AnyPointer](0, size)
       }
       private[Value] def enum: Short = {
         this._getShortField(1)
@@ -2372,30 +2702,66 @@ object schema {
         _setShortField(0, 15)
         _setShortField(1, value)
       }
-      private[Value] def struct: Option[org.murtsi.capnproto.runtime.AnyPointer#Builder] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.AnyPointer](0)
+      private[Value] def struct: org.murtsi.capnproto.runtime.AnyPointer#Builder = {
+        _getPointerField[org.murtsi.capnproto.runtime.AnyPointer](0)
       }
       def struct_=(value: org.murtsi.capnproto.runtime.AnyPointer#Reader): Unit = {
         _setShortField(0, 16)
       }
-      def initStruct(size: Int = 0): org.murtsi.capnproto.runtime.AnyPointer#Builder = {
-        _setShortField(0, 16)
-        _initPointerField[org.murtsi.capnproto.runtime.AnyPointer](0, size)
-      }
       def interface_=(_value: Unit): Unit = {
         _setShortField(0, 17)
       }
-      private[Value] def anyPointer: Option[org.murtsi.capnproto.runtime.AnyPointer#Builder] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.AnyPointer](0)
+      private[Value] def anyPointer: org.murtsi.capnproto.runtime.AnyPointer#Builder = {
+        _getPointerField[org.murtsi.capnproto.runtime.AnyPointer](0)
       }
       def anyPointer_=(value: org.murtsi.capnproto.runtime.AnyPointer#Reader): Unit = {
         _setShortField(0, 18)
       }
-      def initAnyPointer(size: Int = 0): org.murtsi.capnproto.runtime.AnyPointer#Builder = {
-        _setShortField(0, 18)
-        _initPointerField[org.murtsi.capnproto.runtime.AnyPointer](0, size)
-      }
       private[Value] def _whichIndex: Short = _getShortField(0)
+      object has {
+        def text: Boolean = {
+          if (_getShortField(0) != 12) false
+          else _pointerFieldIsNull(0)
+        }
+        def data: Boolean = {
+          if (_getShortField(0) != 13) false
+          else _pointerFieldIsNull(0)
+        }
+        def list: Boolean = {
+          if (_getShortField(0) != 14) false
+          else _pointerFieldIsNull(0)
+        }
+        def struct: Boolean = {
+          if (_getShortField(0) != 16) false
+          else _pointerFieldIsNull(0)
+        }
+        def anyPointer: Boolean = {
+          if (_getShortField(0) != 18) false
+          else _pointerFieldIsNull(0)
+        }
+      }
+      object init {
+        def text(size: Int): org.murtsi.capnproto.runtime.Text#Builder = {
+          _setShortField(0, 12)
+          _initPointerField[org.murtsi.capnproto.runtime.Text](0, size)
+        }
+        def data(size: Int): org.murtsi.capnproto.runtime.Data#Builder = {
+          _setShortField(0, 13)
+          _initPointerField[org.murtsi.capnproto.runtime.Data](0, size)
+        }
+        def list(size: Int = 0): org.murtsi.capnproto.runtime.AnyPointer#Builder = {
+          _setShortField(0, 14)
+          _initPointerField[org.murtsi.capnproto.runtime.AnyPointer](0, size)
+        }
+        def struct(size: Int = 0): org.murtsi.capnproto.runtime.AnyPointer#Builder = {
+          _setShortField(0, 16)
+          _initPointerField[org.murtsi.capnproto.runtime.AnyPointer](0, size)
+        }
+        def anyPointer(size: Int = 0): org.murtsi.capnproto.runtime.AnyPointer#Builder = {
+          _setShortField(0, 18)
+          _initPointerField[org.murtsi.capnproto.runtime.AnyPointer](0, size)
+        }
+      }
     }
     object Void {
       def unapply(value: Value#Reader): Boolean = value._whichIndex == 0
@@ -2491,26 +2857,26 @@ object schema {
     }
     object Text {
       def unapply(value: Value#Reader): Option[org.murtsi.capnproto.runtime.Text#Reader] = {
-        if (value._whichIndex == 12) value.text else None
+        if (value._whichIndex == 12) Some(value.text) else None
       }
       def unapply(value: Value#Builder): Option[org.murtsi.capnproto.runtime.Text#Builder] = {
-        if (value._whichIndex == 12) value.text else None
+        if (value._whichIndex == 12) Some(value.text) else None
       }
     }
     object Data {
       def unapply(value: Value#Reader): Option[org.murtsi.capnproto.runtime.Data#Reader] = {
-        if (value._whichIndex == 13) value.data else None
+        if (value._whichIndex == 13) Some(value.data) else None
       }
       def unapply(value: Value#Builder): Option[org.murtsi.capnproto.runtime.Data#Builder] = {
-        if (value._whichIndex == 13) value.data else None
+        if (value._whichIndex == 13) Some(value.data) else None
       }
     }
     object _List {
       def unapply(value: Value#Reader): Option[org.murtsi.capnproto.runtime.AnyPointer#Reader] = {
-        if (value._whichIndex == 14) value.list else None
+        if (value._whichIndex == 14) Some(value.list) else None
       }
       def unapply(value: Value#Builder): Option[org.murtsi.capnproto.runtime.AnyPointer#Builder] = {
-        if (value._whichIndex == 14) value.list else None
+        if (value._whichIndex == 14) Some(value.list) else None
       }
     }
     object Enum {
@@ -2523,10 +2889,10 @@ object schema {
     }
     object Struct {
       def unapply(value: Value#Reader): Option[org.murtsi.capnproto.runtime.AnyPointer#Reader] = {
-        if (value._whichIndex == 16) value.struct else None
+        if (value._whichIndex == 16) Some(value.struct) else None
       }
       def unapply(value: Value#Builder): Option[org.murtsi.capnproto.runtime.AnyPointer#Builder] = {
-        if (value._whichIndex == 16) value.struct else None
+        if (value._whichIndex == 16) Some(value.struct) else None
       }
     }
     object Interface {
@@ -2535,10 +2901,10 @@ object schema {
     }
     object AnyPointer {
       def unapply(value: Value#Reader): Option[org.murtsi.capnproto.runtime.AnyPointer#Reader] = {
-        if (value._whichIndex == 18) value.anyPointer else None
+        if (value._whichIndex == 18) Some(value.anyPointer) else None
       }
       def unapply(value: Value#Builder): Option[org.murtsi.capnproto.runtime.AnyPointer#Builder] = {
-        if (value._whichIndex == 18) value.anyPointer else None
+        if (value._whichIndex == 18) Some(value.anyPointer) else None
       }
     }
   }
@@ -2558,11 +2924,19 @@ object schema {
       def id: Long = {
         this._getLongField(0)
       }
-      def value: Option[org.murtsi.capnproto.compiler.schema.Value#Reader] = {
-        _getPointerFieldOption[org.murtsi.capnproto.compiler.schema.Value](0)
+      def value: org.murtsi.capnproto.compiler.schema.Value#Reader = {
+        _getPointerField[org.murtsi.capnproto.compiler.schema.Value](0)
       }
-      def brand: Option[org.murtsi.capnproto.compiler.schema.Brand#Reader] = {
-        _getPointerFieldOption[org.murtsi.capnproto.compiler.schema.Brand](1)
+      def brand: org.murtsi.capnproto.compiler.schema.Brand#Reader = {
+        _getPointerField[org.murtsi.capnproto.compiler.schema.Brand](1)
+      }
+      object has {
+        def value: Boolean = {
+          _pointerFieldIsNull(0)
+        }
+        def brand: Boolean = {
+          _pointerFieldIsNull(1)
+        }
       }
     }
     class BuilderImpl(_segment: org.murtsi.capnproto.runtime.SegmentBuilder, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short) extends super.BuilderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount) {
@@ -2572,30 +2946,40 @@ object schema {
       def id_=(value: Long): Unit = {
         _setLongField(0, value)
       }
-      def value: Option[org.murtsi.capnproto.compiler.schema.Value#Builder] = {
-        _getPointerFieldOption[org.murtsi.capnproto.compiler.schema.Value](0)
+      def value: org.murtsi.capnproto.compiler.schema.Value#Builder = {
+        _getPointerField[org.murtsi.capnproto.compiler.schema.Value](0)
       }
       def value_=(value: org.murtsi.capnproto.compiler.schema.Value#Reader): Unit = {
         _setPointerField[org.murtsi.capnproto.compiler.schema.Value](0, value)
       }
-      def initValue(): org.murtsi.capnproto.compiler.schema.Value#Builder = {
-        _initPointerField[org.murtsi.capnproto.compiler.schema.Value](0, 0)
-      }
-      def brand: Option[org.murtsi.capnproto.compiler.schema.Brand#Builder] = {
-        _getPointerFieldOption[org.murtsi.capnproto.compiler.schema.Brand](1)
+      def brand: org.murtsi.capnproto.compiler.schema.Brand#Builder = {
+        _getPointerField[org.murtsi.capnproto.compiler.schema.Brand](1)
       }
       def brand_=(value: org.murtsi.capnproto.compiler.schema.Brand#Reader): Unit = {
         _setPointerField[org.murtsi.capnproto.compiler.schema.Brand](1, value)
       }
-      def initBrand(): org.murtsi.capnproto.compiler.schema.Brand#Builder = {
-        _initPointerField[org.murtsi.capnproto.compiler.schema.Brand](1, 0)
+      object has {
+        def value: Boolean = {
+          _pointerFieldIsNull(0)
+        }
+        def brand: Boolean = {
+          _pointerFieldIsNull(1)
+        }
+      }
+      object init {
+        def value(): org.murtsi.capnproto.compiler.schema.Value#Builder = {
+          _initPointerField[org.murtsi.capnproto.compiler.schema.Value](0, 0)
+        }
+        def brand(): org.murtsi.capnproto.compiler.schema.Brand#Builder = {
+          _initPointerField[org.murtsi.capnproto.compiler.schema.Brand](1, 0)
+        }
       }
     }
   }
 
   sealed class ElementSize(index: Short) extends org.murtsi.capnproto.runtime.Enum(index)
   object ElementSize extends org.murtsi.capnproto.runtime.EnumModule[ElementSize] {
-    override val enumValues: Seq[ElementSize] = Array(
+    override val enumValues: Seq[ElementSize] = Vector(
       ElementSize.Empty,
       ElementSize.Bit,
       ElementSize.Byte,
@@ -2605,8 +2989,7 @@ object schema {
       ElementSize.Pointer,
       ElementSize.InlineComposite
     )
-    val _wrappedValues: Seq[Option[ElementSize]] = enumValues.map(Some(_))
-    def apply(value: Short): Option[ElementSize] = if (value >= 0 && value < _wrappedValues.length) _wrappedValues(value) else None
+    def apply(value: Short): Option[ElementSize] = enumValues.lift(value)
     object Empty extends ElementSize(0)
     object Bit extends ElementSize(1)
     object Byte extends ElementSize(2)
@@ -2629,31 +3012,49 @@ object schema {
     override val Reader: (org.murtsi.capnproto.runtime.SegmentReader, Int, Int, Int, Short, Int) => Reader = new ReaderImpl(_, _, _, _, _, _)
 
     class ReaderImpl(_segment: org.murtsi.capnproto.runtime.SegmentReader, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short, _nestingLimit: Int) extends super.ReaderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount, _nestingLimit) {
-      def nodes: Option[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node]#Reader] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node]](0)
+      def nodes: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node]#Reader = {
+        _getPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node]](0)
       }
-      def requestedFiles: Option[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.CodeGeneratorRequest#RequestedFile]#Reader] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.CodeGeneratorRequest#RequestedFile]](1)
+      def requestedFiles: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.CodeGeneratorRequest#RequestedFile]#Reader = {
+        _getPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.CodeGeneratorRequest#RequestedFile]](1)
+      }
+      object has {
+        def nodes: Boolean = {
+          _pointerFieldIsNull(0)
+        }
+        def requestedFiles: Boolean = {
+          _pointerFieldIsNull(1)
+        }
       }
     }
     class BuilderImpl(_segment: org.murtsi.capnproto.runtime.SegmentBuilder, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short) extends super.BuilderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount) {
-      def nodes: Option[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node]#Builder] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node]](0)
+      def nodes: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node]#Builder = {
+        _getPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node]](0)
       }
       def nodes_=(value: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node]#Reader): Unit = {
         _setPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node]](0, value)
       }
-      def initNodes(size: Int): org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node]#Builder = {
-        _initPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node]](0, size)
-      }
-      def requestedFiles: Option[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.CodeGeneratorRequest#RequestedFile]#Builder] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.CodeGeneratorRequest#RequestedFile]](1)
+      def requestedFiles: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.CodeGeneratorRequest#RequestedFile]#Builder = {
+        _getPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.CodeGeneratorRequest#RequestedFile]](1)
       }
       def requestedFiles_=(value: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.CodeGeneratorRequest#RequestedFile]#Reader): Unit = {
         _setPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.CodeGeneratorRequest#RequestedFile]](1, value)
       }
-      def initRequestedFiles(size: Int): org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.CodeGeneratorRequest#RequestedFile]#Builder = {
-        _initPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.CodeGeneratorRequest#RequestedFile]](1, size)
+      object has {
+        def nodes: Boolean = {
+          _pointerFieldIsNull(0)
+        }
+        def requestedFiles: Boolean = {
+          _pointerFieldIsNull(1)
+        }
+      }
+      object init {
+        def nodes(size: Int): org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node]#Builder = {
+          _initPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.Node]](0, size)
+        }
+        def requestedFiles(size: Int): org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.CodeGeneratorRequest#RequestedFile]#Builder = {
+          _initPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.CodeGeneratorRequest#RequestedFile]](1, size)
+        }
       }
     }
 
@@ -2672,11 +3073,19 @@ object schema {
         def id: Long = {
           this._getLongField(0)
         }
-        def filename: Option[org.murtsi.capnproto.runtime.Text#Reader] = {
-          _getPointerFieldOption[org.murtsi.capnproto.runtime.Text](0)
+        def filename: org.murtsi.capnproto.runtime.Text#Reader = {
+          _getPointerField[org.murtsi.capnproto.runtime.Text](0)
         }
-        def imports: Option[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.CodeGeneratorRequest#RequestedFile#Import]#Reader] = {
-          _getPointerFieldOption[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.CodeGeneratorRequest#RequestedFile#Import]](1)
+        def imports: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.CodeGeneratorRequest#RequestedFile#Import]#Reader = {
+          _getPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.CodeGeneratorRequest#RequestedFile#Import]](1)
+        }
+        object has {
+          def filename: Boolean = {
+            _pointerFieldIsNull(0)
+          }
+          def imports: Boolean = {
+            _pointerFieldIsNull(1)
+          }
         }
       }
       class BuilderImpl(_segment: org.murtsi.capnproto.runtime.SegmentBuilder, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short) extends super.BuilderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount) {
@@ -2686,8 +3095,8 @@ object schema {
         def id_=(value: Long): Unit = {
           _setLongField(0, value)
         }
-        def filename: Option[org.murtsi.capnproto.runtime.Text#Builder] = {
-          _getPointerFieldOption[org.murtsi.capnproto.runtime.Text](0)
+        def filename: org.murtsi.capnproto.runtime.Text#Builder = {
+          _getPointerField[org.murtsi.capnproto.runtime.Text](0)
         }
         def filename_=(value: org.murtsi.capnproto.runtime.Text#Reader): Unit = {
           _setPointerField[org.murtsi.capnproto.runtime.Text](0, value)
@@ -2695,17 +3104,27 @@ object schema {
         def filename_=(value: String): Unit = {
           _setPointerField[org.murtsi.capnproto.runtime.Text](0, org.murtsi.capnproto.runtime.Text.Reader(value))
         }
-        def initFilename(size: Int): org.murtsi.capnproto.runtime.Text#Builder = {
-          _initPointerField[org.murtsi.capnproto.runtime.Text](0, size)
-        }
-        def imports: Option[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.CodeGeneratorRequest#RequestedFile#Import]#Builder] = {
-          _getPointerFieldOption[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.CodeGeneratorRequest#RequestedFile#Import]](1)
+        def imports: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.CodeGeneratorRequest#RequestedFile#Import]#Builder = {
+          _getPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.CodeGeneratorRequest#RequestedFile#Import]](1)
         }
         def imports_=(value: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.CodeGeneratorRequest#RequestedFile#Import]#Reader): Unit = {
           _setPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.CodeGeneratorRequest#RequestedFile#Import]](1, value)
         }
-        def initImports(size: Int): org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.CodeGeneratorRequest#RequestedFile#Import]#Builder = {
-          _initPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.CodeGeneratorRequest#RequestedFile#Import]](1, size)
+        object has {
+          def filename: Boolean = {
+            _pointerFieldIsNull(0)
+          }
+          def imports: Boolean = {
+            _pointerFieldIsNull(1)
+          }
+        }
+        object init {
+          def filename(size: Int): org.murtsi.capnproto.runtime.Text#Builder = {
+            _initPointerField[org.murtsi.capnproto.runtime.Text](0, size)
+          }
+          def imports(size: Int): org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.CodeGeneratorRequest#RequestedFile#Import]#Builder = {
+            _initPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.schema.CodeGeneratorRequest#RequestedFile#Import]](1, size)
+          }
         }
       }
 
@@ -2724,8 +3143,13 @@ object schema {
           def id: Long = {
             this._getLongField(0)
           }
-          def name: Option[org.murtsi.capnproto.runtime.Text#Reader] = {
-            _getPointerFieldOption[org.murtsi.capnproto.runtime.Text](0)
+          def name: org.murtsi.capnproto.runtime.Text#Reader = {
+            _getPointerField[org.murtsi.capnproto.runtime.Text](0)
+          }
+          object has {
+            def name: Boolean = {
+              _pointerFieldIsNull(0)
+            }
           }
         }
         class BuilderImpl(_segment: org.murtsi.capnproto.runtime.SegmentBuilder, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short) extends super.BuilderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount) {
@@ -2735,8 +3159,8 @@ object schema {
           def id_=(value: Long): Unit = {
             _setLongField(0, value)
           }
-          def name: Option[org.murtsi.capnproto.runtime.Text#Builder] = {
-            _getPointerFieldOption[org.murtsi.capnproto.runtime.Text](0)
+          def name: org.murtsi.capnproto.runtime.Text#Builder = {
+            _getPointerField[org.murtsi.capnproto.runtime.Text](0)
           }
           def name_=(value: org.murtsi.capnproto.runtime.Text#Reader): Unit = {
             _setPointerField[org.murtsi.capnproto.runtime.Text](0, value)
@@ -2744,8 +3168,15 @@ object schema {
           def name_=(value: String): Unit = {
             _setPointerField[org.murtsi.capnproto.runtime.Text](0, org.murtsi.capnproto.runtime.Text.Reader(value))
           }
-          def initName(size: Int): org.murtsi.capnproto.runtime.Text#Builder = {
-            _initPointerField[org.murtsi.capnproto.runtime.Text](0, size)
+          object has {
+            def name: Boolean = {
+              _pointerFieldIsNull(0)
+            }
+          }
+          object init {
+            def name(size: Int): org.murtsi.capnproto.runtime.Text#Builder = {
+              _initPointerField[org.murtsi.capnproto.runtime.Text](0, size)
+            }
           }
         }
       }

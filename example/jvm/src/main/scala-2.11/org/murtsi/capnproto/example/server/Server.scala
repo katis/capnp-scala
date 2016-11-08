@@ -81,9 +81,9 @@ class TodoService(system: ActorSystem) {
             val clientId = nextClientId()
             subscribers(clientId) = actor
             sendClientMessage(c => {
-              val initial = c.initInitial()
+              val initial = c.init.initial()
               initial.clientId = clientId
-              for (((id, data), todo) <- todos.zipSameSize(initial.initTodos)) {
+              for (((id, data), todo) <- todos.zipSameSize(initial.init.todos _)) {
                 todo.id = id
                 todo.contents = data.contents
                 todo.created = data.created
@@ -100,10 +100,10 @@ class TodoService(system: ActorSystem) {
           case Add(todo) =>
             val ts = now
             val id = nextId()
-            val data = TodoData(todo.contents.map(_.toString).getOrElse(""), ts)
+            val data = TodoData(todo.contents.toString, ts)
             todos(id) = data
             sendClientMessage(c => {
-              val added = c.initAdded()
+              val added = c.init.added()
               added.id = id
               added.contents = data.contents
               added.created = ts
@@ -111,18 +111,18 @@ class TodoService(system: ActorSystem) {
           case Remove(removal) =>
             todos.remove(removal.id) match {
               case Some(removed) =>
-                sendClientMessage(_.initRemoved().id = removal.id, subscribers.values)
+                sendClientMessage(_.init.removed().id = removal.id, subscribers.values)
               case None =>
-                sendClientMessage(_.initRemovalFailed().id = removal.id, subscribers.get(msg.clientId))
+                sendClientMessage(_.init.removalFailed().id = removal.id, subscribers.get(msg.clientId))
             }
           case Modify(modified) => todos.get(modified.id) match {
             case Some(existing) =>
               todos(modified.id) = existing.copy(
-                contents = modified.contents.map(_.toString).getOrElse("")
+                contents = modified.contents.toString
               )
-              sendClientMessage(_.initModified().id = modified.id, subscribers.values)
+              sendClientMessage(_.init.modified().id = modified.id, subscribers.values)
             case None =>
-              sendClientMessage(_.initModifyFailed().id = modified.id, subscribers.get(msg.clientId))
+              sendClientMessage(_.init.modifyFailed().id = modified.id, subscribers.get(msg.clientId))
           }
         }
     }

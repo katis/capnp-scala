@@ -159,12 +159,6 @@ class StructBuilder(private val _segment: SegmentBuilder,
     implicitly[FromPointerBlobDefault[P]].fromPointerBuilderBlobDefault(_segment, _pointers + index, defaultBuffer, defaultOffset, defaultSize)
   }
 
-  protected def _getPointerFieldOption[P <: PointerFamily : FromPointer](index: Int): Option[P#Builder] = {
-    val ptr = this._pointers + index
-    if (_pointerFieldIsNull(ptr)) None
-    else Some(implicitly[FromPointer[P]].fromPointerBuilder(this._segment, this._pointers + index))
-  }
-
   protected def _initPointerField[T <: PointerFamily : FromPointer](index: Int, elementCount: Int): T#Builder = {
     implicitly[FromPointer[T]].initFromPointerBuilder(this._segment, this._pointers + index, elementCount)
   }

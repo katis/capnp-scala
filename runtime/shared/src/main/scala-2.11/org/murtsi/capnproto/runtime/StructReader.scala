@@ -109,16 +109,7 @@ class StructReader(private[runtime] val _segment: SegmentReader = SegmentReader.
   }
 
   protected def _pointerFieldIsNull(ptrIndex: Int): Boolean = {
-    this._segment.buffer.getLong((this._pointers + ptrIndex) * Constants.BYTES_PER_WORD) ==
-      0
-  }
-
-  protected def _getPointerFieldOption[T <: PointerFamily : FromPointer](ptrIndex: Int): Option[T#Reader] = {
-    if (ptrIndex < this._pointerCount) {
-      Some(implicitly[FromPointer[T]].fromPointerReader(this._segment, this._pointers + ptrIndex, this._nestingLimit))
-    } else {
-      None
-    }
+    this._segment.buffer.getLong((this._pointers + ptrIndex) * Constants.BYTES_PER_WORD) == 0
   }
 
   protected def _getPointerField[T <: PointerFamily : FromPointer](ptrIndex: Int): T#Reader = {

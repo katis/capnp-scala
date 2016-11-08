@@ -84,150 +84,204 @@ object todo {
       private[ClientMessage] def initial: ClientMessage#Initial#Reader = {
         ClientMessage.Initial.Reader(_segment, _dataOffset, _pointers, _dataSize, _pointerCount, _nestingLimit)
       }
-      private[ClientMessage] def added: Option[org.murtsi.capnproto.example.todo.Todo#Reader] = {
-        _getPointerFieldOption[org.murtsi.capnproto.example.todo.Todo](0)
+      private[ClientMessage] def added: org.murtsi.capnproto.example.todo.Todo#Reader = {
+        _getPointerField[org.murtsi.capnproto.example.todo.Todo](0)
       }
-      private[ClientMessage] def removed: Option[org.murtsi.capnproto.example.todo.Todo#Reader] = {
-        _getPointerFieldOption[org.murtsi.capnproto.example.todo.Todo](0)
+      private[ClientMessage] def removed: org.murtsi.capnproto.example.todo.Todo#Reader = {
+        _getPointerField[org.murtsi.capnproto.example.todo.Todo](0)
       }
-      private[ClientMessage] def modified: Option[org.murtsi.capnproto.example.todo.Todo#Reader] = {
-        _getPointerFieldOption[org.murtsi.capnproto.example.todo.Todo](0)
+      private[ClientMessage] def modified: org.murtsi.capnproto.example.todo.Todo#Reader = {
+        _getPointerField[org.murtsi.capnproto.example.todo.Todo](0)
       }
-      private[ClientMessage] def addFailed: Option[org.murtsi.capnproto.example.todo.Todo#Reader] = {
-        _getPointerFieldOption[org.murtsi.capnproto.example.todo.Todo](0)
+      private[ClientMessage] def addFailed: org.murtsi.capnproto.example.todo.Todo#Reader = {
+        _getPointerField[org.murtsi.capnproto.example.todo.Todo](0)
       }
-      private[ClientMessage] def removalFailed: Option[org.murtsi.capnproto.example.todo.Todo#Reader] = {
-        _getPointerFieldOption[org.murtsi.capnproto.example.todo.Todo](0)
+      private[ClientMessage] def removalFailed: org.murtsi.capnproto.example.todo.Todo#Reader = {
+        _getPointerField[org.murtsi.capnproto.example.todo.Todo](0)
       }
-      private[ClientMessage] def modifyFailed: Option[org.murtsi.capnproto.example.todo.Todo#Reader] = {
-        _getPointerFieldOption[org.murtsi.capnproto.example.todo.Todo](0)
+      private[ClientMessage] def modifyFailed: org.murtsi.capnproto.example.todo.Todo#Reader = {
+        _getPointerField[org.murtsi.capnproto.example.todo.Todo](0)
       }
       private[ClientMessage] def _whichIndex: Short = _getShortField(4)
+      object has {
+        def added: Boolean = {
+          if (_getShortField(4) != 1) false
+          else _pointerFieldIsNull(0)
+        }
+        def removed: Boolean = {
+          if (_getShortField(4) != 2) false
+          else _pointerFieldIsNull(0)
+        }
+        def modified: Boolean = {
+          if (_getShortField(4) != 3) false
+          else _pointerFieldIsNull(0)
+        }
+        def addFailed: Boolean = {
+          if (_getShortField(4) != 4) false
+          else _pointerFieldIsNull(0)
+        }
+        def removalFailed: Boolean = {
+          if (_getShortField(4) != 5) false
+          else _pointerFieldIsNull(0)
+        }
+        def modifyFailed: Boolean = {
+          if (_getShortField(4) != 6) false
+          else _pointerFieldIsNull(0)
+        }
+      }
     }
     class BuilderImpl(_segment: org.murtsi.capnproto.runtime.SegmentBuilder, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short) extends super.BuilderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount) {
       private[ClientMessage] def initial: ClientMessage#Initial#Builder = {
         ClientMessage.Initial.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
       }
-      def initInitial(): org.murtsi.capnproto.example.todo.ClientMessage.Initial#Builder = {
-        _setShortField(4, 0)
-        _setLongField(0, 0)
-        _clearPointerField(0)
-        org.murtsi.capnproto.example.todo.ClientMessage.Initial.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
-      }
-      private[ClientMessage] def added: Option[org.murtsi.capnproto.example.todo.Todo#Builder] = {
-        _getPointerFieldOption[org.murtsi.capnproto.example.todo.Todo](0)
+      private[ClientMessage] def added: org.murtsi.capnproto.example.todo.Todo#Builder = {
+        _getPointerField[org.murtsi.capnproto.example.todo.Todo](0)
       }
       def added_=(value: org.murtsi.capnproto.example.todo.Todo#Reader): Unit = {
         _setShortField(4, 1)
         _setPointerField[org.murtsi.capnproto.example.todo.Todo](0, value)
       }
-      def initAdded(): org.murtsi.capnproto.example.todo.Todo#Builder = {
-        _setShortField(4, 1)
-        _initPointerField[org.murtsi.capnproto.example.todo.Todo](0, 0)
-      }
-      private[ClientMessage] def removed: Option[org.murtsi.capnproto.example.todo.Todo#Builder] = {
-        _getPointerFieldOption[org.murtsi.capnproto.example.todo.Todo](0)
+      private[ClientMessage] def removed: org.murtsi.capnproto.example.todo.Todo#Builder = {
+        _getPointerField[org.murtsi.capnproto.example.todo.Todo](0)
       }
       def removed_=(value: org.murtsi.capnproto.example.todo.Todo#Reader): Unit = {
         _setShortField(4, 2)
         _setPointerField[org.murtsi.capnproto.example.todo.Todo](0, value)
       }
-      def initRemoved(): org.murtsi.capnproto.example.todo.Todo#Builder = {
-        _setShortField(4, 2)
-        _initPointerField[org.murtsi.capnproto.example.todo.Todo](0, 0)
-      }
-      private[ClientMessage] def modified: Option[org.murtsi.capnproto.example.todo.Todo#Builder] = {
-        _getPointerFieldOption[org.murtsi.capnproto.example.todo.Todo](0)
+      private[ClientMessage] def modified: org.murtsi.capnproto.example.todo.Todo#Builder = {
+        _getPointerField[org.murtsi.capnproto.example.todo.Todo](0)
       }
       def modified_=(value: org.murtsi.capnproto.example.todo.Todo#Reader): Unit = {
         _setShortField(4, 3)
         _setPointerField[org.murtsi.capnproto.example.todo.Todo](0, value)
       }
-      def initModified(): org.murtsi.capnproto.example.todo.Todo#Builder = {
-        _setShortField(4, 3)
-        _initPointerField[org.murtsi.capnproto.example.todo.Todo](0, 0)
-      }
-      private[ClientMessage] def addFailed: Option[org.murtsi.capnproto.example.todo.Todo#Builder] = {
-        _getPointerFieldOption[org.murtsi.capnproto.example.todo.Todo](0)
+      private[ClientMessage] def addFailed: org.murtsi.capnproto.example.todo.Todo#Builder = {
+        _getPointerField[org.murtsi.capnproto.example.todo.Todo](0)
       }
       def addFailed_=(value: org.murtsi.capnproto.example.todo.Todo#Reader): Unit = {
         _setShortField(4, 4)
         _setPointerField[org.murtsi.capnproto.example.todo.Todo](0, value)
       }
-      def initAddFailed(): org.murtsi.capnproto.example.todo.Todo#Builder = {
-        _setShortField(4, 4)
-        _initPointerField[org.murtsi.capnproto.example.todo.Todo](0, 0)
-      }
-      private[ClientMessage] def removalFailed: Option[org.murtsi.capnproto.example.todo.Todo#Builder] = {
-        _getPointerFieldOption[org.murtsi.capnproto.example.todo.Todo](0)
+      private[ClientMessage] def removalFailed: org.murtsi.capnproto.example.todo.Todo#Builder = {
+        _getPointerField[org.murtsi.capnproto.example.todo.Todo](0)
       }
       def removalFailed_=(value: org.murtsi.capnproto.example.todo.Todo#Reader): Unit = {
         _setShortField(4, 5)
         _setPointerField[org.murtsi.capnproto.example.todo.Todo](0, value)
       }
-      def initRemovalFailed(): org.murtsi.capnproto.example.todo.Todo#Builder = {
-        _setShortField(4, 5)
-        _initPointerField[org.murtsi.capnproto.example.todo.Todo](0, 0)
-      }
-      private[ClientMessage] def modifyFailed: Option[org.murtsi.capnproto.example.todo.Todo#Builder] = {
-        _getPointerFieldOption[org.murtsi.capnproto.example.todo.Todo](0)
+      private[ClientMessage] def modifyFailed: org.murtsi.capnproto.example.todo.Todo#Builder = {
+        _getPointerField[org.murtsi.capnproto.example.todo.Todo](0)
       }
       def modifyFailed_=(value: org.murtsi.capnproto.example.todo.Todo#Reader): Unit = {
         _setShortField(4, 6)
         _setPointerField[org.murtsi.capnproto.example.todo.Todo](0, value)
       }
-      def initModifyFailed(): org.murtsi.capnproto.example.todo.Todo#Builder = {
-        _setShortField(4, 6)
-        _initPointerField[org.murtsi.capnproto.example.todo.Todo](0, 0)
-      }
       private[ClientMessage] def _whichIndex: Short = _getShortField(4)
+      object has {
+        def added: Boolean = {
+          if (_getShortField(4) != 1) false
+          else _pointerFieldIsNull(0)
+        }
+        def removed: Boolean = {
+          if (_getShortField(4) != 2) false
+          else _pointerFieldIsNull(0)
+        }
+        def modified: Boolean = {
+          if (_getShortField(4) != 3) false
+          else _pointerFieldIsNull(0)
+        }
+        def addFailed: Boolean = {
+          if (_getShortField(4) != 4) false
+          else _pointerFieldIsNull(0)
+        }
+        def removalFailed: Boolean = {
+          if (_getShortField(4) != 5) false
+          else _pointerFieldIsNull(0)
+        }
+        def modifyFailed: Boolean = {
+          if (_getShortField(4) != 6) false
+          else _pointerFieldIsNull(0)
+        }
+      }
+      object init {
+        def initial(): org.murtsi.capnproto.example.todo.ClientMessage.Initial#Builder = {
+          _setShortField(4, 0)
+          _setLongField(0, 0)
+          _clearPointerField(0)
+          org.murtsi.capnproto.example.todo.ClientMessage.Initial.Builder(_segment, _dataOffset, _pointers, _dataSize, _pointerCount)
+        }
+        def added(): org.murtsi.capnproto.example.todo.Todo#Builder = {
+          _setShortField(4, 1)
+          _initPointerField[org.murtsi.capnproto.example.todo.Todo](0, 0)
+        }
+        def removed(): org.murtsi.capnproto.example.todo.Todo#Builder = {
+          _setShortField(4, 2)
+          _initPointerField[org.murtsi.capnproto.example.todo.Todo](0, 0)
+        }
+        def modified(): org.murtsi.capnproto.example.todo.Todo#Builder = {
+          _setShortField(4, 3)
+          _initPointerField[org.murtsi.capnproto.example.todo.Todo](0, 0)
+        }
+        def addFailed(): org.murtsi.capnproto.example.todo.Todo#Builder = {
+          _setShortField(4, 4)
+          _initPointerField[org.murtsi.capnproto.example.todo.Todo](0, 0)
+        }
+        def removalFailed(): org.murtsi.capnproto.example.todo.Todo#Builder = {
+          _setShortField(4, 5)
+          _initPointerField[org.murtsi.capnproto.example.todo.Todo](0, 0)
+        }
+        def modifyFailed(): org.murtsi.capnproto.example.todo.Todo#Builder = {
+          _setShortField(4, 6)
+          _initPointerField[org.murtsi.capnproto.example.todo.Todo](0, 0)
+        }
+      }
     }
     object Added {
       def unapply(value: ClientMessage#Reader): Option[org.murtsi.capnproto.example.todo.Todo#Reader] = {
-        if (value._whichIndex == 1) value.added else None
+        if (value._whichIndex == 1) Some(value.added) else None
       }
       def unapply(value: ClientMessage#Builder): Option[org.murtsi.capnproto.example.todo.Todo#Builder] = {
-        if (value._whichIndex == 1) value.added else None
+        if (value._whichIndex == 1) Some(value.added) else None
       }
     }
     object Removed {
       def unapply(value: ClientMessage#Reader): Option[org.murtsi.capnproto.example.todo.Todo#Reader] = {
-        if (value._whichIndex == 2) value.removed else None
+        if (value._whichIndex == 2) Some(value.removed) else None
       }
       def unapply(value: ClientMessage#Builder): Option[org.murtsi.capnproto.example.todo.Todo#Builder] = {
-        if (value._whichIndex == 2) value.removed else None
+        if (value._whichIndex == 2) Some(value.removed) else None
       }
     }
     object Modified {
       def unapply(value: ClientMessage#Reader): Option[org.murtsi.capnproto.example.todo.Todo#Reader] = {
-        if (value._whichIndex == 3) value.modified else None
+        if (value._whichIndex == 3) Some(value.modified) else None
       }
       def unapply(value: ClientMessage#Builder): Option[org.murtsi.capnproto.example.todo.Todo#Builder] = {
-        if (value._whichIndex == 3) value.modified else None
+        if (value._whichIndex == 3) Some(value.modified) else None
       }
     }
     object AddFailed {
       def unapply(value: ClientMessage#Reader): Option[org.murtsi.capnproto.example.todo.Todo#Reader] = {
-        if (value._whichIndex == 4) value.addFailed else None
+        if (value._whichIndex == 4) Some(value.addFailed) else None
       }
       def unapply(value: ClientMessage#Builder): Option[org.murtsi.capnproto.example.todo.Todo#Builder] = {
-        if (value._whichIndex == 4) value.addFailed else None
+        if (value._whichIndex == 4) Some(value.addFailed) else None
       }
     }
     object RemovalFailed {
       def unapply(value: ClientMessage#Reader): Option[org.murtsi.capnproto.example.todo.Todo#Reader] = {
-        if (value._whichIndex == 5) value.removalFailed else None
+        if (value._whichIndex == 5) Some(value.removalFailed) else None
       }
       def unapply(value: ClientMessage#Builder): Option[org.murtsi.capnproto.example.todo.Todo#Builder] = {
-        if (value._whichIndex == 5) value.removalFailed else None
+        if (value._whichIndex == 5) Some(value.removalFailed) else None
       }
     }
     object ModifyFailed {
       def unapply(value: ClientMessage#Reader): Option[org.murtsi.capnproto.example.todo.Todo#Reader] = {
-        if (value._whichIndex == 6) value.modifyFailed else None
+        if (value._whichIndex == 6) Some(value.modifyFailed) else None
       }
       def unapply(value: ClientMessage#Builder): Option[org.murtsi.capnproto.example.todo.Todo#Builder] = {
-        if (value._whichIndex == 6) value.modifyFailed else None
+        if (value._whichIndex == 6) Some(value.modifyFailed) else None
       }
     }
 
@@ -252,8 +306,13 @@ object todo {
         def clientId: Long = {
           this._getLongField(0)
         }
-        def todos: Option[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.example.todo.Todo]#Reader] = {
-          _getPointerFieldOption[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.example.todo.Todo]](0)
+        def todos: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.example.todo.Todo]#Reader = {
+          _getPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.example.todo.Todo]](0)
+        }
+        object has {
+          def todos: Boolean = {
+            _pointerFieldIsNull(0)
+          }
         }
       }
       class BuilderImpl(_segment: org.murtsi.capnproto.runtime.SegmentBuilder, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short) extends super.BuilderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount) {
@@ -263,14 +322,21 @@ object todo {
         def clientId_=(value: Long): Unit = {
           _setLongField(0, value)
         }
-        def todos: Option[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.example.todo.Todo]#Builder] = {
-          _getPointerFieldOption[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.example.todo.Todo]](0)
+        def todos: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.example.todo.Todo]#Builder = {
+          _getPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.example.todo.Todo]](0)
         }
         def todos_=(value: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.example.todo.Todo]#Reader): Unit = {
           _setPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.example.todo.Todo]](0, value)
         }
-        def initTodos(size: Int): org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.example.todo.Todo]#Builder = {
-          _initPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.example.todo.Todo]](0, size)
+        object has {
+          def todos: Boolean = {
+            _pointerFieldIsNull(0)
+          }
+        }
+        object init {
+          def todos(size: Int): org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.example.todo.Todo]#Builder = {
+            _initPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.example.todo.Todo]](0, size)
+          }
         }
       }
     }
@@ -291,16 +357,30 @@ object todo {
       def clientId: Long = {
         this._getLongField(0)
       }
-      private[ServerMessage] def add: Option[org.murtsi.capnproto.example.todo.Todo#Reader] = {
-        _getPointerFieldOption[org.murtsi.capnproto.example.todo.Todo](0)
+      private[ServerMessage] def add: org.murtsi.capnproto.example.todo.Todo#Reader = {
+        _getPointerField[org.murtsi.capnproto.example.todo.Todo](0)
       }
-      private[ServerMessage] def remove: Option[org.murtsi.capnproto.example.todo.Todo#Reader] = {
-        _getPointerFieldOption[org.murtsi.capnproto.example.todo.Todo](0)
+      private[ServerMessage] def remove: org.murtsi.capnproto.example.todo.Todo#Reader = {
+        _getPointerField[org.murtsi.capnproto.example.todo.Todo](0)
       }
-      private[ServerMessage] def modify: Option[org.murtsi.capnproto.example.todo.Todo#Reader] = {
-        _getPointerFieldOption[org.murtsi.capnproto.example.todo.Todo](0)
+      private[ServerMessage] def modify: org.murtsi.capnproto.example.todo.Todo#Reader = {
+        _getPointerField[org.murtsi.capnproto.example.todo.Todo](0)
       }
       private[ServerMessage] def _whichIndex: Short = _getShortField(4)
+      object has {
+        def add: Boolean = {
+          if (_getShortField(4) != 0) false
+          else _pointerFieldIsNull(0)
+        }
+        def remove: Boolean = {
+          if (_getShortField(4) != 1) false
+          else _pointerFieldIsNull(0)
+        }
+        def modify: Boolean = {
+          if (_getShortField(4) != 2) false
+          else _pointerFieldIsNull(0)
+        }
+      }
     }
     class BuilderImpl(_segment: org.murtsi.capnproto.runtime.SegmentBuilder, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short) extends super.BuilderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount) {
       def clientId: Long = {
@@ -309,63 +389,79 @@ object todo {
       def clientId_=(value: Long): Unit = {
         _setLongField(0, value)
       }
-      private[ServerMessage] def add: Option[org.murtsi.capnproto.example.todo.Todo#Builder] = {
-        _getPointerFieldOption[org.murtsi.capnproto.example.todo.Todo](0)
+      private[ServerMessage] def add: org.murtsi.capnproto.example.todo.Todo#Builder = {
+        _getPointerField[org.murtsi.capnproto.example.todo.Todo](0)
       }
       def add_=(value: org.murtsi.capnproto.example.todo.Todo#Reader): Unit = {
         _setShortField(4, 0)
         _setPointerField[org.murtsi.capnproto.example.todo.Todo](0, value)
       }
-      def initAdd(): org.murtsi.capnproto.example.todo.Todo#Builder = {
-        _setShortField(4, 0)
-        _initPointerField[org.murtsi.capnproto.example.todo.Todo](0, 0)
-      }
-      private[ServerMessage] def remove: Option[org.murtsi.capnproto.example.todo.Todo#Builder] = {
-        _getPointerFieldOption[org.murtsi.capnproto.example.todo.Todo](0)
+      private[ServerMessage] def remove: org.murtsi.capnproto.example.todo.Todo#Builder = {
+        _getPointerField[org.murtsi.capnproto.example.todo.Todo](0)
       }
       def remove_=(value: org.murtsi.capnproto.example.todo.Todo#Reader): Unit = {
         _setShortField(4, 1)
         _setPointerField[org.murtsi.capnproto.example.todo.Todo](0, value)
       }
-      def initRemove(): org.murtsi.capnproto.example.todo.Todo#Builder = {
-        _setShortField(4, 1)
-        _initPointerField[org.murtsi.capnproto.example.todo.Todo](0, 0)
-      }
-      private[ServerMessage] def modify: Option[org.murtsi.capnproto.example.todo.Todo#Builder] = {
-        _getPointerFieldOption[org.murtsi.capnproto.example.todo.Todo](0)
+      private[ServerMessage] def modify: org.murtsi.capnproto.example.todo.Todo#Builder = {
+        _getPointerField[org.murtsi.capnproto.example.todo.Todo](0)
       }
       def modify_=(value: org.murtsi.capnproto.example.todo.Todo#Reader): Unit = {
         _setShortField(4, 2)
         _setPointerField[org.murtsi.capnproto.example.todo.Todo](0, value)
       }
-      def initModify(): org.murtsi.capnproto.example.todo.Todo#Builder = {
-        _setShortField(4, 2)
-        _initPointerField[org.murtsi.capnproto.example.todo.Todo](0, 0)
-      }
       private[ServerMessage] def _whichIndex: Short = _getShortField(4)
+      object has {
+        def add: Boolean = {
+          if (_getShortField(4) != 0) false
+          else _pointerFieldIsNull(0)
+        }
+        def remove: Boolean = {
+          if (_getShortField(4) != 1) false
+          else _pointerFieldIsNull(0)
+        }
+        def modify: Boolean = {
+          if (_getShortField(4) != 2) false
+          else _pointerFieldIsNull(0)
+        }
+      }
+      object init {
+        def add(): org.murtsi.capnproto.example.todo.Todo#Builder = {
+          _setShortField(4, 0)
+          _initPointerField[org.murtsi.capnproto.example.todo.Todo](0, 0)
+        }
+        def remove(): org.murtsi.capnproto.example.todo.Todo#Builder = {
+          _setShortField(4, 1)
+          _initPointerField[org.murtsi.capnproto.example.todo.Todo](0, 0)
+        }
+        def modify(): org.murtsi.capnproto.example.todo.Todo#Builder = {
+          _setShortField(4, 2)
+          _initPointerField[org.murtsi.capnproto.example.todo.Todo](0, 0)
+        }
+      }
     }
     object Add {
       def unapply(value: ServerMessage#Reader): Option[org.murtsi.capnproto.example.todo.Todo#Reader] = {
-        if (value._whichIndex == 0) value.add else None
+        if (value._whichIndex == 0) Some(value.add) else None
       }
       def unapply(value: ServerMessage#Builder): Option[org.murtsi.capnproto.example.todo.Todo#Builder] = {
-        if (value._whichIndex == 0) value.add else None
+        if (value._whichIndex == 0) Some(value.add) else None
       }
     }
     object Remove {
       def unapply(value: ServerMessage#Reader): Option[org.murtsi.capnproto.example.todo.Todo#Reader] = {
-        if (value._whichIndex == 1) value.remove else None
+        if (value._whichIndex == 1) Some(value.remove) else None
       }
       def unapply(value: ServerMessage#Builder): Option[org.murtsi.capnproto.example.todo.Todo#Builder] = {
-        if (value._whichIndex == 1) value.remove else None
+        if (value._whichIndex == 1) Some(value.remove) else None
       }
     }
     object Modify {
       def unapply(value: ServerMessage#Reader): Option[org.murtsi.capnproto.example.todo.Todo#Reader] = {
-        if (value._whichIndex == 2) value.modify else None
+        if (value._whichIndex == 2) Some(value.modify) else None
       }
       def unapply(value: ServerMessage#Builder): Option[org.murtsi.capnproto.example.todo.Todo#Builder] = {
-        if (value._whichIndex == 2) value.modify else None
+        if (value._whichIndex == 2) Some(value.modify) else None
       }
     }
   }
@@ -385,11 +481,19 @@ object todo {
       def id: Long = {
         this._getLongField(0)
       }
-      def contents: Option[org.murtsi.capnproto.runtime.Text#Reader] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.Text](0)
+      def contents: org.murtsi.capnproto.runtime.Text#Reader = {
+        _getPointerField[org.murtsi.capnproto.runtime.Text](0)
       }
-      def created: Option[org.murtsi.capnproto.runtime.Text#Reader] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.Text](1)
+      def created: org.murtsi.capnproto.runtime.Text#Reader = {
+        _getPointerField[org.murtsi.capnproto.runtime.Text](1)
+      }
+      object has {
+        def contents: Boolean = {
+          _pointerFieldIsNull(0)
+        }
+        def created: Boolean = {
+          _pointerFieldIsNull(1)
+        }
       }
     }
     class BuilderImpl(_segment: org.murtsi.capnproto.runtime.SegmentBuilder, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short) extends super.BuilderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount) {
@@ -399,8 +503,8 @@ object todo {
       def id_=(value: Long): Unit = {
         _setLongField(0, value)
       }
-      def contents: Option[org.murtsi.capnproto.runtime.Text#Builder] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.Text](0)
+      def contents: org.murtsi.capnproto.runtime.Text#Builder = {
+        _getPointerField[org.murtsi.capnproto.runtime.Text](0)
       }
       def contents_=(value: org.murtsi.capnproto.runtime.Text#Reader): Unit = {
         _setPointerField[org.murtsi.capnproto.runtime.Text](0, value)
@@ -408,11 +512,8 @@ object todo {
       def contents_=(value: String): Unit = {
         _setPointerField[org.murtsi.capnproto.runtime.Text](0, org.murtsi.capnproto.runtime.Text.Reader(value))
       }
-      def initContents(size: Int): org.murtsi.capnproto.runtime.Text#Builder = {
-        _initPointerField[org.murtsi.capnproto.runtime.Text](0, size)
-      }
-      def created: Option[org.murtsi.capnproto.runtime.Text#Builder] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.Text](1)
+      def created: org.murtsi.capnproto.runtime.Text#Builder = {
+        _getPointerField[org.murtsi.capnproto.runtime.Text](1)
       }
       def created_=(value: org.murtsi.capnproto.runtime.Text#Reader): Unit = {
         _setPointerField[org.murtsi.capnproto.runtime.Text](1, value)
@@ -420,8 +521,21 @@ object todo {
       def created_=(value: String): Unit = {
         _setPointerField[org.murtsi.capnproto.runtime.Text](1, org.murtsi.capnproto.runtime.Text.Reader(value))
       }
-      def initCreated(size: Int): org.murtsi.capnproto.runtime.Text#Builder = {
-        _initPointerField[org.murtsi.capnproto.runtime.Text](1, size)
+      object has {
+        def contents: Boolean = {
+          _pointerFieldIsNull(0)
+        }
+        def created: Boolean = {
+          _pointerFieldIsNull(1)
+        }
+      }
+      object init {
+        def contents(size: Int): org.murtsi.capnproto.runtime.Text#Builder = {
+          _initPointerField[org.murtsi.capnproto.runtime.Text](0, size)
+        }
+        def created(size: Int): org.murtsi.capnproto.runtime.Text#Builder = {
+          _initPointerField[org.murtsi.capnproto.runtime.Text](1, size)
+        }
       }
     }
   }

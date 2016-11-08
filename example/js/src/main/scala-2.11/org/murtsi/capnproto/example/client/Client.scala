@@ -40,7 +40,7 @@ object Client extends JSApp {
     btn.textContent = "Add"
     btn.onclick = (ev: MouseEvent) => {
       todoService.send(msg => {
-        msg.initAdd().contents = todoText
+        msg.init.add().contents = todoText
       })
     }
 
@@ -52,7 +52,7 @@ object Client extends JSApp {
       todoContainer.removeChildren()
 
       for (todo <- todos) {
-        val contents = todo.contents.map(_.toString).getOrElse("")
+        val contents = todo.contents.toString
         val li = document.createElement("li")
         li.appendChild(document.createTextNode(contents))
         todoContainer.appendChild(li)
@@ -64,7 +64,7 @@ object Client extends JSApp {
         println("Initial message")
         clientId = init.clientId
         todos.clear()
-        init.todos.get.foreach(todo => {
+        init.todos.foreach(todo => {
           todos += todo
         })
         redrawTodos()

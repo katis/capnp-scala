@@ -67,19 +67,31 @@ object SimpleGeneric {
     override val Reader: (org.murtsi.capnproto.runtime.SegmentReader, Int, Int, Int, Short, Int) => Reader = new ReaderImpl(_, _, _, _, _, _)
 
     class ReaderImpl(_segment: org.murtsi.capnproto.runtime.SegmentReader, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short, _nestingLimit: Int) extends super.ReaderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount, _nestingLimit) {
-      def entries: Option[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.SimpleGeneric.GenericMap[Key, Value]#Entry]#Reader] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.SimpleGeneric.GenericMap[Key, Value]#Entry]](0)
+      def entries: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.SimpleGeneric.GenericMap[Key, Value]#Entry]#Reader = {
+        _getPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.SimpleGeneric.GenericMap[Key, Value]#Entry]](0)
+      }
+      object has {
+        def entries: Boolean = {
+          _pointerFieldIsNull(0)
+        }
       }
     }
     class BuilderImpl(_segment: org.murtsi.capnproto.runtime.SegmentBuilder, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short) extends super.BuilderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount) {
-      def entries: Option[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.SimpleGeneric.GenericMap[Key, Value]#Entry]#Builder] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.SimpleGeneric.GenericMap[Key, Value]#Entry]](0)
+      def entries: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.SimpleGeneric.GenericMap[Key, Value]#Entry]#Builder = {
+        _getPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.SimpleGeneric.GenericMap[Key, Value]#Entry]](0)
       }
       def entries_=(value: org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.SimpleGeneric.GenericMap[Key, Value]#Entry]#Reader): Unit = {
         _setPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.SimpleGeneric.GenericMap[Key, Value]#Entry]](0, value)
       }
-      def initEntries(size: Int): org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.SimpleGeneric.GenericMap[Key, Value]#Entry]#Builder = {
-        _initPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.SimpleGeneric.GenericMap[Key, Value]#Entry]](0, size)
+      object has {
+        def entries: Boolean = {
+          _pointerFieldIsNull(0)
+        }
+      }
+      object init {
+        def entries(size: Int): org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.SimpleGeneric.GenericMap[Key, Value]#Entry]#Builder = {
+          _initPointerField[org.murtsi.capnproto.runtime.StructList[org.murtsi.capnproto.compiler.SimpleGeneric.GenericMap[Key, Value]#Entry]](0, size)
+        }
       }
     }
 
@@ -95,31 +107,49 @@ object SimpleGeneric {
       override val Reader: (org.murtsi.capnproto.runtime.SegmentReader, Int, Int, Int, Short, Int) => Reader = new ReaderImpl(_, _, _, _, _, _)
 
       class ReaderImpl(_segment: org.murtsi.capnproto.runtime.SegmentReader, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short, _nestingLimit: Int) extends super.ReaderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount, _nestingLimit) {
-        def key: Option[Key#Reader] = {
-          _getPointerFieldOption[Key](0)
+        def key: Key#Reader = {
+          _getPointerField[Key](0)
         }
-        def value: Option[Value#Reader] = {
-          _getPointerFieldOption[Value](1)
+        def value: Value#Reader = {
+          _getPointerField[Value](1)
+        }
+        object has {
+          def key: Boolean = {
+            _pointerFieldIsNull(0)
+          }
+          def value: Boolean = {
+            _pointerFieldIsNull(1)
+          }
         }
       }
       class BuilderImpl(_segment: org.murtsi.capnproto.runtime.SegmentBuilder, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short) extends super.BuilderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount) {
-        def key: Option[Key#Builder] = {
-          _getPointerFieldOption[Key](0)
+        def key: Key#Builder = {
+          _getPointerField[Key](0)
         }
         def key_=(value: Key#Reader): Unit = {
           _setPointerField[Key](0, value)
         }
-        def initKey(size: Int = 0): Key#Builder = {
-          _initPointerField[Key](1, size)
-        }
-        def value: Option[Value#Builder] = {
-          _getPointerFieldOption[Value](1)
+        def value: Value#Builder = {
+          _getPointerField[Value](1)
         }
         def value_=(value: Value#Reader): Unit = {
           _setPointerField[Value](1, value)
         }
-        def initValue(size: Int = 0): Value#Builder = {
-          _initPointerField[Value](1, size)
+        object has {
+          def key: Boolean = {
+            _pointerFieldIsNull(0)
+          }
+          def value: Boolean = {
+            _pointerFieldIsNull(1)
+          }
+        }
+        object init {
+          def key(size: Int = 0): Key#Builder = {
+            _initPointerField[Key](1, size)
+          }
+          def value(size: Int = 0): Value#Builder = {
+            _initPointerField[Value](1, size)
+          }
         }
       }
     }
@@ -137,16 +167,21 @@ object SimpleGeneric {
     override val Reader: (org.murtsi.capnproto.runtime.SegmentReader, Int, Int, Int, Short, Int) => Reader = new ReaderImpl(_, _, _, _, _, _)
 
     class ReaderImpl(_segment: org.murtsi.capnproto.runtime.SegmentReader, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short, _nestingLimit: Int) extends super.ReaderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount, _nestingLimit) {
-      def name: Option[org.murtsi.capnproto.runtime.Text#Reader] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.Text](0)
+      def name: org.murtsi.capnproto.runtime.Text#Reader = {
+        _getPointerField[org.murtsi.capnproto.runtime.Text](0)
       }
       def age: Byte = {
         this._getByteField(0)
       }
+      object has {
+        def name: Boolean = {
+          _pointerFieldIsNull(0)
+        }
+      }
     }
     class BuilderImpl(_segment: org.murtsi.capnproto.runtime.SegmentBuilder, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short) extends super.BuilderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount) {
-      def name: Option[org.murtsi.capnproto.runtime.Text#Builder] = {
-        _getPointerFieldOption[org.murtsi.capnproto.runtime.Text](0)
+      def name: org.murtsi.capnproto.runtime.Text#Builder = {
+        _getPointerField[org.murtsi.capnproto.runtime.Text](0)
       }
       def name_=(value: org.murtsi.capnproto.runtime.Text#Reader): Unit = {
         _setPointerField[org.murtsi.capnproto.runtime.Text](0, value)
@@ -154,14 +189,21 @@ object SimpleGeneric {
       def name_=(value: String): Unit = {
         _setPointerField[org.murtsi.capnproto.runtime.Text](0, org.murtsi.capnproto.runtime.Text.Reader(value))
       }
-      def initName(size: Int): org.murtsi.capnproto.runtime.Text#Builder = {
-        _initPointerField[org.murtsi.capnproto.runtime.Text](0, size)
-      }
       def age: Byte = {
         this._getByteField(0)
       }
       def age_=(value: Byte): Unit = {
         _setByteField(0, value)
+      }
+      object has {
+        def name: Boolean = {
+          _pointerFieldIsNull(0)
+        }
+      }
+      object init {
+        def name(size: Int): org.murtsi.capnproto.runtime.Text#Builder = {
+          _initPointerField[org.murtsi.capnproto.runtime.Text](0, size)
+        }
       }
     }
   }

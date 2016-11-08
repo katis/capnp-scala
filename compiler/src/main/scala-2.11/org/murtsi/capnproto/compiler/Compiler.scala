@@ -33,8 +33,8 @@ object Compiler {
 
       val generator = new Generator(messageReader)
 
-      for (requestedFile <- generator.request.requestedFiles.get) {
-        val filePath = outputDirectory.resolve(requestedFile.filename.get.toString + ".scala")
+      for (requestedFile <- generator.request.requestedFiles) {
+        val filePath = outputDirectory.resolve(requestedFile.filename.toString + ".scala")
         val output = generator.generateOutput(requestedFile.id)
 
         Files.write(filePath, output.asJava)
