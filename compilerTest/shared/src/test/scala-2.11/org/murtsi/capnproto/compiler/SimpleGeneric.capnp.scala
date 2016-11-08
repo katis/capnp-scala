@@ -36,22 +36,22 @@ object SimpleGeneric {
     }
   }
   // END GenericMap implicits
-  // START Message implicits
-  implicit val Message$$HasTypeId = new org.murtsi.capnproto.runtime.HasTypeId[Message] {
-    def typeId: Long = -8668618840675577154L
+  // START User implicits
+  implicit val User$$HasTypeId = new org.murtsi.capnproto.runtime.HasTypeId[User] {
+    def typeId: Long = -6754264410935672481L
   }
-  implicit val Message$$HasStructSize = new org.murtsi.capnproto.runtime.HasStructSize[Message] {
-    val structSize = new org.murtsi.capnproto.runtime.StructSize(0, 1)
+  implicit val User$$HasStructSize = new org.murtsi.capnproto.runtime.HasStructSize[User] {
+    val structSize = new org.murtsi.capnproto.runtime.StructSize(1, 1)
   }
-  implicit val Message$$StructFromSegment = new org.murtsi.capnproto.runtime.StructFromSegment[Message] {
-    def readerFromSegment(segment: org.murtsi.capnproto.runtime.SegmentReader, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int): Message#Reader = {
-      Message.Reader(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit)
+  implicit val User$$StructFromSegment = new org.murtsi.capnproto.runtime.StructFromSegment[User] {
+    def readerFromSegment(segment: org.murtsi.capnproto.runtime.SegmentReader, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short, nestingLimit: Int): User#Reader = {
+      User.Reader(segment, dataOffset, pointers, dataSize, pointerCount, nestingLimit)
     }
-    def builderFromSegment(segment: org.murtsi.capnproto.runtime.SegmentBuilder, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short): Message#Builder = {
-      Message.Builder(segment, dataOffset, pointers, dataSize, pointerCount)
+    def builderFromSegment(segment: org.murtsi.capnproto.runtime.SegmentBuilder, dataOffset: Int, pointers: Int, dataSize: Int, pointerCount: Short): User#Builder = {
+      User.Builder(segment, dataOffset, pointers, dataSize, pointerCount)
     }
   }
-  // END Message implicits
+  // END User implicits
 
   object GenericMap {
     def apply[Key <: org.murtsi.capnproto.runtime.PointerFamily : org.murtsi.capnproto.runtime.FromPointer : org.murtsi.capnproto.runtime.SetPointerBuilder, Value <: org.murtsi.capnproto.runtime.PointerFamily : org.murtsi.capnproto.runtime.FromPointer : org.murtsi.capnproto.runtime.SetPointerBuilder]: GenericMap[Key, Value] = new GenericMap[Key, Value]
@@ -109,8 +109,8 @@ object SimpleGeneric {
         def key_=(value: Key#Reader): Unit = {
           _setPointerField[Key](0, value)
         }
-        def initKey(size: Int): Key#Builder = {
-          _initPointerField[Key](0, size)
+        def initKey(size: Int = 0): Key#Builder = {
+          _initPointerField[Key](1, size)
         }
         def value: Option[Value#Builder] = {
           _getPointerFieldOption[Value](1)
@@ -118,17 +118,17 @@ object SimpleGeneric {
         def value_=(value: Value#Reader): Unit = {
           _setPointerField[Value](1, value)
         }
-        def initValue(size: Int): Value#Builder = {
+        def initValue(size: Int = 0): Value#Builder = {
           _initPointerField[Value](1, size)
         }
       }
     }
   }
 
-  object Message extends Message
-  sealed class Message private() extends org.murtsi.capnproto.runtime.Struct { 
-    val typeId: Long = -8668618840675577154L
-    override val structSize: org.murtsi.capnproto.runtime.StructSize = new org.murtsi.capnproto.runtime.StructSize(0, 1)
+  object User extends User
+  sealed class User private() extends org.murtsi.capnproto.runtime.Struct { 
+    val typeId: Long = -6754264410935672481L
+    override val structSize: org.murtsi.capnproto.runtime.StructSize = new org.murtsi.capnproto.runtime.StructSize(1, 1)
 
     override type Reader = ReaderImpl
     override type Builder = BuilderImpl
@@ -137,19 +137,31 @@ object SimpleGeneric {
     override val Reader: (org.murtsi.capnproto.runtime.SegmentReader, Int, Int, Int, Short, Int) => Reader = new ReaderImpl(_, _, _, _, _, _)
 
     class ReaderImpl(_segment: org.murtsi.capnproto.runtime.SegmentReader, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short, _nestingLimit: Int) extends super.ReaderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount, _nestingLimit) {
-      def contents: Option[org.murtsi.capnproto.compiler.SimpleGeneric.GenericMap[org.murtsi.capnproto.runtime.Text, org.murtsi.capnproto.runtime.Text]#Reader] = {
-        _getPointerFieldOption[org.murtsi.capnproto.compiler.SimpleGeneric.GenericMap[org.murtsi.capnproto.runtime.Text, org.murtsi.capnproto.runtime.Text]](0)
+      def name: Option[org.murtsi.capnproto.runtime.Text#Reader] = {
+        _getPointerFieldOption[org.murtsi.capnproto.runtime.Text](0)
+      }
+      def age: Byte = {
+        this._getByteField(0)
       }
     }
     class BuilderImpl(_segment: org.murtsi.capnproto.runtime.SegmentBuilder, _dataOffset: Int, _pointers: Int, _dataSize: Int, _pointerCount: Short) extends super.BuilderBase(_segment, _dataOffset, _pointers, _dataSize, _pointerCount) {
-      def contents: Option[org.murtsi.capnproto.compiler.SimpleGeneric.GenericMap[org.murtsi.capnproto.runtime.Text, org.murtsi.capnproto.runtime.Text]#Builder] = {
-        _getPointerFieldOption[org.murtsi.capnproto.compiler.SimpleGeneric.GenericMap[org.murtsi.capnproto.runtime.Text, org.murtsi.capnproto.runtime.Text]](0)
+      def name: Option[org.murtsi.capnproto.runtime.Text#Builder] = {
+        _getPointerFieldOption[org.murtsi.capnproto.runtime.Text](0)
       }
-      def contents_=(value: org.murtsi.capnproto.compiler.SimpleGeneric.GenericMap[org.murtsi.capnproto.runtime.Text, org.murtsi.capnproto.runtime.Text]#Reader): Unit = {
-        _setPointerField[org.murtsi.capnproto.compiler.SimpleGeneric.GenericMap[org.murtsi.capnproto.runtime.Text, org.murtsi.capnproto.runtime.Text]](0, value)
+      def name_=(value: org.murtsi.capnproto.runtime.Text#Reader): Unit = {
+        _setPointerField[org.murtsi.capnproto.runtime.Text](0, value)
       }
-      def initContents(): org.murtsi.capnproto.compiler.SimpleGeneric.GenericMap[org.murtsi.capnproto.runtime.Text, org.murtsi.capnproto.runtime.Text]#Builder = {
-        _initPointerField[org.murtsi.capnproto.compiler.SimpleGeneric.GenericMap[org.murtsi.capnproto.runtime.Text, org.murtsi.capnproto.runtime.Text]](0, 0)
+      def name_=(value: String): Unit = {
+        _setPointerField[org.murtsi.capnproto.runtime.Text](0, org.murtsi.capnproto.runtime.Text.Reader(value))
+      }
+      def initName(size: Int): org.murtsi.capnproto.runtime.Text#Builder = {
+        _initPointerField[org.murtsi.capnproto.runtime.Text](0, size)
+      }
+      def age: Byte = {
+        this._getByteField(0)
+      }
+      def age_=(value: Byte): Unit = {
+        _setByteField(0, value)
       }
     }
   }

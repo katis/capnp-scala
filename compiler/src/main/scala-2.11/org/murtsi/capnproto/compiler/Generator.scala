@@ -592,8 +592,8 @@ class Generator(message: MessageReader) {
             val struct = nodeMap(parameter.scopeId)
             val paramName = struct.parameters.get(parameter.parameterIndex).name.get.toString
             setterInterior += Line(s"_setPointerField[$paramName]($offset, value)")
-            initterInterior += Line(s"_initPointerField[$paramName]($offset, size)")
-            initterParams += "size: Int"
+            initterInterior += Line(s"_initPointerField[$paramName](1, size)")
+            initterParams += "size: Int = 0"
             (Some(s"$paramName#Reader"), Some(s"$paramName#Builder"))
           case Type.AnyPointer(Type.AnyPointer.Unconstrained()) =>
             initterInterior += Line(s"_initPointerField[org.murtsi.capnproto.runtime.AnyPointer]($offset, size)")

@@ -13,6 +13,7 @@ struct GenericMap(Key, Value) {
   }
 }
 
-struct Message {
-  contents @0 :GenericMap(Text, Text);
+struct User {
+  name @0 :Text;
+  age @1 :Int8;
 }

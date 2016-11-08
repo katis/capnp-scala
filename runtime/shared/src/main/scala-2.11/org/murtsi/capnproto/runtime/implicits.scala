@@ -3,6 +3,10 @@ package org.murtsi.capnproto.runtime
 import java.nio.ByteBuffer
 
 object implicits {
+  implicit class String2Text(val s: String) extends AnyVal {
+    def text: Text#Reader = Text.Reader(s)
+  }
+
   // Struct & struct list implicits
   implicit def structFromPointer[S <: Struct : StructFromSegment : HasStructSize] = new FromPointer[S] with FromPointerRefDefault[S] {
     override def fromPointerBuilder(segment: SegmentBuilder, pointer: Int): S#Builder = {
