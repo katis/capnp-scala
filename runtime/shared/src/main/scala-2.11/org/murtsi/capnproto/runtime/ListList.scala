@@ -1,15 +1,11 @@
 package org.murtsi.capnproto.runtime
 
-/*
 object ListList {
-  def apply[ElementBuilder, ElementReader <: ListReader]: ListList[ElementBuilder, ElementReader] = {
-    new ListList[ElementBuilder, ElementReader]()
-  }
+  def apply[L <: PointerFamily : ListFromSegment : FromPointer]: ListList[L] = new ListList[L]
 }
-class ListList[ElementBuilder, ElementReader <: ListReader](factory: List[ElementBuilder, ElementReader])
-  extends List[List[ElementBuilder, ElementReader]#Builder, List[ElementBuilder, ElementReader]#Reader](ElementSize.POINTER.toByte) {
 
-  type ListT = List[ElementBuilder, ElementReader]
+class ListList[L <: PointerFamily : ListFromSegment : FromPointer]
+  extends List[L#Builder, L#Reader](ElementSize.POINTER) {
   type Builder = BuilderImpl
   type Reader = ReaderImpl
 
@@ -40,7 +36,7 @@ class ListList[ElementBuilder, ElementReader <: ListReader](factory: List[Elemen
                   structPointerCount: Short,
                   nestingLimit: Int) extends ReaderBase(segment, ptr, elementCount, step, structDataSize, structPointerCount, nestingLimit) {
 
-    override def apply(idx: Int): ListT#Reader = _getPointerElement[ListT](idx)
+    override def apply(idx: Int): L#Reader = _getPointerElement[L](idx)
   }
 
   class BuilderImpl(segment: SegmentBuilder,
@@ -50,13 +46,10 @@ class ListList[ElementBuilder, ElementReader <: ListReader](factory: List[Elemen
                    structDataSize: Int,
                    structPointerCount: Short) extends BuilderBase(segment, ptr, elementCount, step, structDataSize, structPointerCount) {
 
-    def init(index: Int, size: Int): ListT#Builder = {
-      _initPointerElement(factory, index, size)
+    def init(index: Int, size: Int): L#Builder = {
+      _initPointerElement[L](index, size)
     }
 
-    def apply(idx: Int): ListT#Builder = _getPointerElement(factory, idx)
+    def apply(idx: Int): L#Builder = _getPointerElement[L](idx)
   }
 }
-
-
-*/

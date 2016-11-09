@@ -32,6 +32,8 @@ class EnumList[T <: Enum : HasEnumValues] extends List[T, T](ElementSize.TWO_BYT
     reader =>
 
     def apply(idx: Int): T = clampOrdinal(enumValues, _getShortElement(idx))
+
+    def get(idx: Int): T = clampOrdinal(enumValues, _getShortElement(idx))
   }
 
   class BuilderImpl(segment: SegmentBuilder,

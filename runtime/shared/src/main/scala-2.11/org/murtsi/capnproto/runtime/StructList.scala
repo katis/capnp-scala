@@ -1,14 +1,12 @@
 package org.murtsi.capnproto.runtime
 
 object StructList {
-  def apply[S <: Struct : StructFromSegment : HasStructSize]: StructList[S] = new StructList[S]
+  def apply[S <: Struct : StructFromSegment : HasStructSize : SetPointerBuilder]: StructList[S] = new StructList[S]
 }
 
-class StructList[S <: Struct : StructFromSegment : HasStructSize] extends org.murtsi.capnproto.runtime.List[S#Builder, S#Reader](ElementSize.INLINE_COMPOSITE) {
+class StructList[S <: Struct : StructFromSegment : HasStructSize : SetPointerBuilder] extends org.murtsi.capnproto.runtime.List[S#Builder, S#Reader](ElementSize.INLINE_COMPOSITE) {
   override type Builder = BuilderImpl
   override type Reader = ReaderImpl
-
-  private val structSize = implicitly[HasStructSize[S]].structSize
 
   class BuilderImpl(_segment: SegmentBuilder,
                     _ptr: Int,
@@ -16,12 +14,13 @@ class StructList[S <: Struct : StructFromSegment : HasStructSize] extends org.mu
                     _step: Int,
                     _structDataSize: Int,
                     _structPointerCount: Short)
-      extends BuilderBase(_segment, _ptr, _elementCount, _step, _structDataSize, _structPointerCount)
-        with Traversable[S#Builder] {
+      extends BuilderBase(_segment, _ptr, _elementCount, _step, _structDataSize, _structPointerCount) {
 
     builder =>
 
     def apply(idx: Int): S#Builder = _getStructElement[S](idx)
+
+    def update(idx: Int, value: S#Reader): Unit = _setPointerElement[S](idx, value)
 
     override def foreach[U](fn: (S#Builder) => U): Unit = {
       for (i <- 0 until builder.size) {
@@ -38,8 +37,7 @@ class StructList[S <: Struct : StructFromSegment : HasStructSize] extends org.mu
                    _structDataSize: Int,
                    _structPointerCount: Short,
                    _nestingLimit: Int)
-      extends ReaderBase(_segment, _ptr, _elementCount, _step, _structDataSize, _structPointerCount, _nestingLimit)
-      with Traversable[S#Reader] {
+      extends ReaderBase(_segment, _ptr, _elementCount, _step, _structDataSize, _structPointerCount, _nestingLimit) {
 
     reader =>
 

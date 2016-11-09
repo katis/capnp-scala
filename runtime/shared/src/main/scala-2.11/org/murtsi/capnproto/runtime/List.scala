@@ -23,17 +23,28 @@ abstract class List[ElementBuilder, ElementReader](val elementSize: Byte) extend
                           elementCount,
                           step,
                           structDataSize,
-                          structPointerCount) with Traversable[ElementBuilder] {
+                          structPointerCount) with Seq[ElementBuilder] with Traversable[ElementBuilder] with IndexedSeq[ElementBuilder] {
 
     builder =>
 
-    override def size: Int = super[ListBuilder].size()
+    override def length: Int = super[ListBuilder].size()
 
-    def apply(idx: Int): ElementBuilder
+    override def size: Int = super[ListBuilder].size()
 
     override def foreach[U](f: (ElementBuilder) => U): Unit = {
       for (i <- 0 until size) {
         f(apply(i))
+      }
+    }
+
+    override def iterator: Iterator[ElementBuilder] = new Iterator[ElementBuilder] {
+      var i = 0
+      override def hasNext: Boolean = i < builder.length
+
+      override def next(): ElementBuilder = {
+        val v = apply(i)
+        i += 1
+        v
       }
     }
   }
@@ -52,9 +63,10 @@ abstract class List[ElementBuilder, ElementReader](val elementSize: Byte) extend
                          step,
                          structDataSize,
                          structPointerCount,
-                         nestingLimit) with Traversable[ElementReader] {
+                         nestingLimit) with Seq[ElementReader] with Traversable[ElementReader] with IndexedSeq[ElementReader] {
+    reader =>
 
-    def apply(idx: Int): ElementReader
+    override def length: Int = super[ListReader].size
 
     override def size: Int = super[ListReader].size
 
@@ -63,60 +75,18 @@ abstract class List[ElementBuilder, ElementReader](val elementSize: Byte) extend
         f(apply(i))
       }
     }
-  }
 
-  /*
-  def fromPointerReaderRefDefault(segment: SegmentReader,
-                                  pointer: Int,
-                                  defaultSegment: SegmentReader,
-                                  defaultOffset: Int,
-                                  nestingLimit: Int): Reader = {
-    WireHelpers.readListPointer(this,
-                                segment,
-                                pointer,
-                                defaultSegment,
-                                defaultOffset,
-                                this.elementSize,
-                                nestingLimit)
-  }
+    override def iterator: Iterator[ElementReader] = new Iterator[ElementReader] {
+      var i = 0
+      override def hasNext: Boolean = i < reader.length
 
-  def fromPointerReader(segment: SegmentReader,
-                        pointer: Int,
-                        nestingLimit: Int): Reader = {
-    fromPointerReaderRefDefault(segment, pointer, null, 0, nestingLimit)
+      override def next(): ElementReader = {
+        val v = apply(i)
+        i += 1
+        v
+      }
+    }
   }
-
-  def fromPointerBuilderRefDefault(segment: SegmentBuilder,
-                                   pointer: Int,
-                                   defaultSegment: SegmentReader,
-                                   defaultOffset: Int): Builder = {
-    WireHelpers.getWritableListPointer(this,
-                                       pointer,
-                                       segment,
-                                       this.elementSize,
-                                       defaultSegment,
-                                       defaultOffset)
-  }
-
-  def fromPointerBuilder(segment: SegmentBuilder, pointer: Int): Builder = {
-    WireHelpers.getWritableListPointer(this,
-                                       pointer,
-                                       segment,
-                                       this.elementSize,
-                                       null,
-                                       0)
-  }
-
-  def initFromPointerBuilder(segment: SegmentBuilder,
-                             pointer: Int,
-                             elementCount: Int): Builder = {
-    WireHelpers
-      .initListPointer(this, pointer, segment, elementCount, this.elementSize)
-  }
-
-  def setPointerBuilder(segment: SegmentBuilder, pointer: Int, value: Reader) {
-    WireHelpers.setListPointer(segment, pointer, value.asInstanceOf[ListReader])
-  }
-  */
 }
+
 

@@ -16,7 +16,8 @@ object Compiler {
     val outDir = Paths.get(System.getenv().getOrDefault("OUT_DIR", "."))
 
     if (args.length > 0) {
-      val capnpc = new ProcessBuilder("capnp", "compile", "-o", "-", args.mkString(" "))
+      val params = Seq("capnp", "compile", "-o", "-") ++ args
+      val capnpc = new ProcessBuilder(params:_*)
       capnpc.redirectError(ProcessBuilder.Redirect.INHERIT)
       val proc = capnpc.start()
       val input = Channels.newChannel(proc.getInputStream)

@@ -83,7 +83,7 @@ class TodoService(system: ActorSystem) {
             sendClientMessage(c => {
               val initial = c.init.initial()
               initial.clientId = clientId
-              for (((id, data), todo) <- todos.zipSameSize(initial.init.todos _)) {
+              for (((id, data), todo) <- todos.zipSameSize(initial.init.todos)) {
                 todo.id = id
                 todo.contents = data.contents
                 todo.created = data.created

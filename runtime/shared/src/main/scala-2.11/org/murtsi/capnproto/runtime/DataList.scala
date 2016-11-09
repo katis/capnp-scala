@@ -35,6 +35,8 @@ object DataList extends List[Data.Builder, Data.Reader](ElementSize.POINTER.toBy
     nestingLimit) {
 
     def apply(idx: Int): Data.Reader = _getPointerElement[Data](idx)
+
+    def get(idx: Int): DataReader = _getPointerElement[Data](idx)
   }
 
   class BuilderImpl(segment: SegmentBuilder,
@@ -47,7 +49,9 @@ object DataList extends List[Data.Builder, Data.Reader](ElementSize.POINTER.toBy
 
     def apply(idx: Int): Data.Builder = _getPointerElement[Data](idx)
 
-    def set(index: Int, value: Data.Reader) {
+    def get(idx: Int): Data.Builder = _getPointerElement[Data](idx)
+
+    def update(index: Int, value: Data.Reader) {
       _setPointerElement[Data](index, value)
     }
   }

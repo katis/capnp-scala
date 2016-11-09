@@ -293,6 +293,90 @@ object implicits {
     }
   }
 
+  // TextList implicits
+
+  implicit val textListElementSize = new HasElementSize[TextList] {
+    override def elementSize: Byte = ElementSize.POINTER
+  }
+
+  implicit val textListListFromSegment = new ListFromSegment[TextList] {
+    override def Reader(segment: SegmentReader, ptr: Int, elementCount: Int, step: Int, structDataSize: Int, structPointerCount: Short, nestingLimit: Int): TextList#Reader = {
+      new TextList.Reader(segment, ptr, elementCount, step, structDataSize, structPointerCount, nestingLimit)
+    }
+
+    override def Builder(segment: SegmentBuilder, ptr: Int, elementCount: Int, step: Int, structDataSize: Int, structPointerCount: Short): TextList#Builder = {
+      new TextList.Builder(segment, ptr, elementCount, step, structDataSize, structPointerCount)
+    }
+  }
+
+  implicit val textListFromPointerAndFromPointerRefDefault = new FromPointer[TextList] with FromPointerRefDefault[TextList] {
+    override def fromPointerBuilderRefDefault(segment: SegmentBuilder, pointer: Int, defaultSegment: SegmentReader, defaultOffset: Int): TextList#Builder = {
+      WireHelpers.getWritableListPointer[TextList](pointer, segment, ElementSize.POINTER, defaultSegment, defaultOffset)
+    }
+
+    override def fromPointerReaderRefDefault(segment: SegmentReader, pointer: Int, defaultSegment: SegmentReader, defaultOffset: Int, nestingLimit: Int): TextList#Reader = {
+      WireHelpers.readListPointer[TextList](segment, pointer, defaultSegment, defaultOffset, ElementSize.POINTER, nestingLimit)
+    }
+
+    override def fromPointerReader(segment: SegmentReader, pointer: Int, nestingLimit: Int): TextList#Reader = {
+      fromPointerReaderRefDefault(segment, pointer, null, 0, nestingLimit)
+    }
+
+    override def fromPointerBuilder(segment: SegmentBuilder, pointer: Int): TextList#Builder = {
+      fromPointerBuilderRefDefault(segment, pointer, null, 0)
+    }
+
+    override def initFromPointerBuilder(segment: SegmentBuilder, pointer: Int, elementCount: Int): TextList#Builder = {
+      WireHelpers.initListPointer[TextList](pointer, segment, elementCount, ElementSize.POINTER)
+    }
+  }
+
+  implicit val textListSetPointerBuilder = new SetPointerBuilder[TextList] {
+    override def setPointerBuilder(segment: SegmentBuilder, pointer: Int, value: TextList#Reader): Unit = WireHelpers.setListPointer(segment, pointer, value)
+  }
+
+  // ListList implicits
+
+  implicit def listListElementSize[L <: PointerFamily : FromPointer : ListFromSegment] = new HasElementSize[ListList[L]] {
+    override def elementSize: Byte = ElementSize.POINTER
+  }
+
+  implicit def listListListFromSegment[T <: PointerFamily : FromPointer : ListFromSegment] = new ListFromSegment[ListList[T]] {
+    override def Reader(segment: SegmentReader, ptr: Int, elementCount: Int, step: Int, structDataSize: Int, structPointerCount: Short, nestingLimit: Int): ListList[T]#Reader = {
+      ListList[T].Reader(segment, ptr, elementCount, step, structDataSize, structPointerCount, nestingLimit)
+    }
+
+    override def Builder(segment: SegmentBuilder, ptr: Int, elementCount: Int, step: Int, structDataSize: Int, structPointerCount: Short): ListList[T]#Builder = {
+      ListList[T].Builder(segment, ptr, elementCount, step, structDataSize, structPointerCount)
+    }
+  }
+
+  implicit def listListFromPointerAndFromPointerRefDefault[T <: PointerFamily : FromPointer : ListFromSegment] = new FromPointer[ListList[T]] with FromPointerRefDefault[ListList[T]] {
+    override def fromPointerBuilderRefDefault(segment: SegmentBuilder, pointer: Int, defaultSegment: SegmentReader, defaultOffset: Int): ListList[T]#Builder = {
+      WireHelpers.getWritableListPointer[ListList[T]](pointer, segment, ElementSize.POINTER, defaultSegment, defaultOffset)
+    }
+
+    override def fromPointerReaderRefDefault(segment: SegmentReader, pointer: Int, defaultSegment: SegmentReader, defaultOffset: Int, nestingLimit: Int): ListList[T]#Reader = {
+      WireHelpers.readListPointer[ListList[T]](segment, pointer, defaultSegment, defaultOffset, ElementSize.POINTER, nestingLimit)
+    }
+
+    override def fromPointerReader(segment: SegmentReader, pointer: Int, nestingLimit: Int): ListList[T]#Reader = {
+      fromPointerReaderRefDefault(segment, pointer, null, 0, nestingLimit)
+    }
+
+    override def fromPointerBuilder(segment: SegmentBuilder, pointer: Int): ListList[T]#Builder = {
+      fromPointerBuilderRefDefault(segment, pointer, null, 0)
+    }
+
+    override def initFromPointerBuilder(segment: SegmentBuilder, pointer: Int, elementCount: Int): ListList[T]#Builder = {
+      WireHelpers.initListPointer[ListList[T]](pointer, segment, elementCount, ElementSize.POINTER)
+    }
+  }
+
+  implicit def listlistSetPointerBuilder[T <: PointerFamily : FromPointer : ListFromSegment] = new SetPointerBuilder[ListList[T]] {
+    override def setPointerBuilder(segment: SegmentBuilder, pointer: Int, value: ListList[T]#Reader): Unit = WireHelpers.setListPointer(segment, pointer, value)
+  }
+
   // List implicits
 
   implicit def listFromPointerAndFromPointerRefDefault[B, R, T <: List[B, R] : HasElementSize : ListFromSegment] = new FromPointer[T] with FromPointerRefDefault[T] {

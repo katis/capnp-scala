@@ -12,10 +12,10 @@ sealed class Text private() extends PointerFamily {
   def Reader(byte: Array[Byte]): Reader = new TextReader(byte)
 }
 
-class TextReader(val buffer: ByteBuffer = ByteBuffer.allocate(0),
+class TextReader(private[runtime] val buffer: ByteBuffer = ByteBuffer.allocate(0),
                  _offset: Int = 0,
                  val size: Int = 0) {
-  val offset = _offset * 8
+  private[runtime] val offset = _offset * 8
 
   def this(bytes: Array[Byte]) {
     this(ByteBuffer.wrap(bytes), 0, bytes.length)

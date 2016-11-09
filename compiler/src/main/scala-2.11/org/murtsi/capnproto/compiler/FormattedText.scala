@@ -3,7 +3,7 @@ package org.murtsi.capnproto.compiler
 import scala.compat.Platform
 
 sealed trait FormattedText {
-  def lines(indent: Int = 0): Seq[String]
+  def lines(indent: Int = 0): Vector[String]
 
   def stringify() =
     lines()
@@ -12,20 +12,20 @@ sealed trait FormattedText {
 }
 
 case class Indent(text: FormattedText) extends FormattedText {
-  override def lines(indent: Int): Seq[String] = text.lines(indent+1)
+  override def lines(indent: Int): Vector[String] = text.lines(indent+1)
 }
 case class Branch(texts: FormattedText*) extends FormattedText {
-  override def lines(indent: Int): Seq[String] = {
-    for (text <- texts;
+  override def lines(indent: Int): Vector[String] = {
+    (for (text <- texts;
          line <- text.lines(indent))
-      yield line
+      yield line).toVector
   }
 }
 case class Line(line: String) extends FormattedText {
-  override def lines(indent: Int): Seq[String] =
-    Seq(" " * (indent * 2) + line)
+  override def lines(indent: Int): Vector[String] =
+    Vector(" " * (indent * 2) + line)
 }
 object BlankLine extends FormattedText {
-  override def lines(indent: Int): Seq[String] = Seq("")
+  override def lines(indent: Int): Vector[String] = Vector("")
 }
 

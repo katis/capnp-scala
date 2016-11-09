@@ -54,6 +54,8 @@ object PrimitiveList {
                            nestingLimit) {
 
       def apply(idx: scala.Int): runtime.Void = runtime.Void
+
+      def get(idx: scala.Int): runtime.Void = runtime.Void
     }
 
     class BuilderImpl(segment: SegmentBuilder,
@@ -69,6 +71,10 @@ object PrimitiveList {
                             structDataSize,
                             structPointerCount) {
       override def apply(idx: scala.Int): runtime.Void = runtime.Void
+
+      def get(idx: scala.Int): runtime.Void = runtime.Void
+
+      def update(idx: scala.Int, elem: runtime.Void): Unit = ()
     }
   }
 
@@ -122,8 +128,9 @@ object PrimitiveList {
                            structPointerCount,
                            nestingLimit) {
 
-      def apply(idx: scala.Int): scala.Boolean = _getBooleanElement(idx)
+      def apply(idx: scala.Int): scala.Boolean = get(idx)
 
+      def get(idx: scala.Int): scala.Boolean = _getBooleanElement(idx)
     }
 
     class BuilderImpl(segment: SegmentBuilder,
@@ -139,13 +146,14 @@ object PrimitiveList {
                             structDataSize,
                             structPointerCount) {
 
-      def apply(idx: scala.Int): scala.Boolean = _getBooleanElement(idx)
+      def apply(idx: scala.Int): scala.Boolean = get(idx)
 
-      def set(idx: scala.Int, value: scala.Boolean) {
+      def get(idx: scala.Int): scala.Boolean = _getBooleanElement(idx)
+
+      def update(idx: scala.Int, value: scala.Boolean) {
         _setBooleanElement(idx, value)
       }
     }
-
   }
 
   object Byte extends Byte
@@ -198,7 +206,9 @@ object PrimitiveList {
                            structPointerCount,
                            nestingLimit) {
 
-      def apply(idx: scala.Int): scala.Byte = _getByteElement(idx)
+      def apply(idx: scala.Int): scala.Byte = get(idx)
+
+      def get(idx: scala.Int): scala.Byte = _getByteElement(idx)
     }
 
     class BuilderImpl(segment: SegmentBuilder,
@@ -214,13 +224,14 @@ object PrimitiveList {
                             structDataSize,
                             structPointerCount) {
 
-      def apply(idx: scala.Int): scala.Byte = _getByteElement(idx)
+      def apply(idx: scala.Int): scala.Byte = get(idx)
 
-      def set(idx: scala.Int, value: scala.Byte) {
+      def get(idx: scala.Int): scala.Byte = _getByteElement(idx)
+
+      def update(idx: scala.Int, value: scala.Byte) {
         _setByteElement(idx, value)
       }
     }
-
   }
 
   object Short extends Short
@@ -273,7 +284,9 @@ object PrimitiveList {
                            structPointerCount,
                            nestingLimit) {
 
-      def apply(idx: scala.Int): scala.Short = _getShortElement(idx)
+      def apply(idx: scala.Int): scala.Short = get(idx)
+
+      def get(idx: scala.Int): scala.Short = _getShortElement(idx)
     }
 
     class BuilderImpl(segment: SegmentBuilder,
@@ -289,9 +302,11 @@ object PrimitiveList {
                             structDataSize,
                             structPointerCount) {
 
-      def apply(idx: scala.Int): scala.Short = _getShortElement(idx)
+      def apply(idx: scala.Int): scala.Short = get(idx)
 
-      def set(idx: scala.Int, value: scala.Short) {
+      def get(idx: scala.Int): scala.Short = _getShortElement(idx)
+
+      def update(idx: scala.Int, value: scala.Short) {
         _setShortElement(idx, value)
       }
     }
@@ -347,7 +362,9 @@ object PrimitiveList {
                            structPointerCount,
                            nestingLimit) {
 
-      def apply(idx: scala.Int): scala.Int = _getIntElement(idx)
+      def apply(idx: scala.Int): scala.Int = get(idx)
+
+      def get(idx: scala.Int): scala.Int = _getIntElement(idx)
     }
 
     class BuilderImpl(segment: SegmentBuilder,
@@ -363,9 +380,11 @@ object PrimitiveList {
                             structDataSize,
                             structPointerCount) {
 
-      def apply(idx: scala.Int): scala.Int = _getIntElement(idx)
+      def apply(idx: scala.Int): scala.Int = get(idx)
 
-      def set(idx: scala.Int, value: scala.Int) {
+      def get(idx: scala.Int): scala.Int = _getIntElement(idx)
+
+      def update(idx: scala.Int, value: scala.Int) {
         _setIntElement(idx, value)
       }
     }
@@ -421,7 +440,9 @@ object PrimitiveList {
                            structPointerCount,
                            nestingLimit) {
 
-      def apply(idx: scala.Int): scala.Long = _getLongElement(idx)
+      def apply(idx: scala.Int): scala.Long = get(idx)
+
+      def get(idx: scala.Int): scala.Long = _getLongElement(idx)
     }
 
     class BuilderImpl(segment: SegmentBuilder,
@@ -437,9 +458,11 @@ object PrimitiveList {
                             structDataSize,
                             structPointerCount) {
 
-      def apply(idx: scala.Int): scala.Long = _getLongElement(idx)
+      def apply(idx: scala.Int): scala.Long = get(idx)
 
-      def set(idx: scala.Int, value: scala.Long) {
+      def get(idx: scala.Int): scala.Long = _getLongElement(idx)
+
+      def update(idx: scala.Int, value: scala.Long) {
         _setLongElement(idx, value)
       }
     }
@@ -495,7 +518,9 @@ object PrimitiveList {
                            structPointerCount,
                            nestingLimit) {
 
-      def apply(idx: scala.Int): scala.Float = _getFloatElement(idx)
+      def apply(idx: scala.Int): scala.Float = get(idx)
+
+      def get(idx: scala.Int): scala.Float = _getFloatElement(idx)
     }
 
     class BuilderImpl(segment: SegmentBuilder,
@@ -511,9 +536,11 @@ object PrimitiveList {
                             structDataSize,
                             structPointerCount) {
 
-      def apply(idx: scala.Int): scala.Float = _getFloatElement(idx)
+      def apply(idx: scala.Int): scala.Float = get(idx)
 
-      def set(idx: scala.Int, value: scala.Float) {
+      def get(idx: scala.Int): scala.Float = _getFloatElement(idx)
+
+      def update(idx: scala.Int, value: scala.Float) {
         _setFloatElement(idx, value)
       }
     }
@@ -569,7 +596,9 @@ object PrimitiveList {
                            structPointerCount,
                            nestingLimit) {
 
-      def apply(idx: scala.Int): scala.Double = _getDoubleElement(idx)
+      def apply(idx: scala.Int): scala.Double = get(idx)
+
+      def get(idx: scala.Int): scala.Double = _getDoubleElement(idx)
     }
 
     class BuilderImpl(segment: SegmentBuilder,
@@ -585,9 +614,11 @@ object PrimitiveList {
                             structDataSize,
                             structPointerCount) {
 
-      def apply(idx: scala.Int): scala.Double = _getDoubleElement(idx)
+      def apply(idx: scala.Int): scala.Double = get(idx)
 
-      def set(idx: scala.Int, value: scala.Double) {
+      def get(idx: scala.Int): scala.Double = _getDoubleElement(idx)
+
+      def update(idx: scala.Int, value: scala.Double) {
         _setDoubleElement(idx, value)
       }
     }

@@ -59,7 +59,8 @@ testschemas := {
   val d = new File("compilerTest/shared/src/test/scala-2.11/org/murtsi/capnproto/compiler")
   if (d.exists() && d.isDirectory) {
     val files = d.listFiles().filter(_.isFile).map(_.getAbsolutePath).filter(_.endsWith(".capnp"))
-    val compiler = new java.lang.ProcessBuilder("java", "-jar", v.getAbsolutePath, files.mkString(" "))
+    val args = Seq("java", "-jar", v.getAbsolutePath) ++ files
+    val compiler = new java.lang.ProcessBuilder(args:_*)
     compiler.redirectOutput(ProcessBuilder.Redirect.INHERIT)
     compiler.redirectError(ProcessBuilder.Redirect.INHERIT)
     val p = compiler.start()

@@ -2,7 +2,8 @@ package org.murtsi.capnproto.runtime
 
 import implicits._
 
-object TextList extends List[Text#Builder, Text#Reader](ElementSize.POINTER) {
+object TextList extends TextList
+sealed class TextList private() extends List[Text#Builder, Text#Reader](ElementSize.POINTER) {
   type Builder = BuilderImpl
   type Reader = ReaderImpl
 
@@ -28,5 +29,7 @@ object TextList extends List[Text#Builder, Text#Reader](ElementSize.POINTER) {
     override def apply(idx: Int): Text#Builder = _getPointerElement[Text](idx)
 
     def update(idx: Int, element: Text.Reader): Unit = _setPointerElement[Text](idx, element)
+
+    def update(idx: Int, element: String): Unit = _setPointerElement[Text](idx, Text.Reader(element))
   }
 }

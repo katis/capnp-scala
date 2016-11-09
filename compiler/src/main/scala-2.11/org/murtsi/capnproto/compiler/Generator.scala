@@ -143,12 +143,16 @@ class Generator(message: MessageReader) {
       )),
       Line("}")
     )
-    Seq("// GENERATED CAP'N PROTO FILE, DO NOT EDIT",
+    val lines = Vector("// GENERATED CAP'N PROTO FILE, DO NOT EDIT",
         s"package $packageName",
         "",
         "import org.murtsi.capnproto.runtime.implicits._",
         "") ++
         schema.lines()
+
+    implicits.clear()
+
+    lines
   }
 
   def genericParamWithConstraints(paramName: String): String = {
@@ -1094,10 +1098,11 @@ class Generator(message: MessageReader) {
     elementType match {
       case Struct(_) => s"org.murtsi.capnproto.runtime.StructList[${typeString(elementType, Leaf.Module)}]$moduleSuffix"
       case Enum(_) => s"org.murtsi.capnproto.runtime.EnumList[${typeString(elementType, Leaf.Module)}]$moduleSuffix"
-      case Type.Text() => s"org.murtsi.capnproto.runtime.Text#List$moduleSuffix"
-      case AnyPointer(_) => s"org.murtsi.capnproto.runtime.AnyPointer#List$moduleSuffix"
-      case Data() => s"org.murtsi.capnproto.runtime.Data#List$moduleSuffix"
-      case _ if elementType.isPrimitive => s"org.murtsi.capnproto.runtime.PrimitiveList#${typeString(elementType, Leaf.Module)}$moduleSuffix"
+      case Type.Text() => s"org.murtsi.capnproto.runtime.TextList$moduleSuffix"
+      case AnyPointer(_) => s"org.murtsi.capnproto.runtime.AnyPointer${separator}List$moduleSuffix"
+      case Data() => s"org.murtsi.capnproto.runtime.DataList$moduleSuffix"
+      case _List(_) => s"org.murtsi.capnproto.runtime.ListList[${typeString(elementType, Leaf.Module)}]$moduleSuffix"
+      case _ if elementType.isPrimitive => s"org.murtsi.capnproto.runtime.PrimitiveList$separator${typeString(elementType, Leaf.Module)}$moduleSuffix"
     }
   }
 }
