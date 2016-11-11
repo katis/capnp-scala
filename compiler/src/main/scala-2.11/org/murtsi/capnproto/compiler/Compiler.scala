@@ -24,6 +24,7 @@ object Compiler {
       run(input, outDir)
       input.close()
     } else {
+      println("Running as a plugin, waiting for input.")
       val input = Channels.newChannel(stdin)
       run(input, outDir)
     }

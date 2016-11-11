@@ -2,28 +2,29 @@ package org.murtsi.capnproto.runtime
 
 import implicits._
 
-object DataList extends List[Data.Builder, Data.Reader](ElementSize.POINTER.toByte) {
+object DataList extends DataList
+sealed class DataList private() extends List[Data#Builder, Data#Reader](ElementSize.POINTER.toByte) {
   type Builder = BuilderImpl
   type Reader = ReaderImpl
 
-    def Reader(segment: SegmentReader,
-               ptr: Int,
-               elementCount: Int,
-               step: Int,
-               structDataSize: Int,
-               structPointerCount: Short,
-               nestingLimit: Int): Reader = {
-      new Reader(segment, ptr, elementCount, step, structDataSize, structPointerCount, nestingLimit)
-    }
+  def Reader(segment: SegmentReader,
+             ptr: Int,
+             elementCount: Int,
+             step: Int,
+             structDataSize: Int,
+             structPointerCount: Short,
+             nestingLimit: Int): Reader = {
+    new Reader(segment, ptr, elementCount, step, structDataSize, structPointerCount, nestingLimit)
+  }
 
-    def Builder(segment: SegmentBuilder,
-        ptr: Int, 
-        elementCount: Int, 
-        step: Int, 
-        structDataSize: Int, 
-        structPointerCount: Short): Builder = {
-      new Builder(segment, ptr, elementCount, step, structDataSize, structPointerCount)
-    }
+  def Builder(segment: SegmentBuilder,
+      ptr: Int,
+      elementCount: Int,
+      step: Int,
+      structDataSize: Int,
+      structPointerCount: Short): Builder = {
+    new Builder(segment, ptr, elementCount, step, structDataSize, structPointerCount)
+  }
 
   class ReaderImpl(segment: SegmentReader,
       ptr: Int, 
