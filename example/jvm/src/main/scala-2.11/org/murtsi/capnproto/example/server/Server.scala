@@ -1,6 +1,5 @@
 package org.murtsi.capnproto.example.server
 
-import java.nio.{ByteBuffer, ByteOrder}
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -11,16 +10,13 @@ import akka.http.scaladsl.server.Directives._
 import akka.stream.scaladsl.{Flow, Sink, Source}
 import akka.stream.{ActorMaterializer, OverflowStrategy}
 import akka.util.ByteString
-import org.murtsi.capnproto.example.todo._
-import org.murtsi.capnproto.example.todo.ServerMessage.{Add, Modify, Remove}
 import org.murtsi.capnproto.example.server.CapnProtoExts._
-import org.murtsi.capnproto.example.todo.{ClientMessage, ServerMessage}
+import org.murtsi.capnproto.example.todo.ServerMessage.{Add, Modify, Remove}
+import org.murtsi.capnproto.example.todo._
 import org.murtsi.capnproto.runtime.implicits._
-import org.murtsi.capnproto.runtime.{Constants, MessageBuilder, MessageStreamParser, Serialize}
+import org.murtsi.capnproto.runtime.{MessageBuilder, MessageStreamParser, Serialize}
 
-import scala.annotation.tailrec
-import scala.collection.mutable
-import scala.collection.immutable
+import scala.collection.{immutable, mutable}
 import scala.io.StdIn
 
 sealed trait WsMessage
@@ -57,7 +53,6 @@ class TodoService(system: ActorSystem) {
     val out = Source.actorRef[ByteString](1, OverflowStrategy.fail)
         .mapMaterializedValue(todoActor ! NewSession(_))
 
-    Source.maybe
     Flow.fromSinkAndSource(in, out)
   }
 
