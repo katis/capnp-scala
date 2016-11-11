@@ -23,7 +23,7 @@ using Scala = import "scala.capnp";
 
 @0xa93fc509624c72d9;
 
-$Scala.package("org.murtsi.capnproto.compiler");
+$Scala.package("org.katis.capnproto.compiler");
 $Scala.module("schema");
 
 using Id = UInt64;
