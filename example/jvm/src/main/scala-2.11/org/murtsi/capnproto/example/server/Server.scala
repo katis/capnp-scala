@@ -1,5 +1,6 @@
 package org.murtsi.capnproto.example.server
 
+import java.nio.{ByteBuffer, ByteOrder}
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -15,9 +16,11 @@ import org.murtsi.capnproto.example.todo.ServerMessage.{Add, Modify, Remove}
 import org.murtsi.capnproto.example.server.CapnProtoExts._
 import org.murtsi.capnproto.example.todo.{ClientMessage, ServerMessage}
 import org.murtsi.capnproto.runtime.implicits._
-import org.murtsi.capnproto.runtime.{MessageBuilder, Serialize}
+import org.murtsi.capnproto.runtime.{Constants, MessageBuilder, MessageStreamParser, Serialize}
 
+import scala.annotation.tailrec
 import scala.collection.mutable
+import scala.collection.immutable
 import scala.io.StdIn
 
 sealed trait WsMessage
@@ -41,13 +44,20 @@ class TodoService(system: ActorSystem) {
 
     val in = Flow[ByteString]
         .map(_.asByteBuffer)
-        .map(Serialize.read)
+        .statefulMapConcat(() => {
+          val parser = new MessageStreamParser()
+          bytes => parser.update(bytes) match {
+            case Some(msg) => immutable.Iterable(msg)
+            case None => immutable.Iterable.empty
+          }
+        })
         .map(_.getRoot[ServerMessage])
         .to(sink)
 
     val out = Source.actorRef[ByteString](1, OverflowStrategy.fail)
         .mapMaterializedValue(todoActor ! NewSession(_))
 
+    Source.maybe
     Flow.fromSinkAndSource(in, out)
   }
 
@@ -69,8 +79,7 @@ class TodoService(system: ActorSystem) {
     }
 
     private val todos = mutable.HashMap[Long, TodoData](
-      (nextId(), TodoData("Hello, world", now)),
-      (nextId(), TodoData("Mitäs kuuluu?", now))
+      (nextId(), TodoData("Hello, world", now))
     )
 
     override def receive = {
@@ -148,7 +157,10 @@ object Server {
     val service = new TodoService(system)
 
     val wsMessage = Flow[Message]
-        .collect { case BinaryMessage.Strict(binary) => binary }
+        .flatMapConcat{
+          case BinaryMessage.Strict(bytes) => Source(immutable.Iterable(bytes))
+          case BinaryMessage.Streamed(bytes) => bytes
+        }
         .via(service.todoFlow())
         .map(BinaryMessage.Strict)
 

@@ -12,7 +12,9 @@ lazy val root = project.in(file(".")).
 lazy val runtime = crossProject.in(file("./runtime")).
   settings(
     name := "capnproto",
-    version := "0.1-SNAPSHOT"
+    version := "0.1-SNAPSHOT",
+    libraryDependencies += "org.scalactic" %%% "scalactic" % "3.0.0",
+    libraryDependencies += "org.scalatest" %%% "scalatest" % "3.0.0" % "test"
   ).
   jvmSettings().
   jsSettings()
@@ -66,9 +68,4 @@ testschemas := {
     val p = compiler.start()
     p.waitFor()
   }
-}
-
-(test in Test) := {
-  testschemas.value
-  (test in Test).value
 }

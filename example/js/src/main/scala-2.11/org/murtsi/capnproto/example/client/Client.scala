@@ -1,5 +1,7 @@
 package org.murtsi.capnproto.example.client
 
+import java.nio.ByteBuffer
+
 import monix.execution.Cancelable
 import monix.execution.Scheduler.Implicits.global
 import monix.reactive.Observable
@@ -8,7 +10,7 @@ import org.murtsi.capnproto.example.todo._
 import org.murtsi.capnproto.example.todo.ClientMessage._
 import org.murtsi.capnproto.example.todo.{ClientMessage, ServerMessage, Todo}
 import org.murtsi.capnproto.runtime.implicits._
-import org.murtsi.capnproto.runtime.{MessageBuilder, Serialize}
+import org.murtsi.capnproto.runtime._
 import org.scalajs.dom._
 import org.scalajs.dom.raw.{HTMLButtonElement, HTMLInputElement, WebSocket}
 
@@ -97,9 +99,8 @@ object Client extends JSApp {
 }
 
 class TodoService(address: String) {
-  private val subscribers = mutable.ArrayBuffer[Subscriber[ClientMessage#Reader]]()
-
-  val messages = Observable.unsafeCreate[ClientMessage#Reader](subscriber => {
+  private val subscribers = mutable.ArrayBuffer[Subscriber[ByteBuffer]]()
+  private val bytes = Observable.unsafeCreate[ByteBuffer](subscriber => {
     subscribers += subscriber
 
     new Cancelable {
@@ -111,6 +112,17 @@ class TodoService(address: String) {
       }
     }
   })
+
+  private val parser = new MessageStreamParser()
+
+  private def parseStream(bb: ByteBuffer): Observable[MessageReader] = {
+    parser.update(bb) match {
+      case Some(msg) => Observable(msg)
+      case None => Observable.empty
+    }
+  }
+
+  val messages = bytes.flatMap(parseStream).map(_.getRoot[ClientMessage])
 
   private val ws = new WebSocket(address)
   ws.binaryType = "arraybuffer"
@@ -128,14 +140,10 @@ class TodoService(address: String) {
   }
 
   ws.onmessage = (ev: MessageEvent) => {
-    println(s"Got a message")
     window.console.log("", ev)
     val data = ev.data.asInstanceOf[ArrayBuffer]
-    println(s"  size: ${data.byteLength}")
     val bb = TypedArrayBuffer.wrap(data)
-    val reader = Serialize.read(bb)
-    val msg = reader.getRoot[ClientMessage]
-    subscribers.foreach(_.onNext(msg))
+    subscribers.foreach(_.onNext(bb))
   }
 
   def send(messageInit: (ServerMessage#Builder) => Unit): Unit = {
