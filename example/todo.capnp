@@ -1,7 +1,7 @@
 using Scala = import "../scala.capnp";
 
 @0xbba67e30383fe749;
-$Scala.package("org.murtsi.capnproto.example");
+$Scala.package("org.katis.capnproto.example");
 $Scala.module("todo");
 
 struct ClientMessage {

@@ -8,6 +8,6 @@ The compiler requires the [capnp tool](https://capnproto.org/install.html) in yo
 
 It can be run with:
 
-    java -jar capnp-scala.jar file1.capnp file2.capnp
+    java -jar capnpc-scala.jar file1.capnp file2.capnp
 
 You need to add the package and module annotations from scala.capnp to your schema.

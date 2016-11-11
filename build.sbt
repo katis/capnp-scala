@@ -23,7 +23,7 @@ lazy val runtimeJVM = runtime.jvm
 lazy val runtimeJS = runtime.js
 
 lazy val capnpcScala = project.in(file("./compiler")).dependsOn(runtimeJVM)
-mainClass in capnpcScala := Some("org.murtsi.capnproto.compiler.Compiler")
+mainClass in capnpcScala := Some("org.katis.capnproto.compiler.Compiler")
 
 lazy val sample = project.in(file("./example"))
     .aggregate(exampleJS, exampleJVM)
@@ -58,7 +58,7 @@ lazy val testschemas = taskKey[Unit]("Compiles test cap'n proto files")
 testschemas := {
   val v = (assembly in capnpcScala).value
 
-  val d = new File("compilerTest/shared/src/test/scala-2.11/org/murtsi/capnproto/compiler")
+  val d = new File("compilerTest/shared/src/test/scala-2.11/org/katis/capnproto/compiler")
   if (d.exists() && d.isDirectory) {
     val files = d.listFiles().filter(_.isFile).map(_.getAbsolutePath).filter(_.endsWith(".capnp"))
     val args = Seq("java", "-jar", v.getAbsolutePath) ++ files
