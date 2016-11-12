@@ -1,5 +1,7 @@
 package org.katis.capnproto.compiler
 
+import java.nio.file.Paths
+
 import org.katis.capnproto.compiler.schema._
 import org.katis.capnproto.runtime.{MessageReader, Text}
 import org.katis.capnproto.runtime.implicits._
@@ -73,8 +75,7 @@ class NodeTypeTree {
   }
 }
 
-class Generator(message: MessageReader) {
-  val request = message.getRoot[CodeGeneratorRequest]
+class Generator(val request: CodeGeneratorRequest#Reader) {
   private val nodeMap = mutable.HashMap[Long, Node#Reader]()
   private val scopeMap = mutable.HashMap[Long, Seq[String]]()
   private val nodeTypes = new NodeTypeTree()
@@ -93,30 +94,38 @@ class Generator(message: MessageReader) {
         }
   }
 
-  private def nodePackageName(nodeId: Long): Option[String] = {
+  def nodePackageName(nodeId: Long): Option[String] = {
     val node = nodeMap(nodeId)
     annotationText(node, PackageNameAnnotationId)
   }
 
-  private def nodeModuleName(nodeId: Long): Option[String] = {
+  def nodeModuleName(nodeId: Long): Option[String] = {
     val node = nodeMap(nodeId)
     annotationText(node, ModuleAnnotationId)
   }
 
   for (requestedFile <- request.requestedFiles) {
     val id = requestedFile.id
-    val packageName = nodePackageName(id).get
-    val module = nodeModuleName(id).get
+    val fileName = requestedFile.filename.toString
+    val root = for (
+      packageName <- nodePackageName(id);
+      module <- nodeModuleName(id)
+    ) yield s"$packageName.$module"
     val imports = requestedFile.imports
 
     for (imp <- imports) {
-      // TODO: Implement properly
-      val importPath = imp.name.toString
-      val rootName = moduleName(importPath.replace("-", "_"))
-      populateScope(Seq(rootName), imp.id)
+      val name = imp.name.toString
+      val path = Paths.get(fileName).resolveSibling(name).toString
+
+      val importGenerator = Compiler.fileGenerator(path)
+      val importFileId = importGenerator.request.requestedFiles.head.id
+      val importRoot = for (pkg <- importGenerator.nodePackageName(importFileId);
+                            mod <- importGenerator.nodeModuleName(importFileId)) yield s"$pkg.$mod"
+
+      populateScope(importRoot.toSeq, imp.id)
     }
 
-    populateScope(Seq(s"$packageName.$module"), id)
+    populateScope(root.toSeq, id)
   }
 
   def structTypePreamble(nodeId: Long, data: Int, pointers: Int) = Seq(Indent(Branch(
@@ -1099,9 +1108,9 @@ class Generator(message: MessageReader) {
       case Struct(_) => s"org.katis.capnproto.runtime.StructList[${typeString(elementType, Leaf.Module)}]$moduleSuffix"
       case Enum(_) => s"org.katis.capnproto.runtime.EnumList[${typeString(elementType, Leaf.Module)}]$moduleSuffix"
       case Type.Text() => s"org.katis.capnproto.runtime.TextList$moduleSuffix"
-      case AnyPointer(_) => s"org.katis.capnproto.runtime.AnyPointer${separator}List$moduleSuffix"
       case Data() => s"org.katis.capnproto.runtime.DataList$moduleSuffix"
       case _List(_) => s"org.katis.capnproto.runtime.ListList[${typeString(elementType, Leaf.Module)}]$moduleSuffix"
+      case AnyPointer(_) => throw new NotImplementedError("Anypointer lists are not implemented")
       case _ if elementType.isPrimitive => s"org.katis.capnproto.runtime.PrimitiveList$separator${typeString(elementType, Leaf.Module)}$moduleSuffix"
     }
   }

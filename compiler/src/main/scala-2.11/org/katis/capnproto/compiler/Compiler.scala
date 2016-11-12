@@ -4,6 +4,8 @@ import java.lang.ProcessBuilder
 import java.nio.channels.{Channels, ReadableByteChannel}
 import java.nio.file.{Files, Path, Paths}
 
+import org.katis.capnproto.compiler.schema._
+import org.katis.capnproto.runtime.implicits._
 import org.katis.capnproto.runtime.Serialize
 
 import scala.collection.JavaConverters._
@@ -16,9 +18,7 @@ object Compiler {
     val outDir = Paths.get(System.getenv().getOrDefault("OUT_DIR", "."))
 
     if (args.length > 0) {
-      val params = Seq("capnp", "compile", "-o", "-") ++ args
-      val capnpc = new ProcessBuilder(params:_*)
-      capnpc.redirectError(ProcessBuilder.Redirect.INHERIT)
+      val capnpc = compiler(args:_*)
       val proc = capnpc.start()
       val input = Channels.newChannel(proc.getInputStream)
       run(input, outDir)
@@ -30,12 +30,30 @@ object Compiler {
     }
   }
 
+  def compiler(files: String*): ProcessBuilder = {
+    val params = Seq("capnp", "compile", "-o", "-") ++ files
+    val capnpc = new ProcessBuilder(params:_*)
+    capnpc.redirectError(ProcessBuilder.Redirect.INHERIT)
+    capnpc
+  }
+
+  def fileGenerator(file: String): Generator = {
+    val capnpc = compiler(file)
+    val proc = capnpc.start()
+    val input = Channels.newChannel(proc.getInputStream)
+
+    val messageReader = Serialize.read(input)
+    val request = messageReader.getRoot[CodeGeneratorRequest]
+    new Generator(request)
+  }
+
   def run(chan: ReadableByteChannel, outputDirectory: Path): Unit = {
       val messageReader = Serialize.read(chan)
 
-      val generator = new Generator(messageReader)
+      val request = messageReader.getRoot[CodeGeneratorRequest]
+      val generator = new Generator(request)
 
-      for (requestedFile <- generator.request.requestedFiles) {
+      for (requestedFile <- request.requestedFiles) {
         val filePath = outputDirectory.resolve(requestedFile.filename.toString + ".scala")
         val output = generator.generateOutput(requestedFile.id)
 

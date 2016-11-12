@@ -58,9 +58,18 @@ lazy val testschemas = taskKey[Unit]("Compiles test cap'n proto files")
 testschemas := {
   val v = (assembly in capnpcScala).value
 
+  def listFiles(f: File): Seq[String] = f match {
+    case dir if dir.isDirectory =>
+      dir.listFiles().flatMap(listFiles)
+    case file if file.getAbsolutePath.endsWith(".capnp") =>
+      Seq(file.getAbsolutePath)
+    case _ =>
+      Seq.empty
+  }
+
   val d = new File("compilerTest/shared/src/test/scala-2.11/org/katis/capnproto/compiler")
   if (d.exists() && d.isDirectory) {
-    val files = d.listFiles().filter(_.isFile).map(_.getAbsolutePath).filter(_.endsWith(".capnp"))
+    val files = listFiles(d)
     val args = Seq("java", "-jar", v.getAbsolutePath) ++ files
     val compiler = new java.lang.ProcessBuilder(args:_*)
     compiler.redirectOutput(ProcessBuilder.Redirect.INHERIT)
